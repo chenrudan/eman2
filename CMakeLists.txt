@@ -566,7 +566,7 @@ ADD_CUSTOM_COMMAND(
 	TARGET unittest
 	POST_BUILD
 	COMMAND python 
-	ARGS ${EMAN_INSTALL_PREFIX}/test/rt/rt.py
+	ARGS ${EMAN_INSTALL_PREFIX}/tests/rt/rt.py
 )
 
 #set the list of unit test to run
