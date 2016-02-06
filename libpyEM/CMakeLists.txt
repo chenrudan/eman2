@@ -20,7 +20,7 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 				DESTINATION	EMAN2
 				RENAME lib${libname}.pyd)
 		INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/release/${libname}.dll
-				DESTINATION	sparx
+				DESTINATION	SPARX
 				RENAME lib${libname}.pyd)
 	ELSE(WIN32)
 		IF(APPLE)
@@ -30,13 +30,13 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 				DESTINATION	EMAN2
 				RENAME lib${libname}.so)
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
-				DESTINATION	sparx
+				DESTINATION	SPARX
 				RENAME lib${libname}.so)
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
 			INSTALL(TARGETS ${libname} DESTINATION EMAN2)
-			INSTALL(TARGETS ${libname} DESTINATION sparx)
+			INSTALL(TARGETS ${libname} DESTINATION SPARX)
 		ENDIF(APPLE)
 	ENDIF(WIN32)
 ENDMACRO(ADD_PYSTE_LIB_WITH_SRC)
@@ -91,6 +91,6 @@ FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(FILES ${empythonlibs} DESTINATION EMAN2)
 
 FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-INSTALL(FILES ${headerfiles} DESTINATION include/EMAN2)
+INSTALL(FILES ${headerfiles} DESTINATION include)
 
 ADD_SUBDIRECTORY(qtgui)
