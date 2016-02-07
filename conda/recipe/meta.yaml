@@ -10,6 +10,7 @@ build:
 
 requirements:
     build:
+        - gcc
         - cmake
         - numpy<=1.9
         - ftgl
