@@ -1,0 +1,30 @@
+{
+	"name":"eman2",
+	"version":"2.1.2",
+	"build":"py27_0",
+	"build_number":0,
+	"depends":[
+		"qt",
+		"freetype",
+		"cmake",
+		"sip",
+		"pyqt",
+		"pyopengl",
+		"pyopengl-accelerate",
+		"ipython",
+		"matplotlib",
+		"libpng",
+		"hdf5",
+		"numpy=1.9",
+		"jpeg",
+		"readline",
+		"libtiff",
+		"bsddb",
+		"gsl",
+		"fftw",
+		"ftgl",
+		"boost"
+	],
+	"arch":"x86_64",
+	"platform":"osx"
+}
