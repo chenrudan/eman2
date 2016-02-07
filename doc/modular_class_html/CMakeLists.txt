@@ -17,7 +17,7 @@ ADD_CUSTOM_COMMAND(
 
 FILE(GLOB modular_html "${CMAKE_CURRENT_SOURCE_DIR}/*.html")
 INSTALL(FILES ${modular_html}
-  DESTINATION    doc
+  	DESTINATION    docs/EMAN2
 )
 
 #INSTALL_FILES(/doc FILES processors.html processor_groups.html aligners.html analyzers.html averagers.html cmps.html projectors.html reconstructors.html)
