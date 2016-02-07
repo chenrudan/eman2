@@ -1,2 +1,2 @@
 INSTALL(FILES DejaVuSerif.ttf readme.txt
-    DESTINATION fonts)
+    	DESTINATION share/EMAN2/fonts)
