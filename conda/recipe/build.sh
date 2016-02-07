@@ -1,9 +1,8 @@
 #!/bin/bash
 
-echo $PREFIX
-echo $SRC_DIR
+#http://conda-test.pydata.org/docs/build.html
 
-cmake
+cmake $SRC_DIR
 make
 make install
 

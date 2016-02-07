@@ -3,7 +3,8 @@ package:
     version: 2.1.2
 
 source:
-  git_url: http://github.com/cryoem/eman2.git
+  git_url: git@github.com:cryoem/eman2.git
+  git_tag: dist
 
 build:
   number: 2
@@ -24,9 +25,9 @@ requirements:
         - libtiff
         - jpeg
         - libpng
-        - python ==2.7
+        - python <3
     run:
-        - python ==2.7
+        - python <3
         - numpy ==1.9
         - matplotlib
         - ipython
@@ -42,3 +43,5 @@ requirements:
 about:
   home: http://blake.bcm.edu/emanwiki
   license: GNU GPL
+  summary: A scientific image processing software suite with a focus on CryoEM and CryoET
+
