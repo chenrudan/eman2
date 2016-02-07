@@ -11,8 +11,9 @@ build:
 requirements:
     build:
         - gcc
+        - zlib
         - cmake
-        - numpy<=1.9
+        - numpy ==1.9
         - ftgl
         - freetype
         - gsl
@@ -23,9 +24,10 @@ requirements:
         - libtiff
         - jpeg
         - libpng
-        - python<3
+        - python ==2.7
     run:
-        - numpy<=1.9
+        - python ==2.7
+        - numpy ==1.9
         - matplotlib
         - ipython
         - pyqt
