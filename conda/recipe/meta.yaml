@@ -42,5 +42,10 @@ requirements:
 about:
   home: http://blake.bcm.edu/emanwiki
   license: GNU GPL
+  license_file: LICENSE.txt
   summary: A scientific image processing software suite with a focus on CryoEM and CryoET
+
+extra:
+  maintainers:
+    - Steve Ludtke
 
