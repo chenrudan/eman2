@@ -204,6 +204,7 @@ SET(INCLUDE_DIRS
 	/usr/include 
 	/sw/include
 	/usr/include/freetype2
+
 	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/OpenGL.framework/Headers
 	)
 
@@ -419,7 +420,7 @@ IF (ENABLE_FTGL)
 		ADD_DEFINITIONS(-DOLD_FTGL)
 	ENDIF(EXISTS ${FTGL_INCLUDE_PATH}/FTGL/FTGL.h AND COMMAND IF)
 	ADD_SUBDIRECTORY(fonts)
-    	FIND_PATH(FREETYPE_INCLUDE_PATH ft2build.h /usr/include/freetype2 /usr/include $ENV{${upper}DIR}/include ${INCLUDE_DIRS})
+    	FIND_PATH(FREETYPE_INCLUDE_PATH ft2build.h $ENV{PREFIX}/include/freetype2 /usr/include/freetype2 /usr/include $ENV{${upper}DIR}/include ${INCLUDE_DIRS})
 	CHECK_REQUIRED_LIB(FREETYPE freetype freetype/config/ftheader.h )
 	IF (ENABLE_STATIC_FTGL)
 		IF(WIN32)
