@@ -6,8 +6,8 @@ ENDIF (ENABLE_AUTODOC)
 
 FILE(GLOB static_html "${CMAKE_CURRENT_SOURCE_DIR}/*.html")
 INSTALL(FILES ${static_html}
-	DESTINATION    share/EMAN2/doc
+	DESTINATION doc
 )
 
 INSTALL(FILES INSTALL EMAN2.0.big.jpg 
-    	DESTINATION share/EMAN2/examples)
+    	DESTINATION examples)

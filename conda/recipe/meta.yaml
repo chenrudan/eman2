@@ -1,0 +1,41 @@
+package:
+    name: eman2
+    version: 2.1.2
+
+source:
+  git_url: http://github.com/cryoem/eman2.git
+
+build:
+  number: 2
+
+requirements:
+    build:
+        - cmake
+        - numpy<=1.9
+        - ftgl
+        - freetype
+        - gsl
+        - boost
+        - fftw
+        - qt
+        - hdf5
+        - libtiff
+        - jpeg
+        - libpng
+        - python<3
+    run:
+        - numpy<=1.9
+        - matplotlib
+        - ipython
+        - pyqt
+        - pyopengl
+        - ftgl
+        - bsddb
+        - readline
+        - libtiff
+        - jpeg
+        - libpng
+
+about:
+  home: http://blake.bcm.edu/emanwiki
+  license: GNU GPL
