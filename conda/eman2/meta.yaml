@@ -13,12 +13,13 @@ build:
 requirements:
     build:
         - zlib
+        #- gcc
         - cmake
         - numpy ==1.9
         - ftgl
         - freetype
         - gsl
-        - boost
+        - boost >1.57
         - fftw
         - hdf5
         - libtiff
@@ -29,6 +30,7 @@ requirements:
         - python <3
         - numpy ==1.9
         - matplotlib
+        - boost >1.57
         - ipython
         - pyqt
         - qt
