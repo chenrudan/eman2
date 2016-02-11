@@ -1,0 +1,20 @@
+package:
+  name: ftgl
+  version: 2.1.3
+
+source:
+  fn: ftgl-2.1.3-rc5.tar.gz
+  url: http://www.mirrorservice.org/sites/downloads.sourceforge.net/f/project/ft/ftgl/FTGL%20Source/2.1.3~rc5/ftgl-2.1.3-rc5.tar.gz
+
+build:
+  number: 2 # [osx]
+  number: 1 # [linux]
+
+requirements:
+  build:
+    - freetype
+
+about:
+  home: http://sourceforge.net/projects/ftgl/
+  license: GNU LGPLv2
+
