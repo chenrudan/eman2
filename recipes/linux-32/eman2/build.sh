@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cmake NUMPY_INCLUDE_PATH=$SP_DIR/numpy/core/include PYTHON_INCLUDE_PATH=$PREFIX/include/python2.7 EMAN_INSTALL_PREFIX=$PREFIX CMAKE_SKIP_RPATH=ON $SRC_DIR
+cmake -DPYTHON_INCLUDE_PATH:PATH=$PREFIX/include/python2.7 -DNUMPY_INCLUDE_PATH:PATH=$PREFIX/lib/python2.7/site-packages/numpy/core/include -DEMAN_INSTALL_PREFIX:PATH=$PREFIX $SRC_DIR
 make -j"${CPU_COUNT}"
 make install
 
