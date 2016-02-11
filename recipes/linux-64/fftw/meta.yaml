@@ -11,9 +11,6 @@ source:
 requirements:
   build:
 
-# Note: tests are run when building the package, they are not accessible
-# in the installed package.
-
 about:
   home: http://fftw.org
   license: GNU General Public License (GPL)
