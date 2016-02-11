@@ -1,9 +1,0 @@
-MAC:
-
-otool -l libpyAligner2.so | grep /Users -B2
-
-for i in $(ls *.so); do install_name_tool -rpath /Users/jmbell/anaconda/envs/_build/lib @rpath $i; done
-
-for i in $(ls *.so); do install_name_tool -change /Users/jmbell/anaconda/conda-bld/work/lib/libEM2.dylib @rpath/python2.7/site-packages/EMAN2/libEM2.dylib $i; done
-
-
