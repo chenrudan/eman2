@@ -15,11 +15,11 @@ SET(EMAN_INSTALL_PREFIX $ENV{PREFIX} CACHE PATH "installation prefix")
 SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
 MARK_AS_ADVANCED(CLEAR EMAN_INSTALL_PREFIX)
 
-#SET(EXECUTABLE_OUTPUT_PATH ${EMAN_BINARY_DIR}/bin CACHE PATH "output directory for building all executables.")
-SET(EXECUTABLE_OUTPUT_PATH $ENV{PREFIX}/bin CACHE PATH "output directory for building all executables.")
+SET(EXECUTABLE_OUTPUT_PATH ${EMAN_BINARY_DIR}/bin CACHE PATH "output directory for building all executables.")
+#SET(EXECUTABLE_OUTPUT_PATH $ENV{PREFIX}/bin CACHE PATH "output directory for building all executables.")
 
-#SET(LIBRARY_OUTPUT_PATH ${EMAN_BINARY_DIR}/lib CACHE PATH "output directory for building all libraries.")
-SET(LIBRARY_OUTPUT_PATH $ENV{PREFIX}/lib CACHE PATH "output directory for building all libraries.")
+SET(LIBRARY_OUTPUT_PATH ${EMAN_BINARY_DIR}/lib CACHE PATH "output directory for building all libraries.")
+#SET(LIBRARY_OUTPUT_PATH $ENV{PREFIX}/lib CACHE PATH "output directory for building all libraries.")
 
 SET(EMAN_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}")
 SET(EMAN_LIBRARY_PATH "${LIBRARY_OUTPUT_PATH}")
