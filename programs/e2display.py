@@ -32,7 +32,7 @@
 #
 
 from EMAN2 import EMANVERSION, E2init, E2end, EMData, base_name, file_exists, EMArgumentParser
-import EMAN2db
+#import EMAN2db
 from emapplication import EMApp
 import embrowser
 from emimage import EMImageWidget, EMWidgetFromFile
@@ -50,7 +50,7 @@ def main():
 
 	This program can be used to visualize most files used in EMAN2. Running it without arguments
 	will open a browser window with more flexible functionality than the command-line.
-	
+
 	"""
 	global app,win,options
 
@@ -78,7 +78,7 @@ def main():
 	win=[]
 	if options.fullrange:
 		fullrangeparms = set_full_range()
-	
+
 	if len(args) < 1:
 		global dialog
 		file_list = []
@@ -88,13 +88,13 @@ def main():
 # 			QtCore.QObject.connect(dialog,QtCore.SIGNAL("ok"),on_browser_done)
 # 			QtCore.QObject.connect(dialog,QtCore.SIGNAL("cancel"),on_browser_cancel)
 		except: pass
-	
+
 	elif options.pdb:
 		load_pdb(args,app)
-	
+
 	elif options.plot:
 		plot(args,app)
-		
+
 	elif options.hist:
 		hist(args,app)
 	
@@ -112,20 +112,20 @@ def main():
 			out.write("#LST\n")
 			out.close()
 		except: pass
-		
+
 	elif options.classmx:
 		options.classmx=options.classmx.split(",")
 		clsnum=int(options.classmx[1])
 		imgs=getmxim(args[0],options.classmx[0],clsnum)
 		display(imgs,app,args[0])
-	
+
 	else:
 		for i in args:
 			if not file_exists(i):
 				print "%s doesn't exist" %i
 				sys.exit(1)
 			display_file(i,app,options.singleimage,usescenegraph=options.newwidget)
-	
+
 	if options.fullrange:
 		revert_full_range(fullrangeparms)
 
@@ -282,7 +282,7 @@ def load_pdb(files,app):
 	for f in files:
 		pdb_model = EMPDBItem3D(f)
 		scene.insertNewNode(f.split("/")[-1],pdb_model)
-		modeltype = EMBallStickModel(f) 
+		modeltype = EMBallStickModel(f)
 		scene.insertNewNode(modeltype.representation, modeltype, parentnode = pdb_model)
 		scene.addChild(EMPDBItem3D(f))
 		title.append(pdb_model.getName())
