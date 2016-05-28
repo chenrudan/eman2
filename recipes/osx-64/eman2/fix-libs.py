@@ -24,6 +24,7 @@
 #
 
 import os
+import sys
 import re
 import shutil
 import subprocess
@@ -105,36 +106,16 @@ def check_output(*popenargs, **kwargs):
 class Target(object):
 	"""Target-specific configuration and build commands.
 	
-	Each target defines some configuration for that platform,
-	and the methods checkout, build, install, postinstall,
-	upload, etc., can be customized to list the actions 
-	required for each platform.
+	Each target defines some configuration for that platform, and the 
+	methods checkout, build, install, upload, etc., can be customized to 
+	list the actions required for each platform.
 	"""
 
 	# Used in the final archive filename
 	target_desc = 'source'
 
 	def __init__(self, args):
-		args = self.update_args(args)
-		args = self.update_cwds(args)
-		self.args = args
-		# print "Updated args:"
-		# for k,v in sorted(vars(args).items()): print k, v, "\n\n"
-
-	def update_args(self, args):
-		# Add a bunch of attributes to the args Namespace
-		args.python = self.python
-		args.distname = '%s.%s'%(args.cvsmodule, args.release)
-		args.distname_source ='%s.%s'%(args.cvsmodule, args.target)
-		args.installtxt = self.installtxt
-		args.bashrc = self.bashrc
-		args.cshrc = self.cshrc
-		args.target_desc = self.target_desc
-		return args
-
-	def update_cwds(self, args):
-		# Find a nicer way of doing this.
-		# I just want to avoid excessive duplicate os.join()
+		# Find a nicer way of doing this. I just want to avoid excessive duplicate os.join()
 		# calls in the main code, because each one is a chance for an error.        
 		args.cwd_co            = os.path.join(args.root, 'co')
 		args.cwd_co_distname   = os.path.join(args.root, 'co',   args.distname)
@@ -152,9 +133,9 @@ class Target(object):
 		args.cwd_rpath_lib     = os.path.join(args.cwd_rpath, 'lib')           
 
 		# OS X links using absolute pathnames; update these to @rpath macro.
-		# This dictionary contains regex sub keys/values
-		# that will be used to process the output
-		# from otool -L.
+		# This dictionary contains regex sub keys/values that will be used 
+		# to process the output from otool -L.
+
 		args.replace = {
 			# The basic paths
 			'^%s/local/'%(args.root): '@rpath/extlib/',
@@ -165,32 +146,31 @@ class Target(object):
 			'^libEM2.dylib': '@rpath/lib/libEM2.dylib',
 			'^libGLEM2.dylib': '@rpath/lib/libGLEM2.dylib',
 		}
-		return args
+
+		self.args = args
 	
 	def _run(self, commands):
 		# Run a series of Builder commands
 		for c in commands:
-			# pass the args Namespace to the Builder.
-			c(self.args).run()
+			c(self.args).run() # pass the args Namespace to the Builder.
 
 	def run(self, commands):
 		for i in commands:
 			getattr(self, i)()
 	
-	def install(self):
+	def fix(self):
 		self._run([FixLinks, FixInstallNames])
 	
 class Mac64Target(Target):
 	"""Generic Mac target."""
-
 	target_desc='mac-64'
 
-	def install(self):
+	def fix(self):
 		self._run([FixLinks, FixInstallNames])
 
 class Linux32Target(Target):
 	target_desc = 'linux-32'
-	def install(self): 
+	def fix(self): 
 		self._run([FixLinuxRpath])
 		   
 class Linux64Target(Linux32Target):
@@ -215,20 +195,15 @@ class Builder(object):
 class FixLinks(Builder):
 	def run(self):
 		log("Creating .dylib -> .so links for Python")
-		# Need to set the current working directory for os.symlink
-		cwd = os.getcwd()
+		cwd = os.getcwd() # Need to set the current working directory for os.symlink
 		os.chdir(self.args.cwd_rpath_lib)
 		for f in glob.glob("*.dylib"):
-			# print f, "->", f.replace(".dylib", ".so")
-			try:
-				os.symlink(f, f.replace(".dylib", ".so"))
-			except:
-				pass
+			try: os.symlink(f, f.replace(".dylib", ".so"))
+			except: pass
 		os.chdir(cwd)
 
 # Set rpath $ORIGIN so LD_LIBRARY_PATH is not needed on Linux.
 # This should work on all modern Linux systems.
-# However, the code below is a little hacky and could be cleaned up.
 class FixLinuxRpath(Builder):
 	def run(self):
 		log("Fixing rpath")
@@ -321,20 +296,27 @@ class FixInstallNames(Builder):
 ##### Registry #####
 
 TARGETS = {
-	'osx-i686': Mac32Target,
-	'osx-x86_64': Mac64Target,
-	'linux-i686': Linux32Target,
-	'linux-x86_64': Linux64Target
+	'osx-64': Mac64Target,
+	'linux-32': Linux32Target,
+	'linux-64': Linux64Target
 }
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('commands',  help='Build commands', nargs='+')
-	parser.add_argument('--root',    help='Build system root', required=True)
-	parser.add_argument('--os',    choices=['osx','linux'],required=True)
-	parser.add_argument('--arch',  choices=['32','64'], required=True)
+	parser.add_argument('--prefix', help='Installation root (Anaconda PREFIX)', required=True, dest="root")
+	parser.add_argument('--dist',   help='Full name of EMAN2 binary', required=True, dest="distname")
+	parser.add_argument('--target', choices=['osx-64','linux-32','linux-64'], required=True)
 	args = parser.parse_args()
-	args.target = "{}-{}".format(args.os,args.arch)
-	print("Install date: {}".format(datetime.datetime.utcnow().isoformat()))
+	
+	args.date = datetime.datetime.utcnow().isoformat()
+	args.python = sys.executable
+
+	print("System info:")
+	print("Target: \t{}".format(args.target))
+	print("Distrib:\t{}".format(args.distname))
+	print("Prefix: \t{}".format(args.root))
+	print("Python: \t{}".format(args.python))
+	print("Date:   \t{}".format(args.date))
+
 	target = TARGETS.get(args.target, Target)(args)
-	target.run(args.commands)
+	target.run(["fix"])
