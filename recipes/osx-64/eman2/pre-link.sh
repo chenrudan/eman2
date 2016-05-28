@@ -2,14 +2,21 @@
 
 echo "Performing pre-linking tasks..."
 
-case "$OSTYPE" in
-  darwin*)  OS="mac" ;; 
-  linux*)   OS="linux" ;;
+case "$(uname -s)" in
+  Darwin*)  OS="mac" ;; 
+  Linux*)   OS="linux" ;;
   *)        OS="other" ;;
 esac
 
-ARCH=$(uname -m)
+case "$(uname -m)" in
+  x86_64)  ARCH="64" ;;
+  i686)    ARCH="32" ;;
+  *)       ARCH="other" ;;
+esac
 
-RECIPE="${PREFIX}/pkgs/${PKG_NAME}-${PKG_VERSION}-${PKG_BUILDNUM}/info/recipe"
+NAME="${PKG_NAME}-${PKG_VERSION}"
+FULLNAME="${NAME}-${PKG_BUILDNUM}"
+RECIPE="${PREFIX}/pkgs/${FULLNAME}/info/recipe"
+TARGET="${OS}-${ARCH}"
 
-python ${RECIPE}/fix-libs.py --os=${OS} --root=${PREFIX} --arch=${ARCH}
+python ${RECIPE}/fix-libs.py --target=${TARGET} --prefix=${PREFIX} --dist=${NAME}
