@@ -124,7 +124,7 @@ class Target(object):
 		args.cwd_images        = os.path.join(args.root, 'images',  args.distname)
 		args.cwd_images_source = os.path.join(args.root, 'images',  args.distname_source)
 		args.cwd_stage         = os.path.join(args.root, 'stage',   args.distname)
-		args.cwd_stage_source  = os.path.joi    n(args.root, 'stage',   args.distname_source)
+		args.cwd_stage_source  = os.path.join(args.root, 'stage',   args.distname_source)
 		args.cwd_stage_source_build = os.path.join(args.root, 'stage',  args.distname_source,'EMAN2/src/build')
 		args.cwd_stage_source_path  = os.path.join(args.root, 'stage',   args.distname_source,'EMAN2/src/eman2')
 		args.cwd_rpath         = os.path.join(args.root, 'stage',   args.distname, args.cvsmodule.upper())
@@ -309,13 +309,6 @@ if __name__ == "__main__":
 	
 	args.date = datetime.datetime.utcnow().isoformat()
 	args.python = sys.executable
-
-	print("System info:")
-	print("Target: \t{}".format(args.target))
-	print("Distrib:\t{}".format(args.distname))
-	print("Prefix: \t{}".format(args.root))
-	print("Python: \t{}".format(args.python))
-	print("Date:   \t{}".format(args.date))
-
+	
 	target = TARGETS.get(args.target, Target)(args)
 	target.run(["fix"])
