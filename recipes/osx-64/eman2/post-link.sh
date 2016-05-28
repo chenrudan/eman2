@@ -1,3 +1,3 @@
-echo "Performing post-linking tasks..."
+#!/bin/bash
 
-python fixlibs.py --os=mac --root=${PREFIX} --version=${GIT_BUILD_STR} --arch=${ARCH}
+echo "Performing post-linking tasks..."

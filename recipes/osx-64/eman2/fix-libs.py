@@ -32,14 +32,6 @@ import datetime
 import argparse
 import platform
 
-##### Registry #####
-
-TARGETS = {
-	'osx-64': MacTarget,
-	'linux-32': LinuxTarget,
-	'linux-64': Linux64Target
-}
-
 ##### Helper functions #####
 
 def log(msg):
@@ -119,9 +111,6 @@ class Target(object):
 	required for each platform.
 	"""
 
-	# All these attrs will be copied into the args Namespace.
-	python = '/usr/bin/python'
-
 	# Used in the final archive filename
 	target_desc = 'source'
 
@@ -189,28 +178,23 @@ class Target(object):
 			getattr(self, i)()
 	
 	def install(self):
-		self._run([FixLinks, FixInterpreter, CopyShrc, CopyExtlib, FixInstallNames])
+		self._run([FixLinks, FixInstallNames])
 	
-class MacTarget(Target):
+class Mac64Target(Target):
 	"""Generic Mac target."""
 
-	python='/usr/bin/python2.7'
-	target_desc='mac' 
+	target_desc='mac-64'
 
 	def install(self):
-		self._run([FixLinks, FixInterpreter, CopyShrc, CopyExtlib, FixInstallNames])
+		self._run([FixLinks, FixInstallNames])
 
-class LinuxTarget(Target):
-	target_desc = 'linux'
+class Linux32Target(Target):
+	target_desc = 'linux-32'
 	def install(self): 
-		self._run([CopyShrc, CopyExtlib, FixLinuxRpath])
-	def package(self):
-		self._run([UnixPackage])
-	def upload(self):
-		self._run([UnixUpload])
+		self._run([FixLinuxRpath])
 		   
-class Linux64Target(LinuxTarget):
-	target_desc = 'linux64'
+class Linux64Target(Linux32Target):
+	target_desc = 'linux-64'
 	pass
 	
 ##### Builder Modules #####
@@ -227,21 +211,7 @@ class Builder(object):
 		"""Each builder class must implement run()."""
 		return NotImplementedError
 
-# Build sub-command.
-class FixInterpreter(Builder):
-	"""Fix the Python interpreter to point to /usr/bin/python<version>."""
-	def run(self):
-		log("Fixing Python interpreter hashbang")
-		for i in find_ext('.py', root=self.args.cwd_rpath):
-			# print i
-			with open(i) as f:
-				data = f.readlines()
-			if data and data[0].startswith("#!") and "python" in data[0]:
-				data[0] = "#!%s\n"%self.args.python
-				with open(i, "w") as f:
-					f.writelines(data)
-
-# Build sub-command. Mac specific.
+# Mac specific build sub-command.
 class FixLinks(Builder):
 	def run(self):
 		log("Creating .dylib -> .so links for Python")
@@ -256,7 +226,6 @@ class FixLinks(Builder):
 				pass
 		os.chdir(cwd)
 
-##### EXPERIMENTAL !!!! ######
 # Set rpath $ORIGIN so LD_LIBRARY_PATH is not needed on Linux.
 # This should work on all modern Linux systems.
 # However, the code below is a little hacky and could be cleaned up.
@@ -283,7 +252,7 @@ class FixLinuxRpath(Builder):
 			except Exception, e:
 				print "Couldnt patchelf:", e        
 		
-# Build sub-command. Mac specific.
+# Mac specific build sub-command. 
 class FixInstallNames(Builder):
 	"""Process all binary files (executables, libraries) to rename linked libraries."""
 	
@@ -324,7 +293,6 @@ class FixInstallNames(Builder):
 			except Exception, e:
 				continue
 
-			# print f
 			# Strip the absolute path down to a relative path
 			frel = f.replace(self.args.cwd_rpath, "")[1:]
 
@@ -350,18 +318,23 @@ class FixInstallNames(Builder):
 					try: cmd(['install_name_tool', '-change', olib, lib, f])
 					except: pass
 
-if __name__ == "__main__":
+##### Registry #####
 
+TARGETS = {
+	'osx-i686': Mac32Target,
+	'osx-x86_64': Mac64Target,
+	'linux-i686': Linux32Target,
+	'linux-x86_64': Linux64Target
+}
+
+if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('commands',  help='Build commands', nargs='+')
-	parser.add_argument('--version', action='version', version=None, required=True)
-	parser.add_argument('--root',    help='Build system root', default=None, required=True)
-	
+	parser.add_argument('--root',    help='Build system root', required=True)
+	parser.add_argument('--os',    choices=['osx','linux'],required=True)
+	parser.add_argument('--arch',  choices=['32','64'], required=True)
 	args = parser.parse_args()
-
-	args.target = platform.platform()
-	
-	print("EMAN2 Anaconda Build -- Date: %s"%(datetime.datetime.utcnow().isoformat()))
-
+	args.target = "{}-{}".format(args.os,args.arch)
+	print("Install date: {}".format(datetime.datetime.utcnow().isoformat()))
 	target = TARGETS.get(args.target, Target)(args)
 	target.run(args.commands)
