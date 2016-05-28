@@ -219,14 +219,13 @@ class FixLinuxRpath(Builder):
 			depth = len(xtarget.split('/'))-2
 			origins = ['$ORIGIN/']
 			base = "".join(["../"]*depth)
-			for i in ['extlib/lib']: #, 'extlib/python/lib', 'extlib/qt4/lib'
+			for i in ['extlib/lib']:
 				origins.append('$ORIGIN/'+base+i+'/')
 			try:
-				# print ['patchelf', '--set-rpath', ":".join(origins), target]
 				cmd(['patchelf', '--set-rpath', ":".join(origins), target])
 			except Exception, e:
 				print "Couldnt patchelf:", e        
-		
+
 # Mac specific build sub-command. 
 class FixInstallNames(Builder):
 	"""Process all binary files (executables, libraries) to rename linked libraries."""
