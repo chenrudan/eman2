@@ -21,9 +21,7 @@ def main():
 	
 	args.date = datetime.datetime.utcnow().isoformat()
 	args.python = sys.executable
-
-	args.cwd_rpath     = args.root
-	args.cwd_rpath_lib = os.path.join(args.cwd_rpath,'lib/python2.7/site-packages/EMAN2')
+	args.cwd_rpath = os.path.join(args.cwd_rpath,'lib/python2.7/site-packages/EMAN2')
 
 	if 'osx' in args.target:
 		target = MacTarget(args)
@@ -90,7 +88,7 @@ class FixLinks(Fixer):
 
 	def run(self):
 		cwd = os.getcwd() # Need to set the current working directory for os.symlink
-		os.chdir(self.args.cwd_rpath_lib)
+		os.chdir(self.args.cwd_rpath)
 		for f in glob.glob("*.dylib"):
 			try: os.symlink(f, f.replace(".dylib", ".so"))
 			except: pass
@@ -125,7 +123,7 @@ class FixInstallNames(Fixer):
 		targets = set()
 		targets |= set(find_ext('.so', root=self.args.cwd_rpath))
 		targets |= set(find_ext('.dylib', root=self.args.cwd_rpath))
-		targets |= set(find_exec(root=self.args.cwd_rpath_lib))
+		targets |= set(find_exec(root=self.args.cwd_rpath))
 
 		for f in sorted(targets):
 			# Get the linked libraries and
