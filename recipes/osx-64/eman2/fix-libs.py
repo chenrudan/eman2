@@ -1,43 +1,39 @@
 #!/usr/bin/env python
-# Ian Rees, 2012
-# Edited by Stephen Murray 2014
-# This is a new version of the EMAN2 build and post-install package management system.
-# The original version was a collection of shell scripts, with various scripts for
-# setting configuration information, CVS checkout, build, package, upload, etc., run
-# via a cron job. 
-#
-# This script expects the following directory layout:
-# 
-#   <target>/
-#       co/
-#           <cvsmodule>.<release>/                               EMAN2 source from CVS, e.g. "eman2.daily", "eman2.EMAN2_0_5"
-#       local/                
-#           [lib,bin,include,doc,share,qt4,...]                  PREFIX for dependency library installs -- think /usr/local
-#       extlib/
-#           <cvsmodule>.<release>/[lib,bin,site-packages,...]    Stripped down copy of local/ that only includes required libraries.
-#       build/
-#           <cvsmodule>.<release>/                               CMake configure and build directory
-#       stage/
-#           <cvsmodule>.<release>/                               Staging area for distribution
-#               EMAN2/[bin,lib,extlib,...]                       EMAN2 installation
-#       images/                                                  Completed, packaged distributions
+
+# Original build.py script by Ian Rees, 2012. Edits by Stephen Murray, 2014.
+# Modified for Anaconda (fix-libs.py) by Michael Bell, 2016
 #
 
 import os
 import sys
 import re
-import shutil
 import subprocess
 import glob
 import datetime
 import argparse
-import platform
+
+def main():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--prefix', help='Installation root (Anaconda PREFIX)', required=True, dest="root")
+	parser.add_argument('--dist',   help='Full name of EMAN2 binary', required=True, dest="distname")
+	parser.add_argument('--target', choices=['osx-64','linux-32','linux-64'], required=True)
+	args = parser.parse_args()
+	
+	args.date = datetime.datetime.utcnow().isoformat()
+	args.name, args.version, _ = args.distname.split('-')
+	args.python = sys.executable
+
+	args.cwd_rpath     = args.root
+	args.cwd_rpath_lib = os.path.join(args.cwd_rpath,'lib/python2.7/site-packages',args.name.upper())
+
+	if 'osx' in args.target:
+		target = MacTarget(args)
+	elif "linux" in args.target:
+		target = LinuxTarget(args)
+
+	target.run(["fix"])
 
 ##### Helper functions #####
-
-def log(msg):
-	"""Print a message."""
-	print "=====", msg, "====="
 
 def find_exec(root='.'):
 	"""Find executables (using +x permissions)."""
@@ -53,40 +49,15 @@ def find_ext(ext='', root='.'):
 		found.extend([os.path.join(root, i) for i in files if i.endswith(ext)])
 	return found
 
-def mkdirs(path):
-	"""mkdir -p"""
-	if not os.path.exists(path):
-		os.makedirs(path)
-  
-def rmtree(path):
-	"""rm -rf"""
-	if os.path.exists(path):
-		shutil.rmtree(path)
-
-def retree(path):
-	"""rm -rf; mkdir -p"""
-	if os.path.exists(path):
-		shutil.rmtree(path)
-	if not os.path.exists(path):
-		os.makedirs(path)  
-	
 def cmd(*popenargs, **kwargs):
-	print "Running:", 
-	print " ".join(*popenargs)
+	print("Running:\n{}".format(" ".join(*popenargs)))
 	kwargs['stdout'] = subprocess.PIPE
 	kwargs['stderr'] = subprocess.PIPE
 	process = subprocess.Popen(*popenargs, **kwargs)
-	# 
 	a, b = process.communicate()
 	exitcode = process.wait()
-	if exitcode:
-		print("WARNING: Command returned non-zero exit code: %s"%" ".join(*popenargs))
-		print a
-		print b
-	
-def echo(*popenargs, **kwargs):
-	print " ".join(popenargs)    
-	
+	if exitcode: print("WARNING: Command returned non-zero exit code: {}\n{}\n{}".format(" ".join(*popenargs),a,b))
+
 def check_output(*popenargs, **kwargs):
 	"""Copy of subprocess.check_output()"""
 	if 'stdout' in kwargs:
@@ -96,138 +67,73 @@ def check_output(*popenargs, **kwargs):
 	retcode = process.poll()
 	if retcode:
 		cmd = kwargs.get("args")
-		if cmd is None:
-			cmd = popenargs[0]
+		if cmd is None: cmd = popenargs[0]
 		raise subprocess.CalledProcessError(retcode, cmd)            
 	return output
 
 ##### Targets #####
 
 class Target(object):
-	"""Target-specific configuration and build commands.
-	
-	Each target defines some configuration for that platform, and the 
-	methods checkout, build, install, upload, etc., can be customized to 
-	list the actions required for each platform.
-	"""
-
-	# Used in the final archive filename
-	target_desc = 'source'
+	"""Target-specific configuration for modifying shared libraries."""
 
 	def __init__(self, args):
-		# Find a nicer way of doing this. I just want to avoid excessive duplicate os.join()
-		# calls in the main code, because each one is a chance for an error.        
-		args.cwd_co            = os.path.join(args.root, 'co')
-		args.cwd_co_distname   = os.path.join(args.root, 'co',   args.distname)
-		args.cwd_extlib        = os.path.join(args.root, 'extlib',  args.distname)
-		args.cwd_build         = os.path.join(args.root, 'build',   args.distname)
-		args.cwd_images        = os.path.join(args.root, 'images',  args.distname)
-		args.cwd_images_source = os.path.join(args.root, 'images',  args.distname_source)
-		args.cwd_stage         = os.path.join(args.root, 'stage',   args.distname)
-		args.cwd_stage_source  = os.path.join(args.root, 'stage',   args.distname_source)
-		args.cwd_stage_source_build = os.path.join(args.root, 'stage',  args.distname_source,'EMAN2/src/build')
-		args.cwd_stage_source_path  = os.path.join(args.root, 'stage',   args.distname_source,'EMAN2/src/eman2')
-		args.cwd_rpath         = os.path.join(args.root, 'stage',   args.distname, args.cvsmodule.upper())
-		args.cwd_rpath_source  = os.path.join(args.root, 'stage',   args.distname_source, args.cvsmodule.upper(),'src/eman2')
-		args.cwd_rpath_extlib  = os.path.join(args.cwd_rpath, 'extlib')
-		args.cwd_rpath_lib     = os.path.join(args.cwd_rpath, 'lib')           
-
-		# OS X links using absolute pathnames; update these to @rpath macro.
-		# This dictionary contains regex sub keys/values that will be used 
-		# to process the output from otool -L.
-
-		args.replace = {
-			# The basic paths
-			'^%s/local/'%(args.root): '@rpath/extlib/',
-			'^%s/build/%s/'%(args.root, args.distname): '@rpath/',
-			# Boost's bjam build doesn't set install_name
-			'^libboost_python.dylib': '@rpath/extlib/lib/libboost_python.dylib',
-			# Same with EMAN2.. for now..
-			'^libEM2.dylib': '@rpath/lib/libEM2.dylib',
-			'^libGLEM2.dylib': '@rpath/lib/libGLEM2.dylib',
-		}
-
 		self.args = args
 	
-	def _run(self, commands):
-		# Run a series of Builder commands
-		for c in commands:
-			c(self.args).run() # pass the args Namespace to the Builder.
-
 	def run(self, commands):
 		for i in commands:
 			getattr(self, i)()
 	
 	def fix(self):
-		self._run([FixLinks, FixInstallNames])
-	
-class Mac64Target(Target):
-	"""Generic Mac target."""
-	target_desc='mac-64'
+		"""Run a series of Fixer commands"""
+		for c in self.fixers:
+			c(self.args).run() # pass the args Namespace to the Fixer.
 
-	def fix(self):
-		self._run([FixLinks, FixInstallNames])
+class MacTarget(Target):
+	"""Mac-specific configuration for modifying shared libraries."""
+	fixers = [FixLinks,FixInstallNames]
 
-class Linux32Target(Target):
-	target_desc = 'linux-32'
-	def fix(self): 
-		self._run([FixLinuxRpath])
-		   
-class Linux64Target(Linux32Target):
-	target_desc = 'linux-64'
+	def __init__(self, args):
+		# OS X links using absolute pathnames; update these to @rpath macro.
+		# This dictionary contains regex substitutions for "otool -L".
+		args.replace = {
+			'^{}'.format(args.root): '@rpath/',
+			'^libEM2.dylib': '@rpath/lib/python2.7/site-packages/EMAN2/libEM2.dylib',
+			'^libGLEM2.dylib': '@rpath/lib/python2.7/site-packages/EMAN2/libGLEM2.dylib'
+		}
+		self.args = args
+
+class LinuxTarget(Target):
+	"""Linux-specific configuration for modifying shared libraries."""
+	fixers = [FixLinuxRpath]
 	pass
-	
-##### Builder Modules #####
 
-class Builder(object):
-	"""Build step."""
+##### Fixer Modules #####
+
+class Fixer(object):
+	"""Generic shared library fixer object."""
 	
 	def __init__(self, args):
 		# Reference to Target configuration args Namespace
 		self.args = args
 	
-	#@abstractmethod
 	def run(self):
-		"""Each builder class must implement run()."""
+		"""Each fixer class must implement run()."""
 		return NotImplementedError
 
-# Mac specific build sub-command.
-class FixLinks(Builder):
+##### Mac specific fixers.
+
+class FixLinks(Fixer):
+	"""Creates .dylib -> .so links for python"""
+
 	def run(self):
-		log("Creating .dylib -> .so links for Python")
 		cwd = os.getcwd() # Need to set the current working directory for os.symlink
 		os.chdir(self.args.cwd_rpath_lib)
 		for f in glob.glob("*.dylib"):
 			try: os.symlink(f, f.replace(".dylib", ".so"))
 			except: pass
-		os.chdir(cwd)
+		os.chdir(cwd)  
 
-# Set rpath $ORIGIN so LD_LIBRARY_PATH is not needed on Linux.
-# This should work on all modern Linux systems.
-class FixLinuxRpath(Builder):
-	def run(self):
-		log("Fixing rpath")
-		targets = set()
-		targets |= set(find_ext('.so', root=self.args.cwd_rpath))
-		targets |= set(find_ext('.dylib', root=self.args.cwd_rpath))
-		targets |= set(find_exec(root=self.args.cwd_rpath))
-
-		for target in sorted(targets):
-			if ".py" in target:
-				continue
-			xtarget = target.replace(self.args.cwd_rpath, '')
-			depth = len(xtarget.split('/'))-2
-			origins = ['$ORIGIN/']
-			base = "".join(["../"]*depth)
-			for i in ['extlib/lib']:
-				origins.append('$ORIGIN/'+base+i+'/')
-			try:
-				cmd(['patchelf', '--set-rpath', ":".join(origins), target])
-			except Exception, e:
-				print "Couldnt patchelf:", e        
-
-# Mac specific build sub-command. 
-class FixInstallNames(Builder):
+class FixInstallNames(Fixer):
 	"""Process all binary files (executables, libraries) to rename linked libraries."""
 	
 	def find_deps(self, filename):
@@ -247,7 +153,6 @@ class FixInstallNames(Builder):
 		return f
 
 	def run(self):
-		log("Fixing install_name")
 		cwd = os.getcwd()
 		os.chdir(self.args.cwd_rpath)       
  
@@ -257,15 +162,13 @@ class FixInstallNames(Builder):
 		targets = set()
 		targets |= set(find_ext('.so', root=self.args.cwd_rpath))
 		targets |= set(find_ext('.dylib', root=self.args.cwd_rpath))
-		targets |= set(find_exec(root=self.args.cwd_rpath))
+		targets |= set(find_exec(root=self.args.cwd_rpath_lib))
 
 		for f in sorted(targets):
 			# Get the linked libraries and
 			# check if the file is a Mach-O binary
-			try:
-				libs = self.find_deps(f)
-			except Exception, e:
-				continue
+			try: libs = self.find_deps(f)
+			except Exception, e: continue
 
 			# Strip the absolute path down to a relative path
 			frel = f.replace(self.args.cwd_rpath, "")[1:]
@@ -278,7 +181,6 @@ class FixInstallNames(Builder):
 			# Set @rpath, this is a reference to the root of the package.
 			# Linked libraries will be referenced relative to this.
 			rpath = self.id_rpath(frel)
-			# print "\tadding @rpath:", rpath
 			try: cmd(['install_name_tool', '-add_rpath', rpath, f])
 			except: pass
 
@@ -288,27 +190,32 @@ class FixInstallNames(Builder):
 				for k,v in self.args.replace.items():
 					lib = re.sub(k, v, lib)
 				if olib != lib:
-					# print "\t", olib, "->", lib
 					try: cmd(['install_name_tool', '-change', olib, lib, f])
 					except: pass
 
-##### Registry #####
+##### Linux specific fixes
 
-TARGETS = {
-	'osx-64': Mac64Target,
-	'linux-32': Linux32Target,
-	'linux-64': Linux64Target
-}
+class FixLinuxRpath(Fixer):
+	"""Set rpath $ORIGIN so LD_LIBRARY_PATH is not needed on Linux. This should work on all modern Linux systems."""
+	
+	def run(self):
+		targets = set()
+		targets |= set(find_ext('.so', root=self.args.cwd_rpath))
+		targets |= set(find_ext('.dylib', root=self.args.cwd_rpath))
+		targets |= set(find_exec(root=self.args.cwd_rpath))
+
+		for target in sorted(targets):
+			if ".py" in target:
+				continue
+			xtarget = target.replace(self.args.cwd_rpath, '')
+			depth = len(xtarget.split('/'))-2
+			origins = ['$ORIGIN/']
+			base = "".join(["../"]*depth)
+			for i in ['extlib/lib']:
+				origins.append('$ORIGIN/'+base+i+'/')
+			try: cmd(['patchelf', '--set-rpath', ":".join(origins), target])
+			except Exception, e: print("Couldnt patchelf: {}".format(e))      
+
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--prefix', help='Installation root (Anaconda PREFIX)', required=True, dest="root")
-	parser.add_argument('--dist',   help='Full name of EMAN2 binary', required=True, dest="distname")
-	parser.add_argument('--target', choices=['osx-64','linux-32','linux-64'], required=True)
-	args = parser.parse_args()
-	
-	args.date = datetime.datetime.utcnow().isoformat()
-	args.python = sys.executable
-	
-	target = TARGETS.get(args.target, Target)(args)
-	target.run(["fix"])
+	main()
