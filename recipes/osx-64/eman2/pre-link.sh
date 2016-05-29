@@ -19,9 +19,10 @@ FULLNAME="${NAME}-${PKG_BUILDNUM}"
 RECIPE="${PREFIX}/pkgs/${FULLNAME}/info/recipe"
 TARGET="${OS}-${ARCH}"
 
-echo "Installation Info ($(date)):"
-echo "Package Name: ${NAME}"
-echo "Anaconda Prefix: ${PREFIX}"
-echo "Target System: ${TARGET}"
+echo "INSTALL INFO:"
+echo "\tDATE: $(date)"
+echo "\tNAME: ${NAME}"
+echo "\tPREFIX: ${PREFIX}"
+echo "\tTARGET: ${TARGET}"
 
 python ${RECIPE}/fix-libs.py --target=${TARGET} --prefix=${PREFIX} --dist=${NAME}

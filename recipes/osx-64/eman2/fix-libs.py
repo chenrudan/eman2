@@ -20,11 +20,10 @@ def main():
 	args = parser.parse_args()
 	
 	args.date = datetime.datetime.utcnow().isoformat()
-	args.name, args.version, _ = args.distname.split('-')
 	args.python = sys.executable
 
 	args.cwd_rpath     = args.root
-	args.cwd_rpath_lib = os.path.join(args.cwd_rpath,'lib/python2.7/site-packages',args.name.upper())
+	args.cwd_rpath_lib = os.path.join(args.cwd_rpath,'lib/python2.7/site-packages/EMAN2')
 
 	if 'osx' in args.target:
 		target = MacTarget(args)
