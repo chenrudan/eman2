@@ -3,7 +3,7 @@
 echo "Performing pre-linking tasks..."
 
 case "$(uname -s)" in
-  Darwin*)  OS="mac" ;; 
+  Darwin*)  OS="osx" ;; 
   Linux*)   OS="linux" ;;
   *)        OS="other" ;;
 esac
