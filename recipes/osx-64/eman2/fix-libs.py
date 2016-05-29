@@ -21,7 +21,7 @@ def main():
 	
 	args.date = datetime.datetime.utcnow().isoformat()
 	args.python = sys.executable
-	args.cwd_rpath = os.path.join(args.cwd_rpath,'lib/python2.7/site-packages/EMAN2')
+	args.cwd_rpath = os.path.join(args.root,'lib/python2.7/site-packages/EMAN2')
 
 	if 'osx' in args.target:
 		target = MacTarget(args)
