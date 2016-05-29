@@ -71,42 +71,6 @@ def check_output(*popenargs, **kwargs):
 		raise subprocess.CalledProcessError(retcode, cmd)            
 	return output
 
-##### Targets #####
-
-class Target(object):
-	"""Target-specific configuration for modifying shared libraries."""
-
-	def __init__(self, args):
-		self.args = args
-	
-	def run(self, commands):
-		for i in commands:
-			getattr(self, i)()
-	
-	def fix(self):
-		"""Run a series of Fixer commands"""
-		for c in self.fixers:
-			c(self.args).run() # pass the args Namespace to the Fixer.
-
-class MacTarget(Target):
-	"""Mac-specific configuration for modifying shared libraries."""
-	fixers = [FixLinks,FixInstallNames]
-
-	def __init__(self, args):
-		# OS X links using absolute pathnames; update these to @rpath macro.
-		# This dictionary contains regex substitutions for "otool -L".
-		args.replace = {
-			'^{}'.format(args.root): '@rpath/',
-			'^libEM2.dylib': '@rpath/lib/python2.7/site-packages/EMAN2/libEM2.dylib',
-			'^libGLEM2.dylib': '@rpath/lib/python2.7/site-packages/EMAN2/libGLEM2.dylib'
-		}
-		self.args = args
-
-class LinuxTarget(Target):
-	"""Linux-specific configuration for modifying shared libraries."""
-	fixers = [FixLinuxRpath]
-	pass
-
 ##### Fixer Modules #####
 
 class Fixer(object):
@@ -216,6 +180,41 @@ class FixLinuxRpath(Fixer):
 			try: cmd(['patchelf', '--set-rpath', ":".join(origins), target])
 			except Exception, e: print("Couldnt patchelf: {}".format(e))      
 
+##### Targets #####
+
+class Target(object):
+	"""Target-specific configuration for modifying shared libraries."""
+
+	def __init__(self, args):
+		self.args = args
+	
+	def run(self, commands):
+		for i in commands:
+			getattr(self, i)()
+	
+	def fix(self):
+		"""Run a series of Fixer commands"""
+		for c in self.fixers:
+			c(self.args).run() # pass the args Namespace to the Fixer.
+
+class MacTarget(Target):
+	"""Mac-specific configuration for modifying shared libraries."""
+	fixers = [FixLinks,FixInstallNames]
+
+	def __init__(self, args):
+		# OS X links using absolute pathnames; update these to @rpath macro.
+		# This dictionary contains regex substitutions for "otool -L".
+		args.replace = {
+			'^{}'.format(args.root): '@rpath/',
+			'^libEM2.dylib': '@rpath/lib/python2.7/site-packages/EMAN2/libEM2.dylib',
+			'^libGLEM2.dylib': '@rpath/lib/python2.7/site-packages/EMAN2/libGLEM2.dylib'
+		}
+		self.args = args
+
+class LinuxTarget(Target):
+	"""Linux-specific configuration for modifying shared libraries."""
+	fixers = [FixLinuxRpath]
+	pass
 
 if __name__ == "__main__":
 	main()
