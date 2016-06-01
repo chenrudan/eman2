@@ -31,3 +31,5 @@ done
 
 cd ${PREFIX}
 
+rm -f ${PREFIX}/eman2.info
+
