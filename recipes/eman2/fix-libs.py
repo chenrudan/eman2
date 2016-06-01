@@ -47,7 +47,7 @@ def find_ext(ext='', root='.'):
 	return found
 
 def cmd(*popenargs, **kwargs):
-	print("Running:\n{}".format(" ".join(*popenargs)))
+	#print("Running:\n{}".format(" ".join(*popenargs)))
 	kwargs['stdout'] = subprocess.PIPE
 	kwargs['stderr'] = subprocess.PIPE
 	process = subprocess.Popen(*popenargs, **kwargs)
@@ -170,9 +170,9 @@ class FixLinuxRpath(Fixer):
 			xtarget = target.replace(self.args.cwd_rpath, '')
 			depth = len(xtarget.split('/'))-2
 			origins = ['$ORIGIN/']
-			#base = "".join(["../"]*depth)
-			#for i in ['extlib/lib']:
-			#	origins.append('$ORIGIN/'+base+i+'/')
+			base = "".join(["../"]*depth)
+			for i in ['lib','lib/python2.7/site-packages/EMAN2']:
+				origins.append('$ORIGIN/'+base+i+'/')
 			try: cmd(['patchelf', '--set-rpath', ":".join(origins), target])
 			except Exception, e: print("Couldnt patchelf: {}".format(e))      
 
