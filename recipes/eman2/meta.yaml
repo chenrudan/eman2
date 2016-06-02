@@ -20,7 +20,7 @@ requirements:
         - ftgl
         - freetype
         - gsl
-        - boost >1.57
+        - boost
         - fftw
         - hdf5
         - libtiff
@@ -31,7 +31,7 @@ requirements:
         - python <3
         - numpy
         - matplotlib
-        - boost >1.57
+        - boost
         - ipython
         - pyqt
         - qt

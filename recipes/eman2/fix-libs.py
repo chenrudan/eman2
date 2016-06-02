@@ -171,7 +171,7 @@ class FixLinuxRpath(Fixer):
 			depth = len(xtarget.split('/'))-2
 			origins = ['$ORIGIN/']
 			base = "".join(["../"]*depth)
-			for i in ['lib','lib/python2.7/site-packages/EMAN2']:
+			for i in ['lib']:#,'lib/python2.7/site-packages/EMAN2']:
 				origins.append('$ORIGIN/'+base+i+'/')
 			try: cmd(['patchelf', '--set-rpath', ":".join(origins), target])
 			except Exception, e: print("Couldnt patchelf: {}".format(e))      

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Performing pre-linking tasks..."
+#echo "Performing pre-linking tasks..."
 
 #echo "Replacing EMAN2DIR environment variable with anaconda prefix"
 #grep -rl 'os.getenv("EMAN2DIR")' ${PREFIX} | xargs sed -i 's/os.getenv("EMAN2DIR")/"${PREFIX}"/g'
