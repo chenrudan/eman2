@@ -11,7 +11,9 @@ setup(
 
     package_dir={'EMAN2':os.path.join(libdir, 'EMAN2')},
     # packages=find_packages('EMAN2'),
-    packages={'EMAN2':'EMAN2'},
+    packages={'EMAN2':'EMAN2',
+              'EMAN2.pyemtbx':'EMAN2.pyemtbx',
+              },
     package_data={'EMAN2':['*.so']},
 
     scripts=scripts,
