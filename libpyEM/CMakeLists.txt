@@ -92,7 +92,4 @@ ENDIF(ENABLE_OPENGL)
 FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(FILES ${empythonlibs} DESTINATION lib/python2.7/site-packages/EMAN2)
 
-FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-INSTALL(FILES ${headerfiles} DESTINATION include)
-
 ADD_SUBDIRECTORY(qtgui)
