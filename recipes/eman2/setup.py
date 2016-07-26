@@ -11,6 +11,7 @@ setup(
     # packages=find_packages('EMAN2'),
     packages={'EMAN2':'EMAN2',
               'EMAN2.qtgui':'EMAN2.qtgui',
+              'EMAN2.pyemtbx':'EMAN2.pyemtbx',
               },
     package_data={'EMAN2':['*.so']},
 
