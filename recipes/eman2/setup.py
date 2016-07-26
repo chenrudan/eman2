@@ -7,11 +7,10 @@ setup(
     name="eman2",
     version="2.2",
 
-    package_dir={'':'lib',
-                 'bin':'lib/bin',
-                 'lib':'lib/EMAN2'},
-    packages=find_packages(),
-    package_data={'':['*.so']},
+    package_dir={'EMAN2':'libeman/EMAN2'},
+    # packages=find_packages('EMAN2'),
+    packages={'EMAN2':'EMAN2'},
+    package_data={'EMAN2':['*.so']},
 
     scripts=scripts,
     # entry_points={
