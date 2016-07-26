@@ -16,9 +16,6 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 		IF(APPLE)
 			ADD_LIBRARY(${libname} MODULE lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
-			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.so
-				DESTINATION	lib/python2.7/site-packages/EMAN2
-				)
 		ENDIF(APPLE)
 ENDMACRO(ADD_PYSTE_LIB_WITH_SRC)
 
@@ -69,9 +66,6 @@ ENDIF(ENABLE_OPENGL)
 
 FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(FILES ${empythonlibs} DESTINATION lib/python2.7/site-packages/EMAN2)
-
-FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-INSTALL(FILES ${headerfiles} DESTINATION include)
 
 ADD_SUBDIRECTORY(qtgui)
 
