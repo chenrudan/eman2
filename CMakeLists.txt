@@ -8,7 +8,7 @@ IF(COMMAND cmake_policy)
 ENDIF(COMMAND cmake_policy)
 cmake_policy(SET CMP0042 NEW)
 
-SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
+SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install_dir CACHE INTERNAL "installation prefix")
 
 SET(LIBRARY_OUTPUT_PATH ${EMAN_BINARY_DIR}/lib CACHE PATH "output directory for building all libraries.")
 
