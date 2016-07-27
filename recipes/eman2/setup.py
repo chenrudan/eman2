@@ -7,7 +7,7 @@ setup(
     name="eman2",
     version="2.2",
 
-    package_dir={'EMAN2':'lib/EMAN2'},
+    package_dir={'EMAN2':'libCMAKE/EMAN2'},
     # packages=find_packages('EMAN2'),
     packages={'EMAN2':'EMAN2',
               'EMAN2.qtgui':'EMAN2.qtgui',
