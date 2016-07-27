@@ -3,7 +3,7 @@ import glob
 import os
 
 libdir='libCMAKE'
-scripts = [name for name in glob.glob(os.path.join(libdir,'bin')+'/*.py')]
+scripts = [name for name in glob.glob(os.path.join(libdir,'bin', '*.py'))]
 
 setup(
     name="eman2",
