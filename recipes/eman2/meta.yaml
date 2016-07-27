@@ -8,7 +8,7 @@ source:
   git_tag: anaconda-wip
 
 build:
-  number: 25
+  number: 27
 
 requirements:
     build:
