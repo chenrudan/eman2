@@ -8,8 +8,7 @@ source:
   git_tag: anaconda-wip
 
 build:
-  number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
-  string: {{ environ.get('GIT_BUILD_STR', '') }}
+  number: 25
 
 requirements:
     build:
