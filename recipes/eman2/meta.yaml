@@ -5,7 +5,7 @@ package:
 
 source:
   git_url: git@github.com:cryoem/eman2.git
-  git_tag: anaconda
+  git_tag: anaconda-wip
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
@@ -54,4 +54,3 @@ extra:
     - Steve Ludtke
     - James Michael Bell
     - Vernon Williams
-
