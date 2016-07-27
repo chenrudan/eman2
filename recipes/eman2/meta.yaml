@@ -5,7 +5,7 @@ package:
 
 source:
   git_url: git@github.com:cryoem/eman2.git
-  git_tag: dist
+  git_tag: anaconda
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
