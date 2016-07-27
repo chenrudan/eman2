@@ -7,7 +7,7 @@ cd $build_dir
 
 cmake $SRC_DIR
 
-make -j
+make
 make install
 
 $PYTHON "${RECIPE_DIR}/setup.py" install
