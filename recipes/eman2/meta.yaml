@@ -4,8 +4,9 @@ package:
     version: 2.2
 
 source:
-  git_url: git@github.com:cryoem/eman2.git
-  git_tag: anaconda-wip
+  path: /home/gorgon/workspace/EMAN2
+  # git_url: git@github.com:cryoem/eman2.git
+  # git_tag: anaconda-wip
 
 build:
   number: 32
