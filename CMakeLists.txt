@@ -7,6 +7,8 @@ IF(COMMAND cmake_policy)
        cmake_policy(SET CMP0002 OLD)
 ENDIF(COMMAND cmake_policy)
 
+set(CMAKE_MACOSX_RPATH 1)
+
 SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation prefix")
 
 SET(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
