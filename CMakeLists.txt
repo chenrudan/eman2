@@ -6,6 +6,7 @@ IF(COMMAND cmake_policy)
        cmake_policy(SET CMP0003 NEW)
        cmake_policy(SET CMP0002 OLD)
 ENDIF(COMMAND cmake_policy)
+cmake_policy(SET CMP0042 NEW)
 
 SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
 
