@@ -12,10 +12,7 @@ SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/libCMAKE CACHE INTERNAL "installa
 SET(EMAN_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "installation prefix")
 
 SET(EXECUTABLE_OUTPUT_PATH ${EMAN_BINARY_DIR}/bin CACHE PATH "output directory for building all executables.")
-#SET(EXECUTABLE_OUTPUT_PATH $ENV{PREFIX}/bin CACHE PATH "output directory for building all executables.")
-
 SET(LIBRARY_OUTPUT_PATH ${EMAN_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
-#SET(LIBRARY_OUTPUT_PATH $ENV{PREFIX}/lib CACHE PATH "output directory for building all libraries.")
 
 OPTION(ENABLE_AUTODOC "enable latex/doxygen document generation and etc. " OFF)
 
