@@ -11,4 +11,5 @@ make
 #sudo ln -s /usr/include/freetype2/freetype /usr/include/freetype
 make install
 
-$PYTHON "${RECIPE_DIR}/setup.py" install
+cp "${RECIPE_DIR}/setup.py" .
+$PYTHON setup.py install
