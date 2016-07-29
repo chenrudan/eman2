@@ -8,11 +8,10 @@ IF(COMMAND cmake_policy)
 ENDIF(COMMAND cmake_policy)
 cmake_policy(SET CMP0042 NEW)
 
-SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/libCMAKE CACHE INTERNAL "installation prefix")
-SET(EMAN_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "installation prefix")
+SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install_dir CACHE INTERNAL "installation prefix")
+# SET(EMAN_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/libCMAKE CACHE PATH "installation prefix")
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin CACHE PATH "output directory for building all executables.")
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
+SET(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
 
 OPTION(ENABLE_AUTODOC "enable latex/doxygen document generation and etc. " OFF)
 

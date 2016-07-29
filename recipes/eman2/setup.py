@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import glob
 import os
 
-libdir='libCMAKE'
+libdir='install_dir'
 scripts = [name for name in glob.glob(os.path.join(libdir,'bin', '*.py'))]
 
 setup(
