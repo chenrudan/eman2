@@ -26,8 +26,8 @@ requirements:
         - boost
         - fftw
         - hdf5
-        - libtiff
-        - jpeg
+        - libtiff >4
+        - jpeg >8
         - libpng
         - python <3
     run:
@@ -35,6 +35,7 @@ requirements:
         - numpy
         - matplotlib
         - boost
+        - fftw
         - ipython
         - pyqt
         - qt
@@ -42,9 +43,11 @@ requirements:
         - ftgl
         - bsddb
         - readline
-        - libtiff
-        - jpeg
+        - libtiff >4
+        - jpeg >8
         - libpng
+        - gsl
+        - hdf5
 
 about:
   home: http://blake.bcm.edu/emanwiki
