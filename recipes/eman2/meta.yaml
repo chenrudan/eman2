@@ -9,6 +9,8 @@ source:
 
 build:
   number: 27
+  rpaths:
+    - lib/python2.7/site-packages/EMAN2/
 
 requirements:
     build:
