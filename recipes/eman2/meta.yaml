@@ -9,9 +9,10 @@ source:
   # git_tag: anaconda-wip
 
 build:
-  number: 32
+  number: 43
   rpaths:
     - lib/python2.7/site-packages/EMAN2/
+    - lib/
 
 requirements:
     build:
@@ -22,6 +23,7 @@ requirements:
         - ftgl
         - freetype
         - gsl
+#        - gslblas
         - boost
         - fftw
         - hdf5
@@ -45,6 +47,8 @@ requirements:
         - jpeg
         - libpng
         - gsl
+#        - gslblas
+        - hdf5
 
 about:
   home: http://blake.bcm.edu/emanwiki

@@ -23,6 +23,7 @@ setup(
     #         'gorgon=run.gorgon:main',
     #     ],
     # },
+    # install_requires=['gsl', 'gslcblas'],
 
     zip_safe = False,
 )

@@ -8,7 +8,7 @@ cd $build_dir
 cmake $SRC_DIR
 
 make
-#sudo ln -s /usr/include/freetype2/freetype /usr/include/freetype
+# make pyAligner2
 make install
 
 cp "${RECIPE_DIR}/setup.py" .
