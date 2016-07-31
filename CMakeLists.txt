@@ -13,6 +13,13 @@ SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install_dir CACHE INTERNAL "insta
 
 SET(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
 
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
 OPTION(ENABLE_AUTODOC "enable latex/doxygen document generation and etc. " OFF)
 
 OPTION(ENABLE_FFTW2 "enable fftw 2 support (LEGACY)" OFF)
