@@ -7,7 +7,7 @@ cd $build_dir
 
 cmake $SRC_DIR
 
-make -j"$(bc -l <<< ${CPU_COUNT}-2)"
+make -j
 make install
 
 $PYTHON "${RECIPE_DIR}/setup.py" install
