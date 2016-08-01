@@ -4,8 +4,7 @@ package:
     version: 2.2
 
 source:
-  git_url: git@github.com:cryoem/eman2.git
-  git_tag: anaconda
+  path: {{HOME}}/workspace/EMAN2
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
