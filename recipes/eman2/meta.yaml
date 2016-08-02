@@ -21,7 +21,7 @@ requirements:
         - boost
         - fftw
         - hdf5
-        - libtiff
+        - libtiff >4
         - jpeg >8
         - libpng
         - python <3
@@ -39,7 +39,7 @@ requirements:
         - ftgl
         - bsddb
         - readline
-        - libtiff
+        - libtiff >4
         - jpeg >8
         - libpng
 
