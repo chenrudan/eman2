@@ -7,7 +7,7 @@ source:
   path: {{HOME}}/workspace/EMAN2
 
 build:
-  number: 57
+  number: 68
 
 requirements:
     build:
