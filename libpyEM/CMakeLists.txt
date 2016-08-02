@@ -25,6 +25,12 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 	ELSE(WIN32)
 		IF(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
+			set_target_properties(${libname}
+					PROPERTIES
+					#			PREFIX lib
+					SUFFIX .so
+					)
+
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
