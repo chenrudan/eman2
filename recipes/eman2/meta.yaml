@@ -30,7 +30,9 @@ requirements:
         - python <3
         - numpy
         - matplotlib
+        - gsl
         - boost
+        - fftw
         - ipython
         - pyqt
         - qt
