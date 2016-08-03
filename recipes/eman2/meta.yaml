@@ -32,6 +32,7 @@ requirements:
         - gsl
         - boost
         - fftw
+        - hdf5
         - ipython
         - pyqt
         - qt
