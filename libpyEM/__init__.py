@@ -30,12 +30,22 @@
 #
 #
 
-import os
+__all__ = []
 
+import pkgutil
+import inspect
+
+for loader, name, is_pkg in pkgutil.walk_packages(__path__):
+	module = loader.find_module(name).load_module(name)
+	for name, value in inspect.getmembers(module):
+		if name.startswith('__'):
+			continue
+		globals()[name] = value
+		__all__.append(name)
+
+import os
 conda_env = [p.replace("/bin","") for p in os.getenv("PATH").split(":") if "/anaconda/" in p][0]
 os.environ["EMAN2DIR"] = conda_env
-
-__all__ = [f for f in glob.glob("{}/lib/site-packages/EMAN2/*.py".format(conda_env)]
 
 import sys
 from math import *
@@ -47,14 +57,13 @@ import cPickle
 import zlib
 import socket
 import subprocess
-from EMAN2 import * # use this to avoid relative paths?
 from EMAN2_cppwrap import *
 from pyemtbx.imagetypes import *
 from pyemtbx.box import *
 from e2version import *
 #from qtgui import * # made this a flat directory
-#import EMAN2db
-#import EMAN2jsondb
+import EMAN2db
+import EMAN2jsondb
 import argparse, copy
 import glob
 import threading
