@@ -30,10 +30,16 @@
 #
 #
 
+import os
+
+conda_env = [p.replace("/bin","") for p in os.getenv("PATH").split(":") if "/anaconda/" in p][0]
+os.environ["EMAN2DIR"] = conda_env
+
+__all__ = [f for f in glob.glob("{}/lib/site-packages/EMAN2/*.py".format(conda_env)]
+
 import sys
 from math import *
 from sys import exit
-import os
 import time
 import shelve
 import re
@@ -41,18 +47,18 @@ import cPickle
 import zlib
 import socket
 import subprocess
+from EMAN2 import * # use this to avoid relative paths?
 from EMAN2_cppwrap import *
 from pyemtbx.imagetypes import *
 from pyemtbx.box import *
 from e2version import *
-from qtgui import *
-import EMAN2db, EMAN2jsondb
+#from qtgui import * # made this a flat directory
+#import EMAN2db
+#import EMAN2jsondb
 import argparse, copy
 import glob
-
-
 import threading
-#from Sparx import *
+#from sparx import *
 
 HOMEDB=None
 
