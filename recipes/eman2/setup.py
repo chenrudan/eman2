@@ -9,7 +9,7 @@ setup(
     description="A scientific image processing software suite with a focus on CryoEM and CryoET",
     author="Steve Ludtke",
     author_email="sludtke@bcm.edu",
-    license="GNU General Public License, Version 2"
+    license="GNU General Public License, Version 2",
     url="http://blake.bcm.edu/emanwiki/EMAN2",
 
     package_dir={'EMAN2':'libeman/EMAN2'},
