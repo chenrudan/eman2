@@ -8,7 +8,7 @@ import cPickle
 
 def import_theano():
 	global theano,T,conv,downsample
-	import theano
+	import EMAN2.theano as theano
 	import theano.tensor as T
 	from theano.tensor.nnet import conv
 	from theano.tensor.signal import downsample

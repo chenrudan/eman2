@@ -41,12 +41,12 @@ import cPickle
 import zlib
 import socket
 import subprocess
-from EMAN2_cppwrap import *
+from EMAN2.EMAN2_cppwrap import *
 from pyemtbx.imagetypes import *
 from pyemtbx.box import *
 from e2version import *
-import EMAN2db
-import EMAN2jsondb
+import EMAN2.EMAN2db as EMAN2db
+import EMAN2.EMAN2jsondb as EMAN2jsondb
 import argparse, copy
 import glob
 import threading
@@ -73,9 +73,9 @@ except: pass
 # behavior appropriately
 #try:
 #import EMAN2db
-from EMAN2db import EMAN2DB,db_open_dict,db_close_dict,db_remove_dict,db_list_dicts,db_check_dict,db_parse_path,db_convert_path,db_get_image_info,e2gethome, e2getcwd
-from EMAN2jsondb import JSDict,js_open_dict,js_close_dict,js_remove_dict,js_list_dicts,js_check_dict,js_one_key
-from EMAN2db import db_open_dict, db_remove_dict, db_check_dict,db_parse_path, e2gethome, e2getcwd
+from EMAN2.EMAN2db import EMAN2DB,db_open_dict,db_close_dict,db_remove_dict,db_list_dicts,db_check_dict,db_parse_path,db_convert_path,db_get_image_info,e2gethome, e2getcwd
+from EMAN2.EMAN2jsondb import JSDict,js_open_dict,js_close_dict,js_remove_dict,js_list_dicts,js_check_dict,js_one_key
+from EMAN2.EMAN2db import db_open_dict, db_remove_dict, db_check_dict,db_parse_path, e2gethome, e2getcwd
 
 #except:
 #	HOMEDB=None
@@ -699,7 +699,7 @@ def display(img,force_2d=False,force_plot=False):
 	"""Generic display function for images or sets of images. You can force images to be displayed in 2-D or as a plot with
 	the optional flags"""
 	if GUIMode:
-		import emimage
+		import EMAN2.emimage as emimage
 		if isinstance(img,tuple) : img=list(img)
 		image = emimage.EMImageWidget(img,None,app,force_2d,force_plot)
 		image.show()
@@ -745,7 +745,7 @@ def euler_display(emdata_list):
 
 def browse():
 	if GUIMode:
-		from emselector import EMBrowser
+		from EMAN2.emselector import EMBrowser
 		browser = EMBrowser()
 		browser.show()
 		#app.attach_child(browser)
@@ -760,7 +760,7 @@ class EMImage(object):
 		old= is provided, and of the appropriate type, it will be used rather than creating
 		a new instance."""
 		if GUIMode:
-			import emimage
+			import EMAN2.emimage as emimage
 			image = emimage.EMImageWidget(data,old,app)
 			image.show()
 			#app.show_specific(image)
@@ -789,7 +789,7 @@ def plot_image_similarity(im1,im2,skipzero=True,skipnearzero=False):
 def plot(data,data2=None,data3=None,show=1,size=(800,600),path="plot.png"):
 	"""plots an image or an array using the matplotlib library"""
 	if GUIMode:
-		from emplot2d import EMPlot2DWidget
+		from EMAN2.emplot2d import EMPlot2DWidget
 		plotw=EMPlot2DWidget(application=app)
 		plotw.set_data(data,"interactive")
 		if data2!=None : plotw.set_data(data2,"interactive2")
@@ -803,7 +803,7 @@ def plot(data,data2=None,data3=None,show=1,size=(800,600),path="plot.png"):
 	else :
 		import matplotlib
 		matplotlib.use('Agg')
-		import pylab
+		import EMAN2.pylab as pylab
 		pylab.figure(figsize=(size[0]/72.0,size[1]/72.0),dpi=72)
 		if isinstance(data,EMData) :
 			a=[]
@@ -857,7 +857,7 @@ def kill_process(pid):
 	platform_string = get_platform()
 	if platform_string == "Windows":
 		# taken from http://www.python.org/doc/faq/windows/#how-do-i-emulate-os-kill-in-windows
-		import win32api
+		import EMAN2.win32api as win32api
 		try:
 			# I _think_ this will work but could definitely be wrong
 			handle = win32api.OpenProcess(1, 0, pid)
@@ -895,7 +895,7 @@ def process_running(pid):
 	platform_string = get_platform()
 	if platform_string == "Windows":
 		# taken from http://www.python.org/doc/faq/windows/#how-do-i-emulate-os-kill-in-windows
-		import win32api
+		import EMAN2.win32api as win32api
 		try:
 			# I _think_ this will work but could definitely be wrong
 			handle = win32api.OpenProcess(1, 0, pid)
@@ -1746,7 +1746,7 @@ def test_image_3d(type=0,size=(128,128,128)):
 # get a font renderer
 def get_3d_font_renderer():
 	try:
-		from libpyGLUtils2 import EMFTGL
+		from EMAN2.libpyGLUtils2 import EMFTGL
 		font_renderer = EMFTGL()
 		font_renderer.set_face_size(32)
 		font_renderer.set_using_display_lists(True)

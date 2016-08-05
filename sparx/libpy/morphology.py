@@ -74,7 +74,7 @@ def dilation(f, mask = None, morphtype="BINARY"):
 	from EMAN2 import morph_type, filt_dilation_
 
 	if not mask:
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		nx = f.get_xsize()
 		ny = f.get_ysize()
 		nz = f.get_zsize()
@@ -106,7 +106,7 @@ def erosion(f, mask = None, morphtype="BINARY"):
 	from EMAN2 import morph_type, filt_erosion_
 
 	if not mask:
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		nx = f.get_xsize()
 		ny = f.get_ysize()
 		nz = f.get_zsize()
@@ -203,7 +203,7 @@ def threshold_to_zero(img, minval = 0.0):
 		Output
 			thresholded image.
 	"""
-	return img.process( "threshold.belowtozero_cut", {"minval": minval } )
+	return img.process( "threshold.belowtozero_cut", {"minval": minval } )	
 
 def threshold_to_minval(img, minval = 0.0):
 	"""
@@ -215,7 +215,7 @@ def threshold_to_minval(img, minval = 0.0):
 		Output
 			thresholded image.
 	"""
-	return img.process( "threshold.belowtominval", {"minval": minval } )
+	return img.process( "threshold.belowtominval", {"minval": minval } )	
 
 def threshold_outside(img, minval, maxval):
 	"""
@@ -226,7 +226,7 @@ def threshold_outside(img, minval, maxval):
 			minval: value below which image pixels will be set to this value.
 			maxval: value above which image pixels will be set to this value.
 	"""
-	return img.process( "threshold.clampminmax", {"minval": minval, "maxval": maxval } )
+	return img.process( "threshold.clampminmax", {"minval": minval, "maxval": maxval } )	
 
 def threshold_maxval(img, maxval = 0.0):
 	"""
@@ -238,19 +238,8 @@ def threshold_maxval(img, maxval = 0.0):
 		Output
 			thresholded image.
 	"""
-	st = Util.infomask(img, None, True)
-	return img.process( "threshold.clampminmax", {"minval": st[2], "maxval": maxval } )
-
-def notzero(img):
-	"""
-		Name
-			notzero - replace values that are not zero by 1.0
-		Input
-			img: input image
-		Output
-			binary image.
-	"""
-	return img.process( "threshold.notzero" )
+	st = Util.infomask(img, None, True)	
+	return img.process( "threshold.clampminmax", {"minval": st[2], "maxval": maxval } )	
 
 def linchange(a, fct):
 	"""
@@ -388,32 +377,6 @@ def ctf_img(nx, ctf, sign = 1, ny = 0, nz = 1):
 
 	if(ny < 1):  ny = nx
 	return  Util.ctf_img(nx, ny, nz, dz, pixel_size, voltage, cs, ampcont, b_factor, dza, azz, sign)
-
-def ctf_img_real(nx, ctf, sign = 1, ny = 0, nz = 1):
-	"""
-		Generate a 1-2-3-D real image containing the CTF.
-	 	Default is 2D output.
-	  	Input
-			nx: x image size.
-			ctf: ctf object, see CTF_info for description.
-			sign: sign of the CTF.
-			ny: y image size
-			nz: z image size 
-		Output
-			ctfimg: real image containing CTF, x-size half of the complex
-	"""
-	dict = ctf.to_dict()
-	dz = dict["defocus"]
-	cs = dict["cs"]
-	voltage = dict["voltage"]
-	pixel_size = dict["apix"]
-	b_factor = dict["bfactor"]
-	ampcont = dict["ampcont"]
-	dza = dict["dfdiff"]
-	azz = dict["dfang"]
-
-	if(ny < 1):  ny = nx
-	return  Util.ctf_img_real(nx, ny, nz, dz, pixel_size, voltage, cs, ampcont, b_factor, dza, azz, sign)
 
 
 def ctf_rimg(nx, ctf, sign = 1, ny = 0, nz = 1):
@@ -565,8 +528,8 @@ def defocus_get(fnam_roo, volt=300, Pixel_size=1, Cs=2, wgh=.1, f_start=0, f_sto
 		   defocus which matches the extracted CTF imprints 
 	"""
 
-	from math 	import sqrt, atan
-	from utilities 	import read_text_row
+	from math import sqrt, atan
+	from EMAN2.utilities import read_text_row
 	roo     = []
 	res     = []
 	if(docf == "a"):
@@ -606,7 +569,7 @@ def defocus_gett(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
+	from EMAN2.utilities import generate_ctf
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 	if f_start == 0 : 	i_start = 0
 	else: 			    i_start = int(Pixel_size*2.*len(roo)*f_start)
@@ -630,10 +593,10 @@ def defocus_gett(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		parent.ctf_data=[roo, Res_roo, Res_TE]
 		parent.i_start = i_start
 		parent.i_stop = i_stop
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 		write_text_file([roo, Res_roo, Res_TE, ctf], "procpw.txt")
 	else:
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 		write_text_file([roo, Res_roo, Res_TE, ctf], "procpw.txt")
 	return defocus
 
@@ -645,8 +608,8 @@ def defocus_get_Eudis(fnam_roo, volt=300, Pixel_size=1, Cs=2, wgh=.1, f_start=0,
 		   defocus which matches the extracted CTF imprints
 		3. It returns Euclidean distance for defocus selection 
 	"""
-	from math 	import sqrt, atan
-	from utilities 	import read_text_row, generate_ctf
+	from math import sqrt, atan
+	from EMAN2.utilities import read_text_row, generate_ctf
 	roo     = []
 	res     = []
 	if docf == "a":
@@ -709,7 +672,7 @@ def defocus_guess(Res_roo, Res_TE, volt, Cs, Pixel_size, ampcont=10.0, istart=0,
 	"""
 	
 	from math import sqrt
-	from utilities import generate_ctf
+	from EMAN2.utilities import generate_ctf
 
 	if istop <= istart : 			istop=len(Res_roo)
 	step = (dz_high-dz_low)/nloop
@@ -774,8 +737,8 @@ def defocus_guess1(Res_roo, Res_TE, volt, Cs, Pixel_size, ampcont=10.0, istart=0
 	"""
 	
 	from math import sqrt
-	from utilities import generate_ctf
-	from morphology import ctf_1d
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.morphology import ctf_1d
 
 	if istop <= istart : 			istop=len(Res_roo)
 	step = (dz_high-dz_low)/nloop
@@ -834,7 +797,7 @@ def defocus_get_fast(indir, writetodoc="w", Pixel_size=1, volt=120, Cs=2, wgh=.1
 	"""
 	import os
 	import types
-	from utilities import set_arb_params, get_image
+	from EMAN2.utilities import set_arb_params, get_image
 	if writetodoc[0]   != "a" and writetodoc[0]   != "l" and writetodoc[0] != "a": 	writetodoc= "a"
 	if print_screen[0] != "p" and print_screen[0] != "n"			     : 	print_screen = "n"
 	if os.path.exists(indir) == False: 	ERROR("roodir doesn't exist", "defocus_get_fast",1)
@@ -1042,7 +1005,7 @@ def defocus_get_slow(indir, writetodoc="w", Pixel_size=1, volt=120, Cs=2, wgh=.1
 		mode=3 output estimated defocus in a text file
 		This is a slow version, more accurate than no s version
 	"""
-	from morphology import defocus_get_Eudis
+	from EMAN2.morphology import defocus_get_Eudis
 	import os
 	if writetodoc[0]   != "a" and writetodoc[0]   != "l" and writetodoc[0] != "a" : writetodoc   = "a"
 	if print_screen[0] != "p" and print_screen[0] != "n": 				print_screen = "n" 
@@ -1105,8 +1068,8 @@ def flcc(t, e):
 		Fast local cross correlation function 
 		See Alan Roseman's paper in Ultramicroscopy
 	"""
-	from utilities import model_blank
-	from fundamentals import ccf
+	from EMAN2.utilities import model_blank
+	from EMAN2.fundamentals import ccf
 	tmp        = EMData()
 	mic_avg_sq = EMData()
 	mic_sq     = EMData()
@@ -1200,7 +1163,7 @@ def imf_residuals_B2(p,y,ctf,x):
 
 def imf_params_get(fstrN, fstrP, ctf_params, pu, nrank, q, lowf=0.01):
 	"""
-		Extract image formation parameters using optimization method
+		Extract image formation paramters using optimization method
 		Output params: 1. freq; 2.Pn1; 3.B factor.4. C; 5. C*Pu; 6. Pn2
 	"""
 	params = []
@@ -1298,7 +1261,7 @@ def residual_1dpw2(list_1dpw2, polynomial_rankB = 2, Pixel_size = 1, cut_off = 0
 			freq.append(i/(2*Pixel_size*len(list_1dpw2)))
 	return res, freq
 
-def adaptive_mask1(vol, nsigma = 1.0, threshold = -9999.0, ndilation = 3, kernel_size = 11, gauss_standard_dev =9):
+def adaptive_mask(vol, nsigma = 1.0, ndilation = 3, kernel_size = 11, gauss_standard_dev =9):
 	"""
 		Name
 			adaptive_mask - create a mask from a given image.
@@ -1308,29 +1271,18 @@ def adaptive_mask1(vol, nsigma = 1.0, threshold = -9999.0, ndilation = 3, kernel
 		Output
 			mask: The mask will have values one, zero, with Gaussian smooth transition between two regions.
 	"""
-	from utilities  import gauss_edge, model_circle
-	from morphology import binarize, dilation
+	from EMAN2.utilities import gauss_edge, model_circle
+	from EMAN2.morphology import binarize, dilation
 	nx = vol.get_xsize()
 	ny = vol.get_ysize()
 	nz = vol.get_zsize()
 	mc = model_circle(nx//2, nx, ny, nz) - model_circle(nx//3, nx, ny, nz)
-	s1 = Util.infomask(vol, mc, True) # flip true: find statistics under the mask (mask >0.5)
-	if threshold <= -9999.0:
-		# Use automatic mode
-		s1 = [s1[0] + s1[1] * nsigma, s1[0], s1[1], nsigma] 
-		# new s1[0] is calculated threshold for binarize
-	else: 
-		# use the user-provided threshold
-		if s1[1] != 0.0:
-			s1 = [threshold, s1[0], s1[1], (threshold - s1[0])/s1[1]] 
-		else:
-			s1 = [threshold, s1[0], s1[1], 0.0]
-		# new s1[3] is calculated nsigma corresponding to user-provided threshold
-	mask = Util.get_biggest_cluster(binarize(vol, s1[0]))
+	s1 = Util.infomask(vol, mc, True)
+	mask = Util.get_biggest_cluster(binarize(vol, s1[0]+s1[1]*nsigma))
 	for i in xrange(ndilation):   mask = dilation(mask)
 	mask = gauss_edge(mask, kernel_size, gauss_standard_dev)
-	return mask, s1 # s1[0]: threshold for binarize, s1[1]: background density average, s1[2]: background density sigma, s1[3]: sigma factor (nsigma)
-	
+	return mask
+
 def adaptive_mask2D(img, nsigma = 1.0, ndilation = 3, kernel_size = 11, gauss_standard_dev =9):
 	"""
 		Name
@@ -1341,8 +1293,8 @@ def adaptive_mask2D(img, nsigma = 1.0, ndilation = 3, kernel_size = 11, gauss_st
 		Output
 			mask: The mask will have values one, zero, with Gaussian smooth transition between two regions.
 	"""
-	from utilities  import gauss_edge, model_circle
-	from morphology import binarize, dilation
+	from EMAN2.utilities import gauss_edge, model_circle
+	from EMAN2.morphology import binarize, dilation
 	nx = img.get_xsize()
 	ny = img.get_ysize()
 	mc = model_circle(nx//2, nx, ny) - model_circle(nx//3, nx, ny)
@@ -1352,16 +1304,15 @@ def adaptive_mask2D(img, nsigma = 1.0, ndilation = 3, kernel_size = 11, gauss_st
 	#mask = gauss_edge(mask, kernel_size, gauss_standard_dev)
 	return mask
 
-def cosinemask(im, radius = -1, cosine_width = 5, bckg = None, s=999999.0):
+def cosinemask(im, radius = -1, cosine_width = 5, bckg = None):
 	"""
 		Apply mask with a cosine fall-off setting values outside of radius_cosine_width to the average computed outside.
 		The fall-off begins from pixel at a distance radius from the center,
 		i.e., mask(radius) = 1 and mask(radius+cosine_width)=0.
-		if s=999999.0 using average else program takes in user-provided s  
 	"""
-	return  Util.cosinemask(im, radius, cosine_width, bckg, s)
-'''
-	from utilities import model_blank
+	#return  Util.cosinemask(im, radius, cosine_width, bckg)
+	#"""
+	from EMAN2.utilities import model_blank
 	from math import cos, sqrt, pi
 	nx = im.get_xsize()
 	ny = im.get_ysize()
@@ -1417,24 +1368,8 @@ def cosinemask(im, radius = -1, cosine_width = 5, bckg = None, s=999999.0):
 						om.set_value_at_fast(x,y,z, om.get_value_at(x,y,z) + temp*(s-om.get_value_at(x,y,z)))
 						#om.set_value_at_fast(x,y,z, om.get_value_at(x,y,z)*(0.5 + 0.5 * cos(pi*(radius_p - r)/cosine_width )))
 	return om
-	"""
+	#"""
 '''
-
-
-def get_shrink_3dmask(nxinit, mask_file_name):
-	from utilities import get_im
-	from fundamentals import resample
-	from morphology   import binarize
-	mask3d = get_im(mask_file_name)
-	nx2 = nxinit
-	nx1 = mask3d.get_xsize()
-	if nx1 == nx2:
-		return mask3d
-	else:
-		shrinkage = float(nx2)/nx1
-		mask3d    = binarize(resample(mask3d,shrinkage))
-		return mask3d
-
 
 def get_biggest_cluster(mg):
 	"""
@@ -1442,8 +1377,8 @@ def get_biggest_cluster(mg):
 	  Output: image that contains the largest connected subset in the input image
 	  This code was written by Wei in C and put in util_sparx.cpp
 	"""
-	from utilities import model_blank
-	from morphology import collapse
+	from EMAN2.utilities import model_blank
+	from EMAN2.morphology import collapse
 
 	nx = mg.get_xsize()
 	ny = mg.get_ysize()
@@ -1508,9 +1443,9 @@ def get_biggest_cluster(mg):
 										l.append([iq,jq,kq])
 
 def adaptive_mask(vol, mass=2000, Pixel_size=3.6):
-	from utilities  import gauss_edge, model_blank
-	from morphology import binarize, threshold
-	from filter     import filt_gaussl, filt_dilation
+	from EMAN2.utilities import gauss_edge, model_blank
+	from EMAN2.morphology import binarize, threshold
+	from EMAN2.filter import filt_gaussl, filt_dilation
 	nx = vol.get_xsize()
 	a = filt_gaussl(vol, 0.15, True)
 	TH = a.find_3d_threshold(mass, Pixel_size)
@@ -1524,11 +1459,10 @@ def adaptive_mask(vol, mass=2000, Pixel_size=3.6):
 	#Util.mul_img(vol, d)
 	#return threshold(vol, 0.0)
 
-"""
 def refine_with_mask(vol):
-	from filter     import filt_dilation
-	from utilities  import model_circle, model_gauss, drop_image
-	from morphology import collapse
+	from EMAN2.filter import filt_dilation
+	from EMAN2.utilities import model_circle, model_gauss, drop_image
+	from EMAN2.morphology import collapse
 	# does not seem to be working all that well
 	nx = vol.get_xsize()
 	outer_radius = nx/2-2
@@ -1555,7 +1489,8 @@ def refine_with_mask(vol):
 	#drop_image(mask,"m2.spi","s")
 	vol *= mask
 	return vol
-"""
+'''
+
 
 
 def compute_bfactor(pws, freq_min, freq_max, pixel_size = 1.0):
@@ -1567,7 +1502,7 @@ def compute_bfactor(pws, freq_min, freq_max, pixel_size = 1.0):
 		pixel_size   :  in A
 	"""
 	from math import log, sqrt
-	from statistics import linreg
+	from EMAN2.statistics import linreg
 	nr = len(pws)
 	"""
 	if (idx_freq_min < 0):
@@ -1597,24 +1532,21 @@ def compute_bfactor(pws, freq_min, freq_max, pixel_size = 1.0):
 			break
 
 	B, s = linreg(x[idx_freq_min:idx_freq_max], pws_log[idx_freq_min:idx_freq_max])
-	#print  B,s
+	print  B,s
 
 	ff = [0.0]*nr
 	from math import exp
 	for i in xrange(nr):  ff[i] = B*x[i] + s
 
-	return -B, [x,ff,pws_log]
+	return -B/4.0, [x,ff,pws_log]
 
 	
 ################
 #
-#  CTER code (old version since 2016/03/16)
+#  CTER code
 #
 ################
-# 
-# NOTE: 2016/03/16 Toshio Moriya
-# This version is going to be obsolete soon. Please use cter_mrk instead.
-#  
+
 def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= -1.0 , f_stop = -1.0, voltage=300.0, Pixel_size=2.29, Cs = 2.0, wgh=10.0, kboot=16, MPI=False, DEBug= False, overlap_x = 50, overlap_y=50 , edge_x = 0, edge_y=0, guimic=None, set_ctf_header=False):
 	'''
 	Input
@@ -1625,22 +1557,22 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 	    
 	    guimic	 :
 	'''
-	from   EMAN2 import periodogram
-	from   applications import MPI_start_end
-	from   utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
-	from   sys import exit
+	from EMAN2 import periodogram
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
+	from sys import exit
 	import numpy as np
 	import os
-	from   mpi  import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
-	from   fundamentals import tilemic, rot_avg_table
-	from   morphology   import threshold, bracket_def, bracket, goldsearch_astigmatism
-	from   morphology   import defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett
-	from   morphology   import defocus_guessn, defocusgett_, defocusget_from_crf, make_real
-	from   morphology   import fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
-	from   alignment    import Numrinit, ringwe
-	from   statistics   import table_stat
-	from   pixel_error  import angle_ave
-	from   global_def   import ERROR
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
+	from EMAN2.fundamentals import tilemic, rot_avg_table
+	from EMAN2.morphology import threshold, bracket_def, bracket, goldsearch_astigmatism
+	from EMAN2.morphology import defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett
+	from EMAN2.morphology import defocus_guessn, defocusgett_, defocusget_from_crf, make_real
+	from EMAN2.morphology import fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
+	from EMAN2.alignment import Numrinit, ringwe
+	from EMAN2.statistics import table_stat
+	from EMAN2.pixel_error import angle_ave
+	from global_def import ERROR
 	import global_def
 
 	# Case of a single micrograph from gui mode
@@ -2007,7 +1939,7 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 					if pwrot2[it]>0.5 :
 						ibec = it
 						break
-				from morphology import ctf_1d
+				from EMAN2.morphology import ctf_1d
 				ct = generate_ctf([ad1, Cs, voltage, Pixel_size, temp, wgh,0.0,0.0])
 				cq = ctf_1d(wn, ct)
 
@@ -2066,7 +1998,7 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 		
 		if stack == None and set_ctf_header:
 			img = get_im(namics[ifi])
-			from utilities import set_ctf
+			from EMAN2.utilities import set_ctf
 			set_ctf(img, [totresi[-1][1], Cs, voltage, Pixel_size, 0, wgh, totresi[-1][7], totresi[-1][8]])
 			# and rewrite image 
 			img.write_image(namics[ifi])
@@ -2074,7 +2006,7 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 			#print  namics[ifi],"     FAILED"
 	#from utilities import write_text_row
 	if MPI:
-		from utilities import wrap_mpi_gatherv
+		from EMAN2.utilities import wrap_mpi_gatherv
 		totresi = wrap_mpi_gatherv(totresi, 0, MPI_COMM_WORLD)
 	if( myid == 0 ):
 		outf = open( os.path.join(outpartres,"partres.txt"), "w")
@@ -2085,769 +2017,7 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 
 	if guimic != None:
 		return totresi[0][1], totresi[0][7], totresi[0][8], totresi[0][9], totresi[0][10], totresi[0][11]
-
-################
-#
-#  CTER code (new version since 2016/03/16)
-#
-################
-# 
-# NOTE: 2016/03/16 Toshio Moriya
-# In this version, the IO-related interface is simplified for sxcter.py and sxgui.py
-# Since cter() was used in not only sxcter.py but also e2boxer.py and sxhelixboxer.py,
-# This new version is added to avoid breaking e2boxer.py and sxhelixboxer.py
-#  
-# NOTE: 2016/03/16 Toshio Moriya
-# To get a single micrograph file name from a GUI application, 
-# there must be a better way than using guimic...
-# 
-def cter_mrk(input_image, output_directory, wn, pixel_size = -1.0, Cs = 2.0, voltage = 300.0, wgh = 10.0, f_start = -1.0, f_stop = -1.0, kboot = 16, overlap_x = 50, overlap_y = 50 , edge_x = 0, edge_y = 0, set_ctf_header = False, MPI = False, stack_mode = False, debug_mode = False):
-	"""
-	Arguments
-		input_image       : micrograph list file name (e.g. mic_list.txt), micrograph file name pattern (e.g. 'Micrographs/mic*.mrc'), single micrograph file name (e.g. 'Micrographs/mic0.mrc'), or particle stack file name (e.g. 'bdb:stack'; must be stack_mode = True).
-		output_directory  : output directory
-	"""
-	from   EMAN2 import periodogram
-	from   EMAN2db import db_check_dict, db_parse_path
-	from   applications import MPI_start_end
-	from   utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
-	from   sys import exit
-	import numpy as np
-	import os
-	import glob
-	from   mpi  import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
-	from   fundamentals import tilemic, rot_avg_table, resample
-	from   morphology   import threshold, bracket_def, bracket, goldsearch_astigmatism
-	from   morphology   import defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett
-	from   morphology   import defocus_guessn, defocusgett_, defocusget_from_crf, make_real
-	from   morphology   import fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
-	from   alignment    import Numrinit, ringwe
-	from   statistics   import table_stat
-	from   pixel_error  import angle_ave
-	from   global_def   import ERROR
-	import global_def
-	
-	# Local Constants
-	myname = "cter_mrk"
-	
-	# Set up MPI related variables
-	if MPI:
-		myid = mpi_comm_rank(MPI_COMM_WORLD)
-		ncpu = mpi_comm_size(MPI_COMM_WORLD)
-		main_node = 0
-	else: 
-		myid = 0
-		ncpu = 1
-		main_node = 0
-	
-	# Find the cter mode from arguments
-	i_enum = -1; the_cter_mode_invalid        = i_enum; 
-	i_enum += 1; the_cter_mode_multi_mic_file = i_enum # Multi-Micrograph Mode by list file
-	i_enum += 1; the_cter_mode_multi_mic_dir  = i_enum # Multi-Micrograph Mode by directory
-	i_enum += 1; the_cter_mode_single_mic     = i_enum # Single-Micrograph Mode
-	i_enum += 1; the_cter_mode_stack          = i_enum # (Particle) Stack Mode
-	i_enum += 1; the_n_cter_mode              = i_enum
-	
-	cter_mode = the_cter_mode_invalid
-	cter_mode_name = ""
-	if stack_mode == False:
-		# One of two Micrograph Modes
-		if os.path.splitext(input_image)[1] == ".txt":
-			# multi-micrograph mode because input image file name contains ".txt"
-			cter_mode = the_cter_mode_multi_mic_file
-			cter_mode_name = "multi-micrograph"
-		elif input_image.find("*") != -1:
-			# multi-micrograph mode because input image file name contains wild card "*"
-			cter_mode = the_cter_mode_multi_mic_dir
-			cter_mode_name = "multi-micrograph"
-		else: # assert input_image.find("*") == -1:
-			# single-micrograph mode because input image file name does not contain wild card "*"
-			cter_mode = the_cter_mode_single_mic
-			cter_mode_name = "single-micrograph"
-	else: # assert(stack_mode == True)
-		# (particle) stack Mode
-		cter_mode = the_cter_mode_stack
-		cter_mode_name = "stack"
-	assert(cter_mode != the_cter_mode_invalid)
-	
-	# Check error conditions. All nodes should check error to see if abort is necessary
-	error_message_list = [] # List of error messages. If no error is found, the length should be zero
-	
-	# input-related errors (mode-dependent) and also create the input file name list
-	input_file_path_list = []
-	if cter_mode == the_cter_mode_multi_mic_file:
-		# assert(input_image.find("*") != -1)
-		# Get the list of micrograph file names
-		input_file_path_list = read_text_file(input_image)
-		if len(input_file_path_list) == 0:
-			# The result shouldn't be empty if the specified micrograph file name pattern is invalid
-			error_message_list.append("The provided micrograph list file (%s) for %s mode contains no entries. Please make sure the file contains a micrograph list, and restart the program." % (input_image, cter_mode_name))
-	elif cter_mode == the_cter_mode_multi_mic_dir:
-		# assert(input_image.find("*") != -1)
-		# Get the list of micrograph file names
-		input_file_path_list = glob.glob(input_image)
-		if input_image[:len("bdb:")].lower() == "bdb:":
-			error_message_list.append("BDB file can not be selected as input_image (%s) for %s mode. Please convert the format, and restart the program." % (input_image, cter_mode_name))
-		elif len(input_file_path_list) == 0:
-			# The result shouldn't be empty if the specified micrograph file name pattern is invalid
-			error_message_list.append("There are no files whose names match with the provided file name pattern (%s) for %s mode. Please correct the pattern, and restart the program." % (input_image, cter_mode_name))
-	elif cter_mode == the_cter_mode_single_mic:
-		# assert(input_image.find("*") == -1)
-		if input_image[:len("bdb:")].lower() == "bdb:":
-			error_message_list.append("BDB file can not be selected as input_image (%s) for %s mode. Please convert the format, and restart the program." % (input_image, cter_mode_name))
-		elif os.path.exists(input_image) == False:
-			error_message_list.append("Micrograph file specified by input_image (%s) for %s mode could not be found. Please correct the file name, and restart the program." % (input_image, cter_mode_name))
-		if MPI:
-			error_message_list.append("Please use single processor version for %s mode, and restart the program." % (cter_mode_name))
-		input_file_path_list = [input_image]
-	elif cter_mode == the_cter_mode_stack:
-		if input_image.find("*") != -1:
-			error_message_list.append("Stack file name specified by input_image (%s) for %s mode should not contain wild card \"*\". Please correct the file name, and restart the program." % (input_image, cter_mode_name))
-		elif os.path.exists(input_image) == False and db_check_dict(input_image) == False:
-			error_message_list.append("Stack file specified by input_image (%s) for %s mode could not be found. Please correct the file name, and restart the program." % (input_image, cter_mode_name))
-		if MPI:
-			error_message_list.append("Please use single processor version for %s mode, and restart the program." % (cter_mode_name))
-		input_file_path_list = [input_image]
-	# else:
-		# assert(False) # This is unreachable code
-	
-	# # output-related errors
-	# if os.path.exists(output_directory):
-	# 	error_message_list.append("Output directory (%s) exists. Please change the name and restart the program." % output_directory)
-	
-	error_status = None
-	if myid == main_node:
-		if os.path.exists(output_directory):
-			error_status = ("Output directory (%s) exists. Please change the name and restart the program." % output_directory, getframeinfo(currentframe()))
-	from utilities import if_error_then_all_processes_exit_program
-	if_error_then_all_processes_exit_program(error_status)
-	
-	# option-related errors
-	if pixel_size <= 0.0:
-		error_message_list.append("Pixel size has to be specified. Please set it and restart the program.")
-	
-	if len(error_message_list) > 0:
-		# Detected error! output error message
-		if MPI == False:
-			for erro_message in error_message_list:  ERROR(erro_message, myname, 2)
-		elif myid == main_node: # assert(MPI == True)
-			for erro_message in error_message_list:  ERROR(erro_message, myname, 2, myid)
-#		print "MRK_DEBUG: Process %03d returning from cter_mrk()" % (myid)
-#		for erro_message in error_message_list:  print "MRK_DEBUG: %s" % (erro_message)
-		# Abort process
-		if cter_mode == the_cter_mode_single_mic:  return 0, 0, 0, 0, 0, 0
-		else:  return
-	
-	# Wait for all nodes to check error condition, especially existence of output directory
-	# Without this barrier, main node can create output directory before some child nodes check this error.
-	if MPI == True:
-		mpi_barrier(MPI_COMM_WORLD)
-	
-	if MPI == False or myid == main_node: print "  Running with %s mode." % (cter_mode_name)
-#	if MPI == False or myid == main_node: print "MRK_DEBUG: namics", namics
-#	if MPI == False or myid == main_node: print "MRK_DEBUG: stack", stack
-	
-	# Prepare input file path(s)
-	# 
-	# NOTE: 2016/03/17 Toshio Moriya
-	# From here on, stack (and namics) will be used to distinguish stack mode and micrograph mode.
-	# However, a single input_file_path_list should be sufficient since we already know the mode.
-	# Let's consider this refactoring in the future.
-	# 
-	stack = None # (particle) stack file name: if it is not None, cter runs with stack mode. Otherwise, runs with micrograph mode
-	namics = []  # micrograph file name list
-	if cter_mode == the_cter_mode_multi_mic_dir or cter_mode == the_cter_mode_multi_mic_file:
-		namics = input_file_path_list
-		namics.sort(key=str.lower) # Sort list of micrographs using case insensitive string comparison
-		# asssert(stack == None)
-		# asssert(len(namics) > 0)
-	elif cter_mode == the_cter_mode_single_mic:
-		namics = input_file_path_list
-		# asssert(stack == None)
-		# assert(len(namics) == 1)
-	elif cter_mode == the_cter_mode_stack:
-		stack = input_file_path_list[0]
-		# asssert(stack == None)
-		# assert(len(namics) > 0) # it can't be empty, right?
-	# else: 
-		# assert(False)  # This is unreachable code
-	
-	# Make output directory
-	outpwrot = "%s/pwrot" % (output_directory)
-	outmicthumb = "%s/micthumb" % (output_directory)
-	if debug_mode:  outravg = "%s/ravg" % (output_directory)
-	if MPI:
-		if myid == main_node:
-			# Make output directory
-			os.mkdir(output_directory)
-			os.mkdir(outpwrot)
-			os.mkdir(outmicthumb)
-			if debug_mode:  os.mkdir(outravg)
-#			print "MRK_DEBUG: Main node created directories. Waiting for the other to reach the next line"
-		# Make all nodes wait for main node to create output directory
-		mpi_barrier(MPI_COMM_WORLD)
-#		if myid == main_node: print "MRK_DEBUG: OK. Every one reached mpi_barrier above"
-	else:
-		# Make output directory
-		os.mkdir(output_directory)
-		os.mkdir(outpwrot)
-		os.mkdir(outmicthumb)
-		if debug_mode:  os.mkdir(outravg)
-	
-	# Set up loop variables depending on the cter mode
-	if stack == None:
-		# assert(len(namics) > 0)
-#		if MPI == False or myid == main_node: print "MRK_DEBUG: len(namics) == %d" % (len(namics))
-		if MPI:
-			set_start, set_end = MPI_start_end(len(namics), ncpu, myid)
-		else:
-			set_start = 0
-			set_end = len(namics)
-	else: # assert(stack =! None)
-		# assert(len(namics) == 0)
-		# assert(MPI == False)
-		pw2 = []
-		data = EMData.read_images(stack)
-		nima = len(data)
-#		if MPI == False or myid == main_node: print "MRK_DEBUG:  len(data) == %d" % (len(data))
-		for i in xrange(nima):
-			pw2.append(periodogram(data[i]))
-		wn = pw2[0].get_xsize()
-		set_start = 0
-		set_end = 1
-	
-	totresi = []
-	missing_img_names = []
-	rejected_img_names = []
-	for ifi in xrange(set_start,set_end):
-		# set pw2 (image used for CTF estimation) and basename root of image file depending on the cter mode
-		pw2 = []
-		img_type = ""
-		img_name = ""
-		img_basename_root = ""
-		img_name_for_print = ""
-		if stack == None:
-			img_type = "Micrograph"; img_name = namics[ifi]; img_name_for_print = " " + img_name
-			
-			if os.path.exists(img_name) == False:
-				missing_img_names.append(img_name)
-				print "  Can not find %s. Skipping this micrograph..." % (img_name_for_print)
-				continue
-			
-			numFM = EMUtil.get_image_count(img_name)
-			#
-			# NOTE: 2016/03/21 Toshio Moriya
-			# For now, dbd file is a invalid input_image for micrograph modes
-			# 
-			# assert(db_check_dict(img_name) == False)
-			img_basename_root = os.path.splitext(os.path.basename(img_name))[0]
-			# 
-			# NOTE: 2016/03/17 Toshio Moriya
-			# The following loop does not make sense because nf is not used in the loop body
-			# If get_im(img_name, nf) instead of get_im(img_name), it might make sense.
-			# 
-			for nf in xrange(numFM):
-				pw2 += tilemic(get_im(img_name), win_size = wn, overlp_x = overlap_x, overlp_y = overlap_y, edge_x = edge_x, edge_y = edge_y)
-		else:
-			assert (ifi == 0) # MRK_DEBUG
-			img_type = "Stack"; img_name = stack; print_img_name = ""
-			numFM = EMUtil.get_image_count(img_name)
-			if db_check_dict(img_name) == False:
-				img_basename_root = os.path.splitext(os.path.basename(img_name))[0]
-			else: # assert(db_check_dict(img_name) == True)
-				path, dictname, keys = db_parse_path(img_name)
-				img_basename_root = dictname
-			
-			for i in xrange(numFM):
-				pw2.append(periodogram(get_im(img_name,i)))
-		# assert(len(pw2) != [])
-		# assert(img_type != "")
-		# assert(img_name != "")
-		# assert(img_basename_root != "")
-		print  "  Process ID = %04d, %s Name = %s, Frame Counts = %03d" % (ifi, img_type, img_name, numFM)
 		
-		nimi = len(pw2)
-		adefocus = [0.0] * kboot
-		aamplitu = [0.0] * kboot
-		aangle   = [0.0] * kboot
-		
-		allroo = []
-		for imi in xrange(nimi):
-			allroo.append(rot_avg_table(pw2[imi]))
-		lenroo = len(allroo[0])
-		#print time(),nimi
-		
-		for nboot in xrange(kboot):
-			if(nboot == 0): boot = range(nimi)
-			else:
-				from random import randint
-				for imi in xrange(nimi): boot[imi] = randint(0, nimi - 1)
-			qa = model_blank(wn, wn)
-			roo  = np.zeros(lenroo, np.float32)
-			sroo = np.zeros(lenroo, np.float32)
-			aroo = np.zeros(lenroo, np.float32)
-			
-			for imi in xrange(nimi):
-				Util.add_img(qa, pw2[boot[imi]])
-				temp1 = np.array(allroo[boot[imi]])
-				roo += temp1
-				temp2 = movingaverage(temp1, 10)
-				aroo += temp2
-				sroo += temp2**2
-			sroo[0] = sroo[1]
-			aroo[0] = aroo[1]
-			sroo = (sroo-aroo**2 / nimi) / nimi
-			aroo /= nimi
-			roo  /= nimi
-			qa   /= nimi
-			
-			if f_start < 0:
-				#  Find a break point
-				bp = 1.e23
-				for i in xrange(5, lenroo - 5):
-					#t1 = linreg(sroo[:i])
-					#t2 = linreg(sroo[i:])
-					#tt = t1[1][0] + t2[1][0]
-					xtt = np.array(range(i), np.float32)
-					zet = np.poly1d(np.polyfit(xtt,sroo[:i], 2))
-					t1 = sum((sroo[:i] - zet(xtt))**2)
-					xtt = np.array(range(i, lenroo), np.float32)
-					zet = np.poly1d(np.polyfit(xtt, sroo[i:], 2) )
-					tt = t1 + sum((sroo[i:] - zet(xtt))**2)
-					if tt < bp:
-						bp = tt
-						istart = i
-				#istart = 25
-				#print istart
-				f_start = istart / (pixel_size * wn)
-			"""
-			hi = hist_list(sroo,2)
-			# hi[0][1] is the threshold
-			for i in xrange(1,len(sroo)):
-				if(sroo[i] < hi[0][1]):
-					istart = i
-					break
-			"""
-			#write_text_file([roo.tolist(),aroo.tolist(),sroo.tolist()], "sroo%03d.txt"%ifi)
-			rooc = roo.tolist()
-			
-			#print namics[ifi],istart,f_start
-			
-			defc, subpw, ctf2, baseline, envelope, istart, istop = defocusgett(rooc, wn, voltage = voltage, Pixel_size = pixel_size, Cs = Cs, ampcont = wgh, f_start = f_start, f_stop = f_stop, round_off = 1.0, nr1 = 3, nr2 = 6, parent = None, DEBug = debug_mode)
-			if debug_mode:
-				print "  RESULT%s" % (img_name_for_print), defc, istart, istop
-				
-				freq = range(len(subpw))
-				for i in xrange(len(freq)):  freq[i] = float(i) / wn / pixel_size
-#				write_text_file([freq, subpw.tolist(), ctf2, envelope.tolist(), baseline.tolist()], "%s/ravg%05d.txt" % (output_directory, ifi))
-				fou = os.path.join(outravg, "%s_ravg_%02d.txt" % (img_basename_root, nboot))
-				write_text_file([freq, subpw.tolist(), ctf2, envelope.tolist(), baseline.tolist()], fou)
-			#mpi_barrier(MPI_COMM_WORLD)
-			
-			#exit()
-			bg = baseline.tolist()
-			en = envelope.tolist()
-			
-			bckg = model_blank(wn, wn, 1, 1)
-			envl = model_blank(wn, wn, 1, 1)
-			
-			from math import sqrt
-			nc = wn // 2
-			bg.append(bg[-1])
-			en.append(en[-1])
-			for i in xrange(wn):
-				for j in xrange(wn):
-					r = sqrt((i - nc)**2 + (j - nc)**2)
-					ir = int(r)
-					if(ir < nc):
-						dr = r - ir
-						bckg.set_value_at(i, j, (1. - dr) * bg[ir] + dr * bg[ir + 1] )
-						envl.set_value_at(i, j, (1. - dr) * en[ir] + dr * en[ir + 1] )
-			
-			#qa.write_image("rs1.hdf")
-			
-			mask = model_circle(istop - 1, wn, wn) * (model_blank(wn, wn, 1, 1.0) - model_circle(istart, wn, wn))
-			qse = threshold((qa - bckg))#*envl
-			#(qse*mask).write_image("rs2.hdf")
-			#qse.write_image("rs3.hdf")
-			##  SIMULATION
-			#bang = 0.7
-			#qse = ctf2_rimg(wn, generate_ctf([defc,Cs,voltage,pixel_size,0.0,wgh, bang, 37.0]) )
-			#qse.write_image("rs3.hdf")
-			
-			cnx = wn // 2 + 1
-			cny = cnx
-			mode = "H"
-			istop = min(wn // 2 - 2, istop)    #2-26-2015@ming
-			numr = Numrinit(istart, istop, 1, mode)
-			wr = ringwe(numr, mode)
-			
-			crefim = Util.Polar2Dm(qse*mask, cnx, cny, numr, mode)
-			Util.Frngs(crefim, numr)
-			Util.Applyws(crefim, numr, wr)
-			
-			#pc = ctf2_rimg(wn,generate_ctf([defc,Cs,voltage,pixel_size,0.0,wgh]))
-			#print ccc(pc*envl, subpw, mask)
-			
-			bang = 0.0
-			bamp = 0.0
-			bdef = defc
-			bold = 1.e23
-			while(True):
-				#  in simctf2 data[3] is astigmatism amplitude
-				"""
-				data = [qse, mask, wn, bamp, Cs, voltage, pixel_size, wgh, bang]
-				#astdata = [crefim, numr, wn, bdef, Cs, voltage, pixel_size, wgh, bang]
-				for qqq in xrange(200):
-					qbdef = 1.0 + qqq*0.001
-					print " VALUE AT THE BEGGINING OF while LOOP  ",qbdef,simctf2(qbdef, data)#,fastigmatism3(bamp,astdata)
-				"""
-				"""
-				bamp = 0.7
-				bang = 37.0
-				
-				data = [qse, mask, wn, bamp, Cs, voltage, pixel_size, wgh, bang]
-				astdata = [crefim, numr, wn, bdef, Cs, voltage, Pixel_size, wgh, bang]
-				print " VALUE AT THE BEGGINING OF while LOOP  ",bdef,bamp,bang,simctf2(bdef, data),fastigmatism3(bamp,astdata,mask)
-				#print  simctf2out(1.568,data)
-				#exit()
-				
-				for kdef in xrange(14000,17000,10):
-					dz = kdef/10000.0
-					ard = [qse, mask, wn, bamp, Cs, voltage, pixel_size, wgh, bang]
-					#print ard
-					aqd = [crefim, numr, wn, dz, Cs, voltage, pixel_size, wgh, bang]
-					#print aqd
-					print  dz,simctf2(dz,ard),fastigmatism3(bamp,aqd,mask)
-					#print aqd[-1]
-				exit()
-				"""
-				data = [qse, mask, wn, bamp, Cs, voltage, pixel_size, wgh, bang]
-				h = 0.05 * bdef
-				amp1, amp2 = bracket_def(simctf2, data, bdef * 0.9, h)
-				#print "bracketing of the defocus  ",amp1, amp2
-				#print " ttt ",time()-srtt
-				#print "bracketing of the defocus  ",amp1,amp2,simctf2(amp1, data),simctf2(amp2, data),h
-				amp1, val2 = goldsearch_astigmatism(simctf2, data, amp1, amp2, tol = 1.0e-3)
-				#print "golden defocus ",amp1, val2,simctf2(amp1, data)
-				#bdef, bcc = goldsearch_astigmatism(simctf2, data, amp1, amp2, tol=1.0e-3)
-				#print "correction of the defocus  ",bdef,bcc
-				#print " ttt ",time()-srtt
-				"""
-				crot2 = rotavg_ctf(ctf2_rimg(wn,generate_ctf([bdef, Cs, voltage, pixel_size, 0.0, wgh, bamp, bang])), bdef, Cs, voltage, pixel_size, wgh, bamp, bang)
-				pwrot = rotavg_ctf(qa-bckg, bdef, Cs, voltage, pixel_size, wgh, bamp, bang)
-				write_text_file([range(len(subroo)),asubroo, ssubroo, sen, pwrot, crot2],"rotinf%04d.txt"%ifi)
-				qse.write_image("qse.hdf")
-				mask.write_image("mask.hdf")
-				exit()
-				"""
-				
-				astdata = [crefim, numr, wn, bdef, Cs, voltage, pixel_size, wgh, bang, mask]
-				h = 0.01
-				amp1, amp2 = bracket(fastigmatism3, astdata, h)
-				#print "  astigmatism bracket  ",amp1,amp2,astdata[-1]
-				#print " ttt ",time()-srtt
-				bamp, bcc = goldsearch_astigmatism(fastigmatism3, astdata, amp1, amp2, tol = 1.0e-3)
-				junk = fastigmatism3(bamp,astdata)
-				bang = astdata[8]
-				
-				#print astdata[8]
-				#print  fastigmatism3(0.0,astdata)
-				#print astdata[8]
-				#temp = 0.0
-				#print bdef, Cs, voltage, pixel_size, temp, wgh, bamp, bang, -bcc
-				#data = [qse, mask, wn, bamp, Cs, voltage, pixel_size, wgh, bang]
-				#astdata = [crefim, numr, wn, bdef, Cs, voltage, pixel_size, wgh, bang]
-				#print " VALUE WITHIN the while LOOP  ",bdef,bamp,bang,simctf2(bdef, data),fastigmatism3(bamp,astdata)
-				#print "  golden search ",bamp,data[-1], fastigmatism3(bamp,data), fastigmatism3(0.0,data)
-				#print " ttt ",time()-srtt
-				#bamp = 0.5
-				#bang = 277
-				
-				dama = amoeba([bdef, bamp], [0.2, 0.2], fupw, 1.e-4, 1.e-4, 500, astdata)
-				if debug_mode:  print "AMOEBA    ", dama
-				bdef = dama[0][0]
-				bamp = dama[0][1]
-				astdata = [crefim, numr, wn, bdef, Cs, voltage, pixel_size, wgh, bang, mask]
-				junk = fastigmatism3(bamp, astdata)
-				bang = astdata[8]
-				if debug_mode:  print " after amoeba ", bdef, bamp, bang
-				#  The looping here is blocked as one shot at amoeba is good enough.  To unlock it, remove - from bold.
-				if(bcc < -bold): bold = bcc
-				else:           break
-			
-			#data = [qse, mask, wn, bamp, Cs, voltage, pixel_size, wgh, bang]
-			#print " VALUE AFTER the while LOOP  ",bdef,bamp,bang,simctf2(bdef, data),fastigmatism3(bamp,astdata)
-			#temp = 0.0
-			#print ifi,bdef, Cs, voltage, pixel_size, temp, wgh, bamp, bang, -bcc
-			#freq = range(len(subpw))
-			#for i in xrange(len(freq)):  freq[i] = float(i)/wn/pixel_size
-			#ctf2 = ctf_2(wn, generate_ctf([bdef,Cs,voltage,pixel_size,0.0,wgh]))[:len(freq)]
-			#write_text_file([freq, subpw.tolist(), ctf2, envelope.tolist(), baseline.tolist()],"ravg/ravg%05d.txt"%ifi)
-			#print " >>>> ",wn, bdef, bamp, Cs, voltage, pixel_size, wgh, bang
-			#data = [qse, mask, wn, bamp, Cs, voltage, pixel_size, wgh, bang]
-			#print  simctf2out(bdef, data)
-			#exit()
-			adefocus[nboot] = bdef
-			aamplitu[nboot] = bamp
-			aangle[nboot]   = bang
-			#from sys import exit
-			#exit()
-		
-		#print " ttt ",time()-srtt
-		#from sys import exit
-		#exit()
-		ad1, ad2, ad3, ad4 = table_stat(adefocus)
-		reject = []
-		thr = 3 * sqrt(ad2)
-		for i in xrange(len(adefocus)):
-			if(abs(adefocus[i] - ad1) > thr):
-				print adefocus[i], ad1, thr
-				reject.append(i)
-		if(len(reject) > 0):
-			print "  Number of rejects%s" % img_name_for_print, len(reject)
-			for i in xrange(len(reject) - 1, -1, -1):
-				del adefocus[i]
-				del aamplitu[i]
-				del aangle[i]
-		if(len(adefocus) < 2):
-			print "  After rejection of outliers too few estimated defocus values for%s" % img_name_for_print
-			
-		else:
-			#print "adefocus",adefocus
-			#print  "aamplitu",aamplitu
-			#print "aangle",aangle
-			ad1, ad2, ad3, ad4 = table_stat(adefocus)
-			bd1, bd2, bd3, bd4 = table_stat(aamplitu)
-			cd1, cd2 = angle_ave(aangle)
-			temp = 0.0
-			stdavad1 = np.sqrt(kboot * max(0.0, ad2))
-			stdavbd1 = np.sqrt(kboot * max(0.0, bd2))
-			cd2 *= np.sqrt(kboot)
-			
-			# Adjust value ranges of astig. amp. and angle.
-			if bd1 < 0.0:
-				bd1 = -1 * bd1
-				cd1 = 90.0 + cd1
-			cd1 = cd1 % 180
-			
-			if bd1 < 0.0: ERROR("Logical Error: Encountered unexpected astig. amp. value (%f). Consult with the developer." % (ad1), "%s in %s" % (__name__, os.path.basename(__file__))) # MRK_ASSERT
-			if cd1 < 0.0 or cd1 >= 180: ERROR("Logical Error: Encountered unexpected astig. angle value (%f). Consult with the developer." % (cd1), "%s in %s" % (__name__, os.path.basename(__file__))) # MRK_ASSERT
-			
-			#  SANITY CHECK, do not produce anything if defocus abd astigmatism amplitude are out of whack
-			reject_img_messages = []
-			try:
-				pwrot2 = rotavg_ctf( model_blank(wn, wn), ad1, Cs, voltage, pixel_size, 0.0, wgh, bd1, cd1)
-			except:
-				reject_img_messages.append("  - Astigmatism amplitude (%f) is larger than defocus (%f) or defocus (%f) is negative." % (bd1, ad1, ad1))
-			
-			valid_min_defocus = 0.3
-			if ad1 < valid_min_defocus:
-				reject_img_messages.append("  - Defocus (%f) is smaller than valid minimum value (%f)." % (ad1, valid_min_defocus))
-			
-			if len(reject_img_messages) > 0:
-				rejected_img_names.append(img_name)
-				print "  Rejected%s" % (img_name_for_print), ad1, Cs, voltage, pixel_size, wgh, bd1, cd1, "(def, Cs, vol, apix, amp_contrast, astig_amp, astig_angle)"
-				print "  because ... "
-				assert(len(reject_img_messages) > 0)
-				for reject_img_message in reject_img_messages:
-					print reject_img_message
-				print "  Skipping the output..."
-			else: # assert(len(img_reject_messages) == 0)
-				#  Estimate the point at which (sum_errordz ctf_1(dz+errordz))^2 falls to 0.5
-				import random as rqt
-				
-				supe = model_blank(wn, wn)
-				niter = 1000
-				for it in xrange(niter):
-					Util.add_img(supe, Util.ctf_rimg(wn, wn, 1, ad1 + rqt.gauss(0.0,stdavad1), pixel_size, voltage, Cs, 0.0, wgh, bd1 + rqt.gauss(0.0,stdavbd1), cd1 + rqt.gauss(0.0,cd2), 1))
-				ni = wn // 2
-				supe /= niter
-				pwrot2 = rotavg_ctf(supe, ad1, Cs, voltage, pixel_size, 0.0, wgh, bd1, cd1)
-				for i in xrange(ni):  pwrot2[i] = pwrot2[i]**2
-				
-				ibec = 0
-				for it in xrange(ni - 1, 0, -1):
-					if pwrot2[it] > 0.5 :
-						ibec = it
-						break
-				from morphology import ctf_1d
-				ct = generate_ctf([ad1, Cs, voltage, pixel_size, temp, wgh, 0.0, 0.0])
-				cq = ctf_1d(wn, ct)
-				
-				supe = [0.0] * ni
-				niter = 1000
-				for i in xrange(niter):
-					cq = generate_ctf([ad1 + rqt.gauss(0.0,stdavad1), Cs, voltage, pixel_size, 0.0, wgh, 0.0, 0.0])
-					ci = ctf_1d(wn, cq)[:ni]
-					for l in xrange(ni):  supe[l] +=ci[l]
-				
-				for l in xrange(ni):  supe[l] = (supe[l] / niter)**2
-				
-				ib1 = 0
-				for it in xrange(ni - 1, 0, -1):
-					if supe[it] > 0.5:
-						ib1 = it
-						break
-				ibec = ibec / (pixel_size * wn)  #  with astigmatism
-				ib1  = ib1 / (pixel_size * wn)   #  no astigmatism
-				#from utilities import write_text_file
-				#write_text_file([range(ni), supe[:ni],pwrot2[:ni]],"fifi.txt")
-				
-				# Compute defocus CV and astig. amp. CV (CV: coefficient of variation; ratio of error (SD) relative to average (mean))
-				if ad1 < max(0.0, valid_min_defocus): ERROR("Logical Error: Encountered unexpected defocus value (%f). Consult with the developer." % (ad1), "%s in %s" % (__name__, os.path.basename(__file__))) # MRK_ASSERT
-				if stdavad1 < 0.0: ERROR("Logical Error: Encountered unexpected defocus SD value (%f). Consult with the developer." % (stdavad1), "%s in %s" % (__name__, os.path.basename(__file__))) # MRK_ASSERT
-				cvavad1 = stdavad1 / ad1 * 100 # use percentage
-				
-				if bd1 < 0.0: ERROR("Logical Error: Encountered unexpected astig. amp. value (%f). Consult with the developer." % (bd1), "%s in %s" % (__name__, os.path.basename(__file__))) # MRK_ASSERT
-				if stdavbd1 < 0.0: ERROR("Logical Error: Encountered unexpected astig. amp. SD value (%f). Consult with the developer." % (stdavbd1), "%s in %s" % (__name__, os.path.basename(__file__))) # MRK_ASSERT
-				bd1_precision = 1.0e-15  # use double precision
-				if bd1 < bd1_precision:
-					bd1 = bd1_precision
-				cvavbd1 = stdavbd1 / bd1 * 100 # use percentage
-				
-				# Compute CTF limit (theoretical resolution limit based on the oscillations of CTF) 
-				# For output, use ctflim (relative frequency limit [1/A]), not ctflim_abs (absolute frequency limit)
-				# 
-				# NOTE: 2016/03/23 Toshio Moriya
-				# xr is limiting frequency [1/A]. Max is Nyquist frequency = 1.0/(2*apix[A/pixel]). <UNIT: [1/(A/pixel)/[pixel])] => [(pixel)/(A*pixel] => [1/A]>
-				# 1.0/xr is limiting period (Angstrom resolution) [A]. Min is Nyquist period = (2*apix[A/pixel]). <UNIT: [1/(1/A)] = [A]>
-				# fwpix is width of Fourier pixel [pixel/A] := 1.0[pixel]/(2*apix[A/pixel])/box_half[pixel] = 1[pixel]/fullsize[A]). <UNIT: [pixel/(A/pixel)/(pixel)] = [pixel*(pixel/A)*(1/pixel) = [pixel/A]>
-				# int(xr/fwpix+0.5) is limiting_absolute_frequency [1/pixel]. <Unit:[(1/A)/(pixel/A)] = [(1/A)*(A/pixel)] = [1/pixel]>
-				# return  int(xr/fwpix+0.5),xr, which is limiting_abs_frequency [1/pixel], and Limiting_frequency[1/A]
-				#
-				ctflim_abs, ctflim = ctflimit(wn, ad1, Cs, voltage, pixel_size)
-				
-				"""
-				for i in xrange(len(ssubroo)):
-					asubroo[i] /= kboot
-					ssubroo[i]  = sqrt(max(0.0, ssubroo[i]-kboot*asubroo[i]**2)/kboot)
-					sen[i]     /= kboot
-				"""
-				lnsb = len(subpw)
-				try:		crot2 = rotavg_ctf(ctf2_rimg(wn, generate_ctf([ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1])), ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1)[:lnsb]
-				except:		crot2 = [0.0] * lnsb
-				try:		pwrot2 = rotavg_ctf(threshold(qa - bckg), ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1)[:lnsb]
-				except:		pwrot2 = [0.0] * lnsb
-				try:		crot1 = rotavg_ctf(ctf2_rimg(wn, generate_ctf([ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1])), ad1, Cs, voltage, pixel_size, temp, wgh, 0.0, 0.0)[:lnsb]
-				except:		crot1 = [0.0] * lnsb
-				try:		pwrot1 = rotavg_ctf(threshold(qa - bckg), ad1, Cs, voltage, pixel_size, temp, wgh, 0.0, 0.0)[:lnsb]
-				except:		pwrot1 = [0.0] * lnsb
-				freq = range(lnsb)
-				for i in xrange(len(freq)):  freq[i] = float(i) / wn / pixel_size
-				fou = os.path.join(outpwrot, "%s_rotinf.txt" % (img_basename_root))
-				#  #1 - rotational averages without astigmatism, #2 - with astigmatism
-				write_text_file([range(len(crot1)), freq, pwrot1, crot1, pwrot2, crot2], fou)
-				
-				#
-				# NOTE: 2016/03/23 Toshio Moriya
-				# Compute mean of extrema differences (differences at peak & trough) between 
-				# (1) experimental rotational average with astigmatism (pwrot2)
-				# (2) experimental rotational average without astigmatism (pwrot1), and
-				# as a indication of goodness of astigmatism estimation by cter.
-				# The peak & trough detection uses fitted rotational average with astigmatism (crot2) 
-				# Start from 1st trough while ignoring 1st peak.
-				# End at astigmatism frequency limit.
-				# 
-				is_peak_target = True
-				pre_crot2_val = crot2[0]
-				extremum_counts = 0
-				extremum_diff_sum = 0
-				for i in xrange(1, len(crot2)):
-					cur_crot2_val = crot2[i]
-					if is_peak_target == True and pre_crot2_val > cur_crot2_val:
-						# peak search state
-						extremum_i = i - 1
-						extremum_counts += 1
-						extremum_diff_sum += pwrot2[extremum_i] - pwrot1[extremum_i] # This should be positive if astigmatism estimation is good
-						# print "MRK_DEBUG: Peak Search  : extremum_i = %03d, freq[extremum_i] = %12.5g, extremum_counts = %03d, (pwrot2[extremum_i] - pwrot1[extremum_i]) = %12.5g, extremum_diff_sum = %12.5g " % (extremum_i, freq[extremum_i] , extremum_counts, (pwrot2[extremum_i] - pwrot1[extremum_i]), extremum_diff_sum)
-						is_peak_target = False
-					elif is_peak_target == False and pre_crot2_val < cur_crot2_val:
-						# trough search state
-						extremum_i = i - 1
-						extremum_counts += 1
-						extremum_diff_sum += pwrot1[extremum_i] - pwrot2[extremum_i] # This should be positive if astigmatism estimation is good
-						# print "MRK_DEBUG: Trough Search: extremum_i = %03d, freq[extremum_i] = %12.5g, extremum_counts = %03d, (pwrot1[extremum_i] - pwrot2[extremum_i]) = %12.5g, extremum_diff_sum = %12.5g " % (extremum_i, freq[extremum_i] , extremum_counts, (pwrot1[extremum_i] - pwrot2[extremum_i]), extremum_diff_sum)
-						is_peak_target = True
-					pre_crot2_val = cur_crot2_val
-				if extremum_counts == 0: ERROR("Logical Error: Encountered unexpected zero extremum counts. Consult with the developer." % (bd1), "%s in %s" % (__name__, os.path.basename(__file__))) # MRK_ASSERT
-				extremum_diff_avg = extremum_diff_sum / extremum_counts
-				
-				# print "MRK_DEBUG: extremum_avg = %12.5g, extremum_diff_sum = %12.5g, extremum_counts = %03d," % (extremum_avg, extremum_diff_sum, extremum_counts)
-				
-#				if stack == None:     cmd = "echo " + "    " + namics[ifi] + "  >>  " + fou
-#				else:                 cmd = "echo " + "    " + "  >>  " + fou
-#				os.system(cmd)
-				
-				print  "  Stored Parmaters:%s" % (img_name_for_print), ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1, stdavad1, stdavbd1, cd2, cvavad1, cvavbd1, extremum_diff_avg, ib1, ibec, ctflim
-				totresi.append( [ img_name, ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1, stdavad1, stdavbd1, cd2, cvavad1, cvavbd1, extremum_diff_avg, ib1, ibec, ctflim])
-				
-#				if stack == None:
-#					print  namics[ifi], ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1, stdavad1, stdavbd1, cd2, ib1, ibec
-#				else:
-#					print               ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1, stdavad1, stdavbd1, cd2, ib1, ibec
-#				if stack == None:
-#					totresi.append( [ namics[ifi], ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1, stdavad1, stdavbd1, cd2, ib1, ibec])
-#				else:
-#					totresi.append( [ 0, ad1, Cs, voltage, pixel_size, temp, wgh, bd1, cd1, stdavad1, stdavbd1, cd2, ib1, ibec])
-#				#if ifi == 4 : break
-				
-#		if stack == None and set_ctf_header:
-		if stack == None:
-			img_mic = get_im(namics[ifi])
-			# create micrograph thumbnail
-			nx_target = 512
-			nx = img_mic.get_xsize()
-			if nx > nx_target:
-				img_micthumb = resample(img_mic, float(nx_target)/nx)
-			else:
-				img_micthumb = img_mic
-			fou = os.path.join(outmicthumb, "%s_thumb.hdf" % (img_basename_root))
-			img_micthumb.write_image(fou)
-			if set_ctf_header:
-				from utilities import set_ctf
-				set_ctf(img_mic, [totresi[-1][1], Cs, voltage, pixel_size, 0, wgh, totresi[-1][7], totresi[-1][8]])
-				# and rewrite image 
-				img_mic.write_image(namics[ifi])
-		#except:
-			#print  namics[ifi],"     FAILED"
-	#from utilities import write_text_row
-	if MPI:
-		from utilities import wrap_mpi_gatherv
-		totresi = wrap_mpi_gatherv(totresi, 0, MPI_COMM_WORLD)
-		missing_img_names = wrap_mpi_gatherv(missing_img_names, 0, MPI_COMM_WORLD)
-		rejected_img_names = wrap_mpi_gatherv(rejected_img_names, 0, MPI_COMM_WORLD)
-	if myid == 0:
-		outf = open(os.path.join(output_directory, "partres.txt"), "w")
-		for i in xrange(len(totresi)):
-			for k in xrange(1, len(totresi[i])):
-				outf.write("  %12.5g" % totresi[i][k])
-			outf.write("  %s\n" % totresi[i][0])
-		outf.close()
-		
-		missing_counts = len(missing_img_names)
-		print "  Num. of missing %s(s): %d." % (img_type.lower(), missing_counts)
-		if missing_counts > 0:
-			outfile_path = os.path.join(output_directory, "missing_%s_list.txt" % (img_type.lower()))
-			print "  Saving list of missing %s(s) in %s..." % (img_type.lower(), outfile_path)
-			outf = open(outfile_path, "w")
-			for missing_img_name in missing_img_names:
-				outf.write("%s\n" % missing_img_name)
-			outf.close()
-		
-		rejected_counts = len(rejected_img_names)
-		print "  Num. of rejected %s(s): %d." % (img_type.lower(), rejected_counts)
-		if rejected_counts > 0:
-			outfile_path = os.path.join(output_directory, "rejected_%s_list.txt" % (img_type.lower()))
-			print "  Saving list of rejected %s(s) in %s..." % (img_type.lower(), outfile_path)
-			outf = open(outfile_path, "w")
-			for rejected_img_name in rejected_img_names:
-				outf.write("%s\n" % rejected_img_name)
-			outf.close()
-	
-	if cter_mode == the_cter_mode_single_mic:
-		return totresi[0][1], totresi[0][7], totresi[0][8], totresi[0][9], totresi[0][10], totresi[0][11]
-	
 ########################################
 # functions used by cter
 # Later on make sure these functions don't conflict with those used
@@ -2945,7 +2115,7 @@ def defocus_baseline_fit(roo, i_start, i_stop, nrank, iswi):
 			The background fit is done between i_start, i_stop, but the entire baseline curve is evaluated and subtracted
 	"""
 	import numpy as np
-	from morphology import imf_params_cl1
+	from EMAN2.morphology import imf_params_cl1
 	
 	TMP = imf_params_cl1(roo[i_start:i_stop], nrank, iswi)
 	nroo = len(roo)
@@ -2961,8 +2131,8 @@ def defocus_baseline_fit(roo, i_start, i_stop, nrank, iswi):
 
 def simpw1d(defocus, data):
 	import numpy as np
-	from morphology import ctf_2
-	from utilities import generate_ctf
+	from EMAN2.morphology import ctf_2
+	from EMAN2.utilities import generate_ctf
 	
 	#[defocus, Cs, volt, Pixel_size, 0.0, ampcont]
 	# data[1] - envelope
@@ -3007,9 +2177,9 @@ def defocusgett(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1, f_s
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
+	from EMAN2.utilities import generate_ctf
 	import numpy as np
-	from morphology import ctf_2, bracket_def, defocus_baseline_fit, ctflimit, simpw1d, goldsearch_astigmatism
+	from EMAN2.morphology import ctf_2, bracket_def, defocus_baseline_fit, ctflimit, simpw1d, goldsearch_astigmatism
 
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 
@@ -3062,7 +2232,7 @@ def defocusgett(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1, f_s
 	del defound[3:]
 	def1 = defound[0][1]
 	if adjust_fstop:
-		from morphology import ctflimit
+		from EMAN2.morphology import ctflimit
 		newstop,fnewstop = ctflimit(nx, def1, Cs, voltage, Pixel_size)
 		if DEBug:  print  "newstop  ",int(newstop*0.7),fnewstop*0.7,i_stop,newstop
 		if( newstop != i_stop):
@@ -3105,7 +2275,7 @@ def defocusgett(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1, f_s
 			if(qt<qm):
 				qm=qt
 				defi = dc
-		from utilities import write_text_row
+		from EMAN2.utilities import write_text_row
 		write_text_row(toto,"toto1.txt")
 		print " >>>>>>>>>  ",defi,simpw1d(defi, data)#,generate_ctf([defi, Cs, voltage, Pixel_size, 0.0, ampcont])
 		#def1 = defi
@@ -3129,8 +2299,8 @@ def defocus_guessn(roo, volt, Cs, Pixel_size, ampcont, istart, i_stop):
 	"""
 	
 	from math import sqrt
-	from utilities import generate_ctf
-	from morphology import ctf_2
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.morphology import ctf_2
 	
 	import numpy as np
 
@@ -3171,8 +2341,8 @@ def defocusgett_(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
-	from morphology import defocus_env_baseline_fit, defocus_guess, ctf_2, defocus_guessn
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.morphology import defocus_env_baseline_fit, defocus_guess, ctf_2, defocus_guessn
 	
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 
@@ -3186,10 +2356,10 @@ def defocusgett_(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		parent.ctf_data=[roo, Res_roo, Res_TE]
 		parent.i_start = i_start
 		parent.i_stop  = i_stop
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 		write_text_file([range(len(roo)), roo, Res_roo, Res_TE, ctf], "procpw.txt")
 	else:
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 		write_text_file([range(len(roo)), roo, Res_roo, Res_TE, ctf, TE, Pn1], "procpw.txt")
 	"""
 	return defocus, [], ctf2, [],[],0,0
@@ -3204,8 +2374,8 @@ def defocusget_from_crf(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=10.,
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
-	from morphology import defocus_env_baseline_fit, defocus_guess, defocus_guess1, ctf_1d
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.morphology import defocus_env_baseline_fit, defocus_guess, defocus_guess1, ctf_1d
 	
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 	if f_start == 0 : 	i_start = 0
@@ -3234,7 +2404,7 @@ def defocusget_from_crf(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=10.,
 
 
 def make_real(t):
-	from utilities import model_blank
+	from EMAN2.utilities import model_blank
 	
 	nx = t.get_ysize()
 	ny2 = nx//2
@@ -3253,8 +2423,8 @@ def make_real(t):
 
 
 def fastigmatism(amp, data):
-	from morphology import ctf2_rimg
-	from utilities import generate_ctf
+	from EMAN2.morphology import ctf2_rimg
+	from EMAN2.utilities import generate_ctf
 	
 	nx = data[0].get_xsize()
 	qt = 0.5*nx**2
@@ -3276,8 +2446,8 @@ def fastigmatism(amp, data):
 
 def fastigmatism1(amp, data):
 	
-	from morphology import ctf_rimg
-	from utilities import generate_ctf
+	from EMAN2.morphology import ctf_rimg
+	from EMAN2.utilities import generate_ctf
 	
 	nx = data[0].get_xsize()
 	qt = 0.5*nx**2
@@ -3302,9 +2472,9 @@ def fastigmatism1(amp, data):
 
 def fastigmatism2(amp, data):
 	
-	from morphology import ctf_rimg
-	from utilities import generate_ctf
-	from alignment import ornq
+	from EMAN2.morphology import ctf_rimg
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.alignment import ornq
 	
 	cnx = data[2]//2+1
 	#qt = 0.5*nx**2
@@ -3315,10 +2485,10 @@ def fastigmatism2(amp, data):
 
 
 def fastigmatism3(amp, data):
-	from morphology import ctf2_rimg
-	from utilities  import generate_ctf
-	from alignment  import ornq
-	from math       import sqrt
+	from EMAN2.morphology import ctf2_rimg
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.alignment import ornq
+	from math import sqrt
 	#  data[0] - crefim
 	#  data[1] - numr
 	#  data[2] - nx (image is square)
@@ -3338,8 +2508,8 @@ def fastigmatism3(amp, data):
 
 
 def simctf(amp, data):
-	from morphology import ctf2_rimg
-	from utilities import generate_ctf
+	from EMAN2.morphology import ctf2_rimg
+	from EMAN2.utilities import generate_ctf
 	
 	nx = data[2]
 	qt = 0.5*nx**2
@@ -3348,8 +2518,8 @@ def simctf(amp, data):
 	return  -bcc
 
 def simctf2(dz, data):
-	from morphology import ctf2_rimg
-	from utilities import generate_ctf
+	from EMAN2.morphology import ctf2_rimg
+	from EMAN2.utilities import generate_ctf
 	
 	#nx = data[2]
 	#qt = 0.5*nx**2
@@ -3361,8 +2531,8 @@ def simctf2(dz, data):
 	return  -bcc
 
 def simctf2out(dz, data):
-	from morphology import ctf2_rimg, localvariance
-	from utilities import generate_ctf, model_blank, pad
+	from EMAN2.morphology import ctf2_rimg, localvariance
+	from EMAN2.utilities import generate_ctf, model_blank, pad
 	
 	nx = data[2]
 	qt = 0.5*nx**2
@@ -3386,7 +2556,7 @@ def simctf2out(dz, data):
 
 
 def fupw(args,data):
-	from morphology import fastigmatism3
+	from EMAN2.morphology import fastigmatism3
 	return -fastigmatism3(args[1],[data[0], data[1], data[2], args[0], data[4], data[5], data[6], data[7], data[8], data[9]])
 
 ########################################
@@ -3398,9 +2568,9 @@ def fupw(args,data):
 ########################################################################
 
 def simpw1d_crf(defocus, data):
-	from morphology import ctf_1d
+	from EMAN2.morphology import ctf_1d
 	import numpy as np
-	from utilities import generate_ctf
+	from EMAN2.utilities import generate_ctf
 	
 	#[defocus, Cs, volt, Pixel_size, 0.0, ampcont]
 	# data[1] - envelope
@@ -3423,8 +2593,8 @@ def defocusgett_crf(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1,
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
-	from morphology import bracket_def, goldsearch_astigmatism, ctflimit, simpw1d_crf, ctf_1d
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.morphology import bracket_def, goldsearch_astigmatism, ctflimit, simpw1d_crf, ctf_1d
 	import numpy as np
 
 
@@ -3476,7 +2646,7 @@ def defocusgett_crf(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1,
 	del defound[3:]
 	if DEBug:  print  " BEST DEF CANDIDATES",defound
 	if adjust_fstop:
-		from morphology import ctflimit
+		from EMAN2.morphology import ctflimit
 		newstop,fnewstop = ctflimit(nx, defound[0][1], Cs, voltage, Pixel_size)
 		if DEBug:  
 			print  "newstop  ",int(newstop),fnewstop,i_stop,newstop,nx, defound[0][1]
@@ -3525,8 +2695,8 @@ def envelopegett_crf(defold, roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, amp
 	
 		
 	"""
-	from utilities  import generate_ctf
-	from morphology import ctf_1d
+	from EMAN2.utilities import generate_ctf
+	from EMAN2.morphology import ctf_1d
 	import numpy as np
 
 
@@ -3555,7 +2725,7 @@ def envelopegett_crf(defold, roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, amp
 	envelope = []#movingaverage(  abs( np.array(roo, np.float32) )   , nroo//4, 3)
 
 	if adjust_fstop:
-		from morphology import ctflimit
+		from EMAN2.morphology import ctflimit
 		newstop,fnewstop = ctflimit(nx, defold, Cs, voltage, Pixel_size)
 		if DEBug:  print  "newstop  ",int(newstop*0.7),fnewstop*0.7,i_stop
 	
@@ -3564,13 +2734,9 @@ def envelopegett_crf(defold, roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, amp
 	return envelope, i_start, i_stop
 
 def fufu(args,data):
-	from morphology import fastigmatism2
+	from EMAN2.morphology import fastigmatism2
 	return -fastigmatism2(args[1],[data[0], data[1], data[2], args[0], data[4], data[5], data[6], data[7], data[8]])
 
-#  
-# NOTE: 2016/03/21 Toshio Moriya
-# getastcrfNOE() function does not work with the new output format of cter_mrk()
-# 
 def getastcrfNOE(refvol, datfilesroot, voltage=300.0, Pixel_size= 1.264, Cs = 2.0, wgh = 7.0, kboot=16, DEBug = False):
 	"""
 
@@ -3582,17 +2748,17 @@ def getastcrfNOE(refvol, datfilesroot, voltage=300.0, Pixel_size= 1.264, Cs = 2.
 
 	"""
 
-	from applications import MPI_start_end
-	from utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
 	from sys import exit
 	import numpy as np
 	import os
-	from mpi  import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
-	from fundamentals import tilemic, rot_avg_table
-	from morphology import threshold, bracket_def, bracket, goldsearch_astigmatism, defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett, defocus_guessn, defocusgett_, defocusget_from_crf, make_real, fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
-	from alignment import Numrinit, ringwe
-	from statistics import table_stat
-	from pixel_error import angle_ave
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
+	from EMAN2.fundamentals import tilemic, rot_avg_table
+	from EMAN2.morphology import threshold, bracket_def, bracket, goldsearch_astigmatism, defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett, defocus_guessn, defocusgett_, defocusget_from_crf, make_real, fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
+	from EMAN2.alignment import Numrinit, ringwe
+	from EMAN2.statistics import table_stat
+	from EMAN2.pixel_error import angle_ave
 
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
 	ncpu = mpi_comm_size(MPI_COMM_WORLD)

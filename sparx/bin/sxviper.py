@@ -7,17 +7,17 @@ import global_def
 from global_def import *
 
 def main(args):
-	from utilities import if_error_then_all_processes_exit_program, write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
-	from logger import Logger, BaseLogger_Files
+	from EMAN2.utilities import if_error_all_processes_quit_program, write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
+	from EMAN2.logger import Logger, BaseLogger_Files
 	from mpi import mpi_init, mpi_finalize, MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size, mpi_barrier
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	import sys
 	import os
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from optparse import OptionParser, SUPPRESS_HELP
 	from global_def import SPARXVERSION
 	from EMAN2 import EMData
-	from multi_shc import multi_shc
+	from EMAN2.multi_shc import multi_shc
 
 	progname = os.path.basename(sys.argv[0])
 	usage = progname + " stack  [output_directory] --ir=inner_radius --rs=ring_step --xr=x_range --yr=y_range  --ts=translational_search_step  --delta=angular_step --center=center_type --maxit1=max_iter1 --maxit2=max_iter2 --L2threshold=0.1 --ref_a=S --sym=c1"
@@ -39,7 +39,7 @@ directory		output directory name: into which the results will be written (if it 
 	# 'radius' and 'ou' are the same as per Pawel's request; 'ou' is hidden from the user
 	# the 'ou' variable is not changed to 'radius' in the 'sparx' program. This change is at interface level only for sxviper.
 	##### XXXXXXXXXXXXXXXXXXXXXX option does not exist in docs XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-	parser.add_option("--ou",                    type="int",           default=-1,         help=SUPPRESS_HELP)
+	parser.add_option("--ou",       type= "int",   default= -1,                 help= SUPPRESS_HELP)
 	parser.add_option("--rs",                    type="int",           default=1,          help="step between rings in rotational search: >0 (default 1)")
 	parser.add_option("--ts",                    type="string",        default='1.0',      help="step size of the translation search in x-y directions: search is -xr, -xr+ts, 0, xr-ts, xr, can be fractional (default '1.0')")
 	parser.add_option("--delta",                 type="string",        default='2.0',      help="angular step of reference projections: (default '2.0')")
@@ -108,7 +108,7 @@ directory		output directory name: into which the results will be written (if it 
 	runs_count = options.nruns
 	mpi_rank = mpi_comm_rank(MPI_COMM_WORLD)
 	mpi_size = mpi_comm_size(MPI_COMM_WORLD)	# Total number of processes, passed by --np option.
-	
+
 	if mpi_rank == 0:
 		all_projs = EMData.read_images(args[0])
 		subset = range(len(all_projs))

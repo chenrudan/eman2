@@ -32,7 +32,7 @@
 #
 
 from EMAN2 import *
-from sparx  import *
+from EMAN2.sparx import *
 
 numr=Numrinit(5,5,1,'f')
 print  numr

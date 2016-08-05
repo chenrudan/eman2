@@ -32,14 +32,13 @@
 
 
 from EMAN2 import *
-from sparx import *
-from global_def import SPARX_MPI_TAG_UNIVERSAL
+from EMAN2.sparx import *
 
 
 import	global_def
-from	global_def 	import *
-from	optparse 	import OptionParser
-from	EMAN2 		import EMUtil
+from global_def import *
+from optparse import OptionParser
+from EMAN2 import EMUtil
 import	os
 import	sys
 from 	time		import	time
@@ -49,9 +48,9 @@ def image_decimate_window_xform_ctf(img,decimation=2,window_size=0,CTF=False):
                 Window 2D image to FFT-friendly size, apply Butterworth low pass filter,
                 and decimate image by integer factor
         """
-        from filter       import filt_btwl
-        from fundamentals import smallprime,window2d
-        from utilities    import get_image,get_params_proj,set_params_proj,get_ctf, set_ctf
+        from EMAN2.filter import filt_btwl
+        from EMAN2.fundamentals import smallprime,window2d
+        from EMAN2.utilities import get_image,get_params_proj,set_params_proj,get_ctf, set_ctf
         if decimation ==1:
         	if window_size ==0:
         		return img
@@ -106,7 +105,7 @@ def main():
 	parser.add_option("--var3D",		type="string"	   ,	default=False,				help="compute 3D variability (time consuming!)")
 	parser.add_option("--img_per_grp",	type="int"         ,	default=10   ,				help="number of neighbouring projections")
 	parser.add_option("--no_norm",		action="store_true",	default=False,				help="do not use normalization")
-	parser.add_option("--radius", 	    type="int"         ,	default=-1   ,				help="radius for 3D variability" )
+	parser.add_option("--radiusvar", 	type="int"         ,	default=-1   ,				help="radius for 3D var" )
 	parser.add_option("--npad",			type="int"         ,	default=2    ,				help="number of time to pad the original images")
 	parser.add_option("--sym" , 		type="string"      ,	default="c1" ,				help="symmetry")
 	parser.add_option("--fl",			type="float"       ,	default=0.0  ,				help="stop-band frequency (Default - no filtration)")
@@ -116,30 +115,30 @@ def main():
 	#parser.add_option("--MPI" , 		action="store_true",	default=False,				help="use MPI version")
 	#parser.add_option("--radiuspca", 	type="int"         ,	default=-1   ,				help="radius for PCA" )
 	#parser.add_option("--iter", 		type="int"         ,	default=40   ,				help="maximum number of iterations (stop criterion of reconstruction process)" )
-	#parser.add_option("--abs", 		type="float"   ,        default=0.0  ,				help="minimum average absolute change of voxels' values (stop criterion of reconstruction process)" )
-	#parser.add_option("--squ", 		type="float"   ,	    default=0.0  ,				help="minimum average squared change of voxels' values (stop criterion of reconstruction process)" )
+	#parser.add_option("--abs", 			type="float"       ,	default=0.0  ,				help="minimum average absolute change of voxels' values (stop criterion of reconstruction process)" )
+	#parser.add_option("--squ", 			type="float"       ,	default=0.0  ,				help="minimum average squared change of voxels' values (stop criterion of reconstruction process)" )
 	parser.add_option("--VAR" , 		action="store_true",	default=False,				help="stack on input consists of 2D variances (Default False)")
-	parser.add_option("--decimate",     type="float",           default=1.0,                help="image decimate rate, a number large than 1. default is 1")
-	parser.add_option("--window",       type="int",             default=0,                  help="reduce images to a small image size without changing pixel_size. Default value is zero.")
+	parser.add_option("--decimate",     type="float",           default=1.0,                 help="image decimate rate, a number large than 1. default is 1")
+	parser.add_option("--window",       type="int",             default=0,                   help="reduce images to a small image size without changing pixel_size. Default value is zero.")
 	#parser.add_option("--SND",			action="store_true",	default=False,				help="compute squared normalized differences (Default False)")
 	parser.add_option("--nvec",			type="int"         ,	default=0    ,				help="number of eigenvectors, default = 0 meaning no PCA calculated")
 	parser.add_option("--symmetrize",	action="store_true",	default=False,				help="Prepare input stack for handling symmetry (Default False)")
 	
 	(options,args) = parser.parse_args()
 	#####
-	from mpi import mpi_init, mpi_comm_rank, mpi_comm_size, mpi_recv, MPI_COMM_WORLD
+	from mpi import mpi_init, mpi_comm_rank, mpi_comm_size, mpi_recv, MPI_COMM_WORLD, MPI_TAG_UB
 	from mpi import mpi_barrier, mpi_reduce, mpi_bcast, mpi_send, MPI_FLOAT, MPI_SUM, MPI_INT, MPI_MAX
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from reconstruction import recons3d_em, recons3d_em_MPI
-	from reconstruction	import recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
+	from reconstruction import recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
 	from utilities import print_begin_msg, print_end_msg, print_msg
-	from utilities import read_text_row, get_image, get_im
-	from utilities import bcast_EMData_to_all, bcast_number_to_all
-	from utilities import get_symt
+	from EMAN2.utilities import read_text_row, get_image, get_im
+	from EMAN2.utilities import bcast_EMData_to_all, bcast_number_to_all
+	from EMAN2.utilities import get_symt
 
 	#  This is code for handling symmetries by the above program.  To be incorporated. PAP 01/27/2015
 
-	from EMAN2db import db_open_dict
+	from EMAN2.EMAN2db import db_open_dict
 	
 	if options.symmetrize :
 		try:
@@ -197,8 +196,8 @@ def main():
 
 	else:
 
-		sys.argv       = mpi_init(len(sys.argv), sys.argv)
-		myid           = mpi_comm_rank(MPI_COMM_WORLD)
+		sys.argv = mpi_init(len(sys.argv), sys.argv)
+		myid     = mpi_comm_rank(MPI_COMM_WORLD)
 		number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 		main_node = 0
 
@@ -209,14 +208,15 @@ def main():
 			print( "Please run '" + progname + " -h' for detailed options")
 			return 1
 
-		t0 = time()	
+		t0 = time()
+	
 		# obsolete flags
-		options.MPI  = True
+		options.MPI = True
 		options.nvec = 0
 		options.radiuspca = -1
 		options.iter = 40
-		options.abs  = 0.0
-		options.squ  = 0.0
+		options.abs = 0.0
+		options.squ = 0.0
 
 		if options.fl > 0.0 and options.aa == 0.0:
 			ERROR("Fall off has to be given for the low-pass filter", "sx3dvariability", 1, myid)
@@ -239,7 +239,7 @@ def main():
 		options.sym = options.sym.lower()
 		 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from EMAN2.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		global_def.BATCH = True
 
@@ -265,7 +265,7 @@ def main():
 						ERROR("The symmetry provided does not agree with the symmetry of the input stack", "sx3dvariability", myid=myid)
 				except:
 					ERROR("Input stack is not prepared for symmetry, please follow instructions", "sx3dvariability", myid=myid)
-				from utilities import get_symt
+				from EMAN2.utilities import get_symt
 				i = len(get_symt(options.sym))
 				if((nima/i)*i != nima):
 					ERROR("The length of the input stack is incorrect for symmetry processing", "sx3dvariability", myid=myid)
@@ -275,11 +275,13 @@ def main():
 			nima = 0
 			nx = 0
 			ny = 0
-		nima    = bcast_number_to_all(nima)
-		nx      = bcast_number_to_all(nx)
-		ny      = bcast_number_to_all(ny)
+		nima = bcast_number_to_all(nima)
+		nx   = bcast_number_to_all(nx)
+		ny   = bcast_number_to_all(ny)
 		Tracker ={}
-		Tracker["total_stack"] = nima
+		Tracker["nx"]  =nx
+		Tracker["ny"]  =ny
+		Tracker["total_stack"]=nima
 		if options.decimate==1.:
 			if options.window !=0:
 				nx = options.window
@@ -291,10 +293,7 @@ def main():
 			else:
 				nx = int(options.window/options.decimate)
 				ny = nx
-		Tracker["nx"]  = nx
-		Tracker["ny"]  = ny
-		Tracker["nz"]  = nx
-		symbaselen     = bcast_number_to_all(symbaselen)
+		symbaselen = bcast_number_to_all(symbaselen)
 		if radiuspca == -1: radiuspca = nx/2-2
 
 		if myid == main_node:
@@ -303,11 +302,11 @@ def main():
 		img_begin, img_end = MPI_start_end(nima, number_of_proc, myid)
 		"""
 		if options.SND:
-			from projection		import prep_vol, prgs
-			from statistics		import im_diff
-			from utilities		import get_im, model_circle, get_params_proj, set_params_proj
-			from utilities		import get_ctf, generate_ctf
-			from filter			import filt_ctf
+			from EMAN2.projection import prep_vol, prgs
+			from EMAN2.statistics import im_diff
+			from EMAN2.utilities import get_im, model_circle, get_params_proj, set_params_proj
+			from EMAN2.utilities import get_ctf, generate_ctf
+			from EMAN2.filter import filt_ctf
 		
 			imgdata = EMData.read_images(stack, range(img_begin, img_end))
 
@@ -334,27 +333,27 @@ def main():
 			mpi_barrier(MPI_COMM_WORLD)
 		"""
 		if options.VAR:
-			#varList   = EMData.read_images(stack, range(img_begin, img_end))
-			varList    = []
+			#varList = EMData.read_images(stack, range(img_begin, img_end))
+			varList = []
 			this_image = EMData()
 			for index_of_particle in xrange(img_begin,img_end):
 				this_image.read_image(stack,index_of_particle)
-				varList.append(image_decimate_window_xform_ctf(this_image,options.decimate,options.window,options.CTF))
+				varList.append(image_decimate_window_xform_ctf(img,options.decimate,options.window,options.CTF))
 		else:
-			from utilities		import bcast_number_to_all, bcast_list_to_all, send_EMData, recv_EMData
-			from utilities		import set_params_proj, get_params_proj, params_3D_2D, get_params2D, set_params2D, compose_transform2
-			from utilities		import model_blank, nearest_proj, model_circle
-			from applications	import pca
-			from statistics		import avgvar, avgvar_ctf, ccc
-			from filter		    import filt_tanl
-			from morphology		import threshold, square_root
-			from projection 	import project, prep_vol, prgs
-			from sets		    import Set
+			from EMAN2.utilities import bcast_number_to_all, bcast_list_to_all, send_EMData, recv_EMData
+			from EMAN2.utilities import set_params_proj, get_params_proj, params_3D_2D, get_params2D, set_params2D, compose_transform2
+			from EMAN2.utilities import model_blank, nearest_proj, model_circle
+			from EMAN2.applications import pca
+			from EMAN2.statistics import avgvar, avgvar_ctf, ccc
+			from EMAN2.filter import filt_tanl
+			from EMAN2.morphology import threshold, square_root
+			from EMAN2.projection import project, prep_vol, prgs
+			from EMAN2.sets import Set
 
 			if myid == main_node:
-				t1          = time()
+				t1 = time()
 				proj_angles = []
-				aveList     = []
+				aveList = []
 				tab = EMUtil.get_all_attributes(stack, 'xform.projection')
 				for i in xrange(nima):
 					t     = tab[i].get_params('spider')
@@ -372,6 +371,7 @@ def main():
 					print "Number of images per group: ", img_per_grp
 					print "Now grouping projections"
 				proj_angles.sort()
+
 			proj_angles_list = [0.0]*(nima*4)
 			if myid == main_node:
 				for i in xrange(nima):
@@ -380,10 +380,11 @@ def main():
 					proj_angles_list[i*4+2] = proj_angles[i][3]
 					proj_angles_list[i*4+3] = proj_angles[i][4]
 			proj_angles_list = bcast_list_to_all(proj_angles_list, myid, main_node)
-			proj_angles      = []
+			proj_angles = []
 			for i in xrange(nima):
 				proj_angles.append([proj_angles_list[i*4], proj_angles_list[i*4+1], proj_angles_list[i*4+2], int(proj_angles_list[i*4+3])])
 			del proj_angles_list
+
 			proj_list, mirror_list = nearest_proj(proj_angles, img_per_grp, range(img_begin, img_end))
 
 			all_proj = Set()
@@ -421,9 +422,9 @@ def main():
 			if options.VERBOSE: 	print "Begin to read images on processor %d"%(myid)
 			ttt = time()
 			#imgdata = EMData.read_images(stack, all_proj)
+			img     = EMData()
 			imgdata = []
 			for index_of_proj in xrange(len(all_proj)):
-				img     = EMData()
 				img.read_image(stack, all_proj[index_of_proj])
 				dmg = image_decimate_window_xform_ctf(img,options.decimate,options.window,options.CTF)
 				#print dmg.get_xsize(), "init"
@@ -448,8 +449,8 @@ def main():
 			del vol, imgdata2
 			mpi_barrier(MPI_COMM_WORLD)
 			'''
-			from applications import prepare_2d_forPCA
-			from utilities import model_blank
+			from EMAN2.applications import prepare_2d_forPCA
+			from EMAN2.utilities import model_blank
 			for i in xrange(len(proj_list)):
 				ki = proj_angles[proj_list[i][0]][3]
 				if ki >= symbaselen:  continue
@@ -481,12 +482,12 @@ def main():
 					del mask
 
 				if options.fl > 0.0:
-					from filter import filt_ctf, filt_table
-					from fundamentals import fft, window2d
+					from EMAN2.filter import filt_ctf, filt_table
+					from EMAN2.fundamentals import fft, window2d
 					nx2 = 2*nx
 					ny2 = 2*ny
 					if options.CTF:
-						from utilities import pad
+						from EMAN2.utilities import pad
 						for k in xrange(img_per_grp):
 							grp_imgdata[k] = window2d(fft( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa) ),nx,ny)
 							#grp_imgdata[k] = window2d(fft( filt_table( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa), fifi) ),nx,ny)
@@ -497,13 +498,13 @@ def main():
 							#grp_imgdata[k] = window2d(fft( filt_table( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa), fifi) ),nx,ny)
 							#grp_imgdata[k] = filt_tanl(grp_imgdata[k], options.fl, options.aa)
 				else:
-					from utilities import pad, read_text_file
-					from filter import filt_ctf, filt_table
-					from fundamentals import fft, window2d
+					from EMAN2.utilities import pad, read_text_file
+					from EMAN2.filter import filt_ctf, filt_table
+					from EMAN2.fundamentals import fft, window2d
 					nx2 = 2*nx
 					ny2 = 2*ny
 					if options.CTF:
-						from utilities import pad
+						from EMAN2.utilities import pad
 						for k in xrange(img_per_grp):
 							grp_imgdata[k] = window2d( fft( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1) ) , nx,ny)
 							#grp_imgdata[k] = window2d(fft( filt_table( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa), fifi) ),nx,ny)
@@ -562,7 +563,7 @@ def main():
 			#  To this point, all averages, variances, and eigenvectors are computed
 
 			if options.ave2D:
-				from fundamentals import fpol
+				from EMAN2.fundamentals import fpol
 				if myid == main_node:
 					km = 0
 					for i in xrange(number_of_proc):
@@ -571,42 +572,42 @@ def main():
 								aveList[im].write_image(options.ave2D, km)
 								km += 1
 						else:
-							nl = mpi_recv(1, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+							nl = mpi_recv(1, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 							nl = int(nl[0])
 							for im in xrange(nl):
 								ave = recv_EMData(i, im+i+70000)
 								"""
-								nm = mpi_recv(1, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+								nm = mpi_recv(1, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 								nm = int(nm[0])
-								members = mpi_recv(nm, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+								members = mpi_recv(nm, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 								ave.set_attr('members', map(int, members))
-								members = mpi_recv(nm, MPI_FLOAT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+								members = mpi_recv(nm, MPI_FLOAT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 								ave.set_attr('pix_err', map(float, members))
-								members = mpi_recv(3, MPI_FLOAT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+								members = mpi_recv(3, MPI_FLOAT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 								ave.set_attr('refprojdir', map(float, members))
 								"""
-								tmpvol=fpol(ave, Tracker["nx"],Tracker["nx"],1)								
+								tmpvol=fpol(ave, Tracker["nx"],Tracker["nx"],Tracker["nx"])								
 								tmpvol.write_image(options.ave2D, km)
 								km += 1
 				else:
-					mpi_send(len(aveList), 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					mpi_send(len(aveList), 1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 					for im in xrange(len(aveList)):
 						send_EMData(aveList[im], main_node,im+myid+70000)
 						"""
 						members = aveList[im].get_attr('members')
-						mpi_send(len(members), 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-						mpi_send(members, len(members), MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						mpi_send(len(members), 1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
+						mpi_send(members, len(members), MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 						members = aveList[im].get_attr('pix_err')
-						mpi_send(members, len(members), MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						mpi_send(members, len(members), MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 						try:
 							members = aveList[im].get_attr('refprojdir')
-							mpi_send(members, 3, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+							mpi_send(members, 3, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 						except:
-							mpi_send([-999.0,-999.0,-999.0], 3, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+							mpi_send([-999.0,-999.0,-999.0], 3, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 						"""
 
 			if options.ave3D:
-				from fundamentals import fpol
+				from EMAN2.fundamentals import fpol
 				if options.VERBOSE:
 					print "Reconstructing 3D average volume"
 				ave3D = recons3d_4nn_MPI(myid, aveList, symmetry=options.sym, npad=options.npad)
@@ -663,7 +664,7 @@ def main():
 
 			if options.ave3D: del ave3D
 			if options.var2D:
-				from fundamentals import fpol 
+				from EMAN2.fundamentals import fpol 
 				if myid == main_node:
 					km = 0
 					for i in xrange(number_of_proc):
@@ -673,7 +674,7 @@ def main():
 								tmpvol.write_image(options.var2D, km)
 								km += 1
 						else:
-							nl = mpi_recv(1, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+							nl = mpi_recv(1, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 							nl = int(nl[0])
 							for im in xrange(nl):
 								ave = recv_EMData(i, im+i+70000)
@@ -681,7 +682,7 @@ def main():
 								tmpvol.write_image(options.var2D, km)
 								km += 1
 				else:
-					mpi_send(len(varList), 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					mpi_send(len(varList), 1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 					for im in xrange(len(varList)):
 						send_EMData(varList[im], main_node, im+myid+70000)#  What with the attributes??
 
@@ -692,12 +693,12 @@ def main():
 				print "Reconstructing 3D variability volume"
 
 			t6 = time()
-			radiusvar = options.radius
+			radiusvar = options.radiusvar
 			if( radiusvar < 0 ):  radiusvar = nx//2 -3
 			res = recons3d_4nn_MPI(myid, varList, symmetry=options.sym, npad=options.npad)
 			#res = recons3d_em_MPI(varList, vol_stack, options.iter, radiusvar, options.abs, True, options.sym, options.squ)
 			if myid == main_node:
-				from fundamentals import fpol
+				from EMAN2.fundamentals import fpol
 				res =fpol(res, Tracker["nx"], Tracker["nx"], Tracker["nx"])
 				res.write_image(options.var3D)
 

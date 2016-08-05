@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-from sparx import *
+from EMAN2.sparx import *
 from EMAN2 import *
 e=test_image()
 #check rotation

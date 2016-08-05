@@ -32,8 +32,8 @@
 #
 import os
 import global_def
-from   global_def     import *
-from   optparse       import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -47,13 +47,13 @@ def main():
 	(options, args) = parser.parse_args()
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 
 	global_def.BATCH = True
 
 	from numpy import array
-	from statistics import k_means_stab_bbenum
+	from EMAN2.statistics import k_means_stab_bbenum
 
 	R = len(args)
 	Parts = []

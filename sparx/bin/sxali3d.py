@@ -91,13 +91,13 @@ def main():
 			sys.argv = mpi_init(len(sys.argv), sys.argv)
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from EMAN2.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		#  centering permanently disabled due to the way new polar searches are done
 		center = 0
 		if(options.ns):
 			global_def.BATCH = True
-			from development import  ali3d_saturn
+			from EMAN2.development import ali3d_saturn
 			ali3d_saturn(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 				options.yr, options.ts, options.delta, options.an, options.apsi, options.deltapsi, options.startpsi,
 				center, options.maxit, options.CTF, options.snr, options.ref_a, options.sym,
@@ -105,7 +105,7 @@ def main():
 			global_def.BATCH = False
 		elif(options.ns2):
 			global_def.BATCH = True
-			from development import  ali3d_saturn2
+			from EMAN2.development import ali3d_saturn2
 			ali3d_saturn2(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 				options.yr, options.ts, options.delta, options.an, options.apsi, options.deltapsi, options.startpsi,
 				center, options.maxit, options.CTF, options.snr, options.ref_a, options.sym,
@@ -117,33 +117,33 @@ def main():
 			else:
 				global_def.BATCH = True
 				if(options.nsoft == 1):
-					from applications import ali3d_shcMPI
+					from EMAN2.applications import ali3d_shcMPI
 					ali3d_shcMPI(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 					options.yr, options.ts, options.delta, options.an, options.apsi, options.deltapsi, options.startpsi,
 					center, options.maxit, options.CTF, options.snr, options.ref_a, options.sym,
 					options.function, options.Fourvar, options.npad, options.debug, options.stoprnct, gamma=options.gamma)
 				elif(options.nsoft == 0):
-					from applications import ali3d_shc0MPI
+					from EMAN2.applications import ali3d_shc0MPI
 					ali3d_shc0MPI(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 					options.yr, options.ts, options.delta, options.an, options.apsi, options.deltapsi, options.startpsi,
 					center, options.maxit, options.CTF, options.snr, options.ref_a, options.sym,
 					options.function, options.Fourvar, options.npad, options.debug, options.stoprnct, gamma=options.gamma)
 				else:
-					from multi_shc import ali3d_multishc_soft
-					import user_functions
+					from EMAN2.multi_shc import ali3d_multishc_soft
+					import EMAN2.user_functions as user_functions
 					options.user_func = user_functions.factory[options.function]
 					ali3d_multishc_soft(args[0], args[1], options, mpi_comm = None, log = None, nsoft = options.nsoft )
 				global_def.BATCH = False
 		elif(options.nh2):
 			global_def.BATCH = True
-			from development import ali3d_shc2
+			from EMAN2.development import ali3d_shc2
 			ali3d_shc2(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 				options.yr, options.ts, options.delta, options.an, options.apsi, options.deltapsi, options.startpsi,
 				center, options.maxit, options.CTF, options.snr, options.ref_a, options.sym,
 				options.function, options.Fourvar, options.npad, options.debug, options.MPI, options.stoprnct)
 			global_def.BATCH = False
 		elif options.searchpsi:
-			from applications import ali3dpsi_MPI
+			from EMAN2.applications import ali3dpsi_MPI
 			global_def.BATCH = True
 			ali3dpsi_MPI(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 			options.yr, options.ts, options.delta, options.an, options.apsi, options.deltapsi, options.startpsi,
@@ -152,7 +152,7 @@ def main():
 			global_def.BATCH = False
 		else:
 			if options.rantest:
-				from development import ali3d_rantest
+				from EMAN2.development import ali3d_rantest
 				global_def.BATCH = True
 				ali3d_rantest(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 				options.yr, options.ts, options.delta, options.an, options.deltapsi, options.startpsi,
@@ -160,7 +160,7 @@ def main():
 				options.function, options.Fourvar, options.npad, options.debug, options.stoprnct)
 				global_def.BATCH = False
 			else:
-				from applications import ali3d
+				from EMAN2.applications import ali3d
 				global_def.BATCH = True
 				ali3d(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr,
 				options.yr, options.ts, options.delta, options.an, options.apsi, options.deltapsi, options.startpsi,

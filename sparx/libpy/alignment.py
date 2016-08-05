@@ -32,7 +32,6 @@ from global_def import *
 
 
 #  06-12-14 code lifted
-'''
 def XXali2d_single_iter(data, numr, wr, cs, tavg, cnx, cny, \
 						xrng, yrng, step, nomirror = False, mode="F", CTF=False, \
 						random_method="", T=1.0, ali_params="xform.align2d", delta = 0.0):
@@ -40,11 +39,11 @@ def XXali2d_single_iter(data, numr, wr, cs, tavg, cnx, cny, \
 		single iteration of 2D alignment using ormq
 		if CTF = True, apply CTF to data (not to reference!)
 	"""
-	from utilities import combine_params2, inverse_transform2, get_params2D, set_params2D
-	from alignment import ormq, ornq
+	from EMAN2.utilities import combine_params2, inverse_transform2, get_params2D, set_params2D
+	from EMAN2.alignment import ormq, ornq
 
 	if CTF:
-		from filter  import filt_ctf
+		from EMAN2.filter import filt_ctf
 
 	# 2D alignment using rotational ccf in polar coords and quadratic interpolation
 	cimage = Util.Polar2Dm(tavg, cnx, cny, numr, mode)
@@ -84,7 +83,7 @@ def XXali2d_single_iter(data, numr, wr, cs, tavg, cnx, cny, \
 		sy_sum += syn
 
 	return sx_sum, sy_sum
-'''
+
 
 def ali2d_single_iter(data, numr, wr, cs, tavg, cnx, cny, \
 						xrng, yrng, step, nomirror = False, mode="F", CTF=False, \
@@ -93,17 +92,17 @@ def ali2d_single_iter(data, numr, wr, cs, tavg, cnx, cny, \
 		single iteration of 2D alignment using ormq
 		if CTF = True, apply CTF to data (not to reference!)
 	"""
-	from utilities import combine_params2, inverse_transform2, get_params2D, set_params2D
-	from alignment import ormq, ornq
+	from EMAN2.utilities import combine_params2, inverse_transform2, get_params2D, set_params2D
+	from EMAN2.alignment import ormq, ornq
 
 	if CTF:
-		from filter  import filt_ctf
+		from EMAN2.filter import filt_ctf
 
 	maxrin = numr[-1]  #  length
 	ou = numr[-3]  #  maximum radius
 	if random_method == "SCF":
-		from fundamentals import fft, scf
-		from alignment import multalign2d_scf
+		from EMAN2.fundamentals import fft, scf
+		from EMAN2.alignment import multalign2d_scf
 		frotim = [fft(tavg)]
 		xrng = int(xrng+0.5)
 		yrng = int(yrng+0.5)
@@ -219,8 +218,8 @@ def ali2d_single_iter_fast(data, dimage, params, numr, wr, cs, tavg, cnx, cny, \
 		single iteration of 2D alignment using ormq
 		if CTF = True, apply CTF to data (not to reference!)
 	"""
-	from utilities import combine_params2, inverse_transform2, get_params2D, set_params2D
-	from alignment import ormq, ornq
+	from EMAN2.utilities import combine_params2, inverse_transform2, get_params2D, set_params2D
+	from EMAN2.alignment import ormq, ornq
 
 	# 2D alignment using rotational ccf in polar coords and quadratic interpolation
 	cimage = Util.Polar2Dm(tavg, cnx, cny, numr, mode)
@@ -291,7 +290,7 @@ def crit2d(args, data):
 	#print  " AMOEBA ",args
 	#  data: 0 - kb,  1 - mask, 2 - nima,  3 - current ave, 4 - current image in the gridding format
 	#from utilities import info
-	from fundamentals import rtshgkb
+	from EMAN2.fundamentals import rtshgkb
 	mn = data[4].get_attr('mirror')
 	temp = rtshgkb(data[4], args[0], args[1], args[2], data[0])
 	if  mn: temp.process_inplace("xform.mirror", {"axis":'x'})
@@ -302,12 +301,11 @@ def crit2d(args, data):
 	return v
 
 
-
-def eqproj_cascaded_ccc_fitness_function(args, data):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
+def eqproj_cascaded_ccc(args, data):
+	from EMAN2.utilities import peak_search, amoeba
+	from EMAN2.fundamentals import fft, ccf, fpol
+	from EMAN2.alignment import twoD_fine_search
+	from EMAN2.statistics import ccc
 	from EMAN2 import Processor
 
 	volft   = data[0]
@@ -352,394 +350,6 @@ def eqproj_cascaded_ccc_fitness_function(args, data):
 	size_of_ccf = 2*int(ts+1.5)+1
 	pk = peak_search(Util.window(product, size_of_ccf, size_of_ccf,1,0,0,0))
 	# adjust pk to correspond to large ccf
-	# print  " pk ",pk
-	pk[0][1] = sx + pk[0][4]
-	pk[0][2] = sy + pk[0][5]
-	#print  " pk ",pk
-	# step in amoeba should be vicinity of the peak, within one pixel or even less.
-	ps = amoeba([pk[0][1], pk[0][2]], [1.1, 1.1], twoD_fine_search, 1.e-4, 1.e-4, 1, data2)
-	#print  " ps ",ps,[sx,sy], data2, shift
-	#print  " if ",abs(sx-ps[0][0]),abs(sy-ps[0][1]),ts2
-	if(  abs(sx-ps[0][0]) >= ts2 or abs(sy-ps[0][1]) >= ts2 ):
-		return  twoD_fine_search([sx,sy], data2), shift
-	else:
-		s2x = (sx-ps[0][0])/2 + shift[0]
-		s2y = (sy-ps[0][1])/2 + shift[1]
-		#print  " B ",ps[1], [s2x, s2y]
-		return ps[1], [s2x, s2y]
-
-def format_list(l):
-	return "["+", ".join(["%10.6f" % x for x in l])+"]"
-
-
-def objective_function_just_ccc_has_maximum(args, data):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
-	from EMAN2 import Processor
-	from projection import prgl
-	from math import sqrt
-
-	# return 1
-	import numpy as np
-	
-	# if type(args).__module__ == np.__name__:
-	# 	args = args.tolist()
-
-	data[5] = args[3:5]
-
-	volft   = data[0]
-	kb	    = data[1]
-	prj	    = data[2]
-	mask2D  = data[3]
-	refi    = data[4]
-	shift   = data[5]
-	ts      = data[6]
-	
-	# 2016-02-08--15-25-45-589 
-	# #print  "Input shift ",shift
-	# R = Transform({"type":"spider", "phi":args[0], "theta":args[1], "psi":args[2], "tx":0.0, "ty":0.0, "tz":0.0, "mirror":0, "scale":1.0})
-	# refprj = volft.extract_plane(R, kb)
-	# refprj.fft_shuffle()
-	# refprj.center_origin_fft()
-	# 
-	# if(shift[0]!=0. or shift[1]!=0.):
-	# 	filt_params = {"filter_type" : Processor.fourier_filter_types.SHIFT,
-	# 			  "x_shift" : shift[0], "y_shift" : shift[1], "z_shift" : 0.0}
-	# 	refprj = Processor.EMFourierFilter(refprj, filt_params)
-	# 
-	# refprj.do_ift_inplace()
-	# refprj.set_attr_dict({'npad':2})
-	# refprj.depad()
-
-	reference_projection = prgl(volft, args[0:5], interpolation_method = 1, return_real = True)
-	reference_projection.set_attr("is_complex",0)
-
-	# peak = Util.innerproduct(temp, emimage[im])
-	# peak /= nrmref
-
-	# norm_of_reference_projection = sqrt(reference_projection.cmp("dot", reference_projection, dict(negative = 0)))
-	# rrr = -reference_projection.cmp("dot", prj, dict(negative = 0, mask = mask2D))/ norm_of_reference_projection
-
-
-	norm_of_reference_projection = sqrt(Util.innerproduct(reference_projection, reference_projection, None))
-	rrr =  Util.innerproduct(prj, reference_projection, None) / norm_of_reference_projection
-
-	# print "ccc:", format_list(args[0:5]), rrr
-	# with open("test.txt", "a") as myfile:
-	# 	myfile.write("%f\n"%rrr)
-
-	return rrr
-
-def objective_function_just_ccc_has_minimum(args, data):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
-	from EMAN2 import Processor
-	from projection import prgl
-	from math import sqrt
-
-
-	# volft   = data[0]
-	# prj	    = data[2]
-	
-
-	reference_projection = prgl(data[0], args[0:5], interpolation_method = 1, return_real = False)
-	reference_projection.set_attr("is_complex",0)
-
-	norm_of_reference_projection = sqrt(Util.innerproduct(reference_projection, reference_projection, None))
-	return  -Util.innerproduct(data[2], reference_projection, None) / norm_of_reference_projection
-	# rrr =  -Util.innerproduct(prj, reference_projection) / norm_of_reference_projection
-
-	# print "ccc:", format_list(args[0:5]), rrr
-	# with open("test.txt", "a") as myfile:
-	# 	myfile.write("%f\n"%rrr)
-	
-	# return rrr
-
-
-
-def objective_function_just_ccc_has_minimum_reduced(args, data):
-	# in this version, args contains only the angles
-	from projection import prgl
-	from math import sqrt
-
-	import numpy as np
-	
-	# volft   = data[0]
-	# prj	    = data[2]
-
-	args1 = np.append(args, data[5])
-	reference_projection = prgl(data[0], args1 , interpolation_method = 1, return_real = False)
-	reference_projection.set_attr("is_complex",0)
-
-	norm_of_reference_projection = sqrt(Util.innerproduct(reference_projection, reference_projection, None))
-	return  -Util.innerproduct(data[2], reference_projection, None) / norm_of_reference_projection
-	# rrr =  -Util.innerproduct(prj, reference_projection) / norm_of_reference_projection
-
-	# print "ccc:", format_list(args[0:5]), rrr
-	# with open("test.txt", "a") as myfile:
-	# 	myfile.write("%f\n"%rrr)
-	
-	# return rrr
-
-def objective_function_just_ccc_has_minimum_reduced_only_shifts(args, data):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
-	from EMAN2 import Processor
-	from projection import prgl
-	from math import sqrt
-
-	# return 1
-	import numpy as np
-	
-	# if type(args).__module__ == np.__name__:
-	# 	args = args.tolist()
-
-	# data[5] = args[3:5]
-
-	volft   = data[0]
-	kb	    = data[1]
-	prj	    = data[2]
-	mask2D  = data[3]
-	refi    = data[4]
-	shift   = data[5]
-	ts      = data[6]
-	
-	# 2016-02-08--15-25-45-589 
-	# #print  "Input shift ",shift
-	# R = Transform({"type":"spider", "phi":args[0], "theta":args[1], "psi":args[2], "tx":0.0, "ty":0.0, "tz":0.0, "mirror":0, "scale":1.0})
-	# refprj = volft.extract_plane(R, kb)
-	# refprj.fft_shuffle()
-	# refprj.center_origin_fft()
-	# 
-	# if(shift[0]!=0. or shift[1]!=0.):
-	# 	filt_params = {"filter_type" : Processor.fourier_filter_types.SHIFT,
-	# 			  "x_shift" : shift[0], "y_shift" : shift[1], "z_shift" : 0.0}
-	# 	refprj = Processor.EMFourierFilter(refprj, filt_params)
-	# 
-	# refprj.do_ift_inplace()
-	# refprj.set_attr_dict({'npad':2})
-	# refprj.depad()
-
-	# args1 = np.append(args, data[5])
-	args1 = np.append(data[5], args)
-	
-	
-	reference_projection = prgl(volft, args1 , interpolation_method = 1, return_real = True)
-	reference_projection.set_attr("is_complex",0)
-
-	# peak = Util.innerproduct(temp, emimage[im])
-	# peak /= nrmref
-
-	norm_of_reference_projection = sqrt(reference_projection.cmp("dot", reference_projection, dict(negative = 0)))
-	rrr =  -reference_projection.cmp("dot", prj, dict(negative = 0, mask = mask2D))/ norm_of_reference_projection
-
-
-	# norm_of_reference_projection = sqrt(Util.innerproduct(reference_projection, reference_projection))
-	# rrr =  -Util.innerproduct(prj, reference_projection) / norm_of_reference_projection
-
-	# print "ccc:", format_list(args[0:5]), rrr
-	# with open("test.txt", "a") as myfile:
-	# 	myfile.write("%f\n"%rrr)
-	
-	return rrr
-
-def objective_function_just_ccc_has_minimum2(args, data):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
-	from EMAN2 import Processor
-	from projection import prgl
-	from math import sqrt
-
-	# return 1
-	import numpy as np
-	
-	# if type(args).__module__ == np.__name__:
-	# 	args = args.tolist()
-
-	# data[5] = args[3:5]
-
-	volft   = data[0]
-	kb	    = data[1]
-	prj	    = data[2]
-	mask2D  = data[3]
-	refi    = data[4]
-	shift   = data[5]
-	ts      = data[6]
-	
-	# 2016-02-08--15-25-45-589 
-	# #print  "Input shift ",shift
-	# R = Transform({"type":"spider", "phi":args[0], "theta":args[1], "psi":args[2], "tx":0.0, "ty":0.0, "tz":0.0, "mirror":0, "scale":1.0})
-	# refprj = volft.extract_plane(R, kb)
-	# refprj.fft_shuffle()
-	# refprj.center_origin_fft()
-	# 
-	# if(shift[0]!=0. or shift[1]!=0.):
-	# 	filt_params = {"filter_type" : Processor.fourier_filter_types.SHIFT,
-	# 			  "x_shift" : shift[0], "y_shift" : shift[1], "z_shift" : 0.0}
-	# 	refprj = Processor.EMFourierFilter(refprj, filt_params)
-	# 
-	# refprj.do_ift_inplace()
-	# refprj.set_attr_dict({'npad':2})
-	# refprj.depad()
-
-	reference_projection = prgl(volft, args[0:5], interpolation_method = 1, return_real = True)
-	reference_projection.set_attr("is_complex",0)
-
-	# peak = Util.innerproduct(temp, emimage[im])
-	# peak /= nrmref
-
-	norm_of_reference_projection = sqrt(reference_projection.cmp("dot", reference_projection, dict(negative = 0)))
-	return -reference_projection.cmp("dot", prj, dict(negative = 0, mask = mask2D))/ norm_of_reference_projection
-
-	# norm_of_reference_projection = sqrt(Util.innerproduct(reference_projection, reference_projection))
-	# return -Util.innerproduct(prj, reference_projection) / norm_of_reference_projection
-
-
-	
-	
-# def prgl(volft, params, interpolation_method = 0, return_real = True):
-# 	"""
-# 		Name
-# 			prgl - calculate 2-D projection of a 3-D volume
-# 		Input
-# 			vol: input volume, the volume has to be cubic
-# 			params: input parameters given as a list [phi, theta, psi, s2x, s2y], projection in calculated using the three Eulerian angles and then shifted by sx,sy
-# 		Output
-# 			proj: generated 2-D projection
-
-	# 2016-02-08--15-25-45-589 
-	# return -ccc(prj, refprj, mask2D)
-
-def objective_function_just_ccc_has_maximum___old(args, data):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
-	from EMAN2 import Processor
-
-	# return 1
-	import numpy as np
-	
-	# if type(args).__module__ == np.__name__:
-	# 	args = args.tolist()
-
-	data[5] = args[3:5]
-
-	volft   = data[0]
-	kb	    = data[1]
-	prj	    = data[2]
-	mask2D  = data[3]
-	refi    = data[4]
-	shift   = data[5]
-	ts      = data[6]
-	#print  "Input shift ",shift
-	R = Transform({"type":"spider", "phi":args[0], "theta":args[1], "psi":args[2], "tx":0.0, "ty":0.0, "tz":0.0, "mirror":0, "scale":1.0})
-	refprj = volft.extract_plane(R, kb)
-	refprj.fft_shuffle()
-	refprj.center_origin_fft()
-
-	if(shift[0]!=0. or shift[1]!=0.):
-		filt_params = {"filter_type" : Processor.fourier_filter_types.SHIFT,
-				  "x_shift" : shift[0], "y_shift" : shift[1], "z_shift" : 0.0}
-		refprj = Processor.EMFourierFilter(refprj, filt_params)
-
-	refprj.do_ift_inplace()
-	refprj.set_attr_dict({'npad':2})
-	refprj.depad()
-
-	return ccc(prj, refprj, mask2D)
-	
-
-
-def objective_function_just_ccc_rewrite(params, volft, kb, data_im, mask2D):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
-	from EMAN2 import Processor
-	# import numpy as np
-	
-	# if type(args).__module__ == np.__name__:
-	# 	args = args.tolist()
-	
-	#print  "Input shift ",shift
-	R = Transform({"type":"spider", "phi":params[0], "theta":params[1], "psi":params[2], "tx":0.0, "ty":0.0, "tz":0.0, "mirror":0, "scale":1.0})
-	refprj = volft.extract_plane(R, kb)
-	refprj.fft_shuffle()
-	refprj.center_origin_fft()
-
-	if(params[3]!=0. or params[4]!=0.):
-		filt_params = {"filter_type" : Processor.fourier_filter_types.SHIFT,
-				  "x_shift" : params[3], "y_shift" : params[4], "z_shift" : 0.0}
-		refprj = Processor.EMFourierFilter(refprj, filt_params)
-
-	refprj.do_ift_inplace()
-	refprj.set_attr_dict({'npad':2})
-	refprj.depad()
-
-	return -ccc(data_im, refprj, mask2D)
-
-
-def eqproj_cascaded_ccc(args, data):
-	from utilities     import peak_search, amoeba
-	from fundamentals  import fft, ccf, fpol
-	from alignment     import twoD_fine_search
-	from statistics    import ccc
-	from EMAN2 import Processor
-
-	volft   = data[0]
-	kb	    = data[1]
-	prj	    = data[2]
-	mask2D  = data[3]
-	refi    = data[4]
-	shift   = data[5]
-	ts      = data[6]
-	#print  "Input shift ",shift
-	R = Transform({"type":"spider", "phi":args[0], "theta":args[1], "psi":args[2], "tx":0.0, "ty":0.0, "tz":0.0, "mirror":0, "scale":1.0})
-	refprj = volft.extract_plane(R, kb)
-	refprj.fft_shuffle()
-	refprj.center_origin_fft()
-
-	if(shift[0]!=0. or shift[1]!=0.):
-		filt_params = {"filter_type" : Processor.fourier_filter_types.SHIFT,
-				  "x_shift" : shift[0], "y_shift" : shift[1], "z_shift" : 0.0}
-		refprj = Processor.EMFourierFilter(refprj, filt_params)
-
-	refprj.do_ift_inplace()
-	MM = refprj.get_ysize()
-	refprj.set_attr_dict({'npad':2})
-	refprj.depad()
-
-	if ts==0.0:
-		return ccc(prj, refprj, mask2D), shift
-
-	refprj.process_inplace("normalize.mask", {"mask":mask2D, "no_sigma":1})
-	Util.mul_img(refprj, mask2D)
-
-	product = ccf(fpol(refprj, MM, MM, 1, False), data[4])
-	nx = product.get_ysize()
-	sx = nx//2
-	sy = sx
-	# This is for debug purpose
-	# if ts == -1.0:
-	# 	return twoD_fine_search([sx, sy], [product, kb, -ts, sx]), shift
-	
-	
-
-	ts2 = 2*ts
-	data2 = [product, kb, 1.1*ts2, sx]
-	size_of_ccf = 2*int(ts+1.5)+1
-	pk = peak_search(Util.window(product, size_of_ccf, size_of_ccf,1,0,0,0))
-	# adjust pk to correspond to large ccf
-	# print  " pk ",pk
 	pk[0][1] = sx + pk[0][4]
 	pk[0][2] = sy + pk[0][5]
 	#print  " pk ",pk
@@ -760,7 +370,7 @@ def twoD_fine_search(args, data):
 	return data[0].get_pixel_conv7(args[0], args[1], 0.0, data[1])
 
 def eqproj(args, data):
-	from projection import prgs
+	from EMAN2.projection import prgs
 	#from fundamentals import cyclic_shift
 	#from utilities import info
 	#print  " AMOEBA ",args
@@ -788,8 +398,8 @@ def eqproj(args, data):
 	return v
 
 def eqprojDot(args, data):
-	from projection import project
-	from filter import filt_ctf
+	from EMAN2.projection import project
+	from EMAN2.filter import filt_ctf
 	phi = args[0]
 	tht = args[1]
 	psi = args[2]
@@ -809,14 +419,14 @@ def eqprojDot(args, data):
 	return ref.cmp( "dot", tmp, {"mask":msk, "negative":0} )
 
 def eqprojEuler(args, data):
-	from projection import prgs
+	from EMAN2.projection import prgs
 	prj = prgs(data[0], data[1], [args[0], args[1], args[2], data[3], data[4]])
 	v = prj.cmp("ccc", data[2], {"mask":data[5], "negative":0})
 	return v
 
 def symm_func(args, data):
-	from utilities import sym_vol
-	from fundamentals  import  rot_shift3D
+	from EMAN2.utilities import sym_vol
+	from EMAN2.fundamentals import rot_shift3D
 	sym = sym_vol(rot_shift3D(data[0], args[0], args[1], args[2]), data[2])
 	avg = sym.cmp("dot",sym,{"mask":data[1], "negative":0})
 	print avg, args
@@ -824,8 +434,8 @@ def symm_func(args, data):
 
 def find_symm(vol, mask, sym_gp, phi, theta, psi, scale, ftolerance, xtolerance):
 	
-	from utilities import amoeba, model_circle
-	from alignment import symm_func
+	from EMAN2.utilities import amoeba, model_circle
+	from EMAN2.alignment import symm_func
 	args   = [phi, theta, psi]
 	data   = [vol, mask, sym_gp]
 	result = amoeba(args, scale, symm_func, ftolerance, xtolerance, 500, data)
@@ -945,7 +555,7 @@ def ornq(image, crefim, xrng, yrng, step, mode, numr, cnx, cny, deltapsi = 0.0):
 		cnx, cny in FORTRAN convention
 	"""
 	from math import pi, cos, sin, radians
-	from alignment import ang_n
+	from EMAN2.alignment import ang_n
 	#from utilities import info
 	#print "ORNQ"
 	peak = -1.0E23
@@ -1088,7 +698,7 @@ def ormq_fast(dimage, crefim, xrng, yrng, step, numr, mode, delta = 0.0):
 			
 
 def prepref(data, maskfile, cnx, cny, numr, mode, maxrangex, maxrangey, step):
-	from utilities import get_params2D, combine_params2
+	from EMAN2.utilities import get_params2D, combine_params2
 	from EMAN2 import Util
 	#step = 1
 	mashi = cnx -numr[-3] -2
@@ -1125,7 +735,7 @@ def ormq_peaks(image, crefim, xrng, yrng, step, mode, numr, cnx, cny):
 	quadratic interpolation
 	cnx, cny in FORTRAN convention
 	"""
-	from utilities import peak_search
+	from EMAN2.utilities import peak_search
 
 	ccfs = EMData()
 	ccfm = EMData()
@@ -1189,9 +799,9 @@ def find_position(list_a, t):
 
 def select_major_peaks(g, max_major_peaks, min_height, dim):
 
-	from filter import filt_gaussl
-	from fundamentals import fft
-	from utilities import peak_search
+	from EMAN2.filter import filt_gaussl
+	from EMAN2.fundamentals import fft
+	from EMAN2.utilities import peak_search
 	
 	G = fft(g)
 	
@@ -1256,7 +866,7 @@ def ormq_peaks_major(image, crefim, xrng, yrng, step, mode, numr, cnx, cny):
 	quadratic interpolation
 	cnx, cny in FORTRAN convention
 	"""
-	from utilities import peak_search, pad
+	from EMAN2.utilities import peak_search, pad
 	
 	ccfs = EMData()
 	ccfm = EMData()
@@ -1625,10 +1235,10 @@ def prepare_refrings( volft, kb, nz = -1, delta = 2.0, ref_a = "P", sym = "c1", 
 	"""
 		Generate quasi-evenly distributed reference projections converted to rings
 	"""
-	from projection   import prep_vol, prgs
-	from applications import MPI_start_end
-	from utilities    import even_angles, getfvec
-	from types        import BooleanType
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.utilities import even_angles, getfvec
+	from types import BooleanType
 
 	# mpi communicator can be sent by the MPI parameter
 	if type(MPI) is BooleanType:
@@ -1702,7 +1312,7 @@ def prepare_refrings( volft, kb, nz = -1, delta = 2.0, ref_a = "P", sym = "c1", 
 			refrings[i] = cimage
 
 	if MPI:
-		from utilities import bcast_compacted_EMData_all_to_all
+		from EMAN2.utilities import bcast_compacted_EMData_all_to_all
 		bcast_compacted_EMData_all_to_all(refrings, myid, comm=mpi_comm)
 
 	for i in xrange(len(ref_angles)):
@@ -1717,11 +1327,11 @@ def prepare_refrings_projections( volft, kb, nz = -1, delta = 2.0, ref_a = "P", 
 		Generate quasi-evenly distributed reference FTs projections and the halfrings of their scf's
 		nz has to be provided
 	"""
-	from projection   import prep_vol, prgs
-	from applications import MPI_start_end
-	from utilities    import even_angles, getfvec, model_circle
-	from fundamentals import scf, fft, fftip
-	from types        import BooleanType
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.utilities import even_angles, getfvec, model_circle
+	from EMAN2.fundamentals import scf, fft, fftip
+	from types import BooleanType
 
 	# mpi communicator can be sent by the MPI parameter
 	if type(MPI) is BooleanType:
@@ -1788,8 +1398,8 @@ def prepare_refrings_projections( volft, kb, nz = -1, delta = 2.0, ref_a = "P", 
 		projections[i] = prjref
 
 	if MPI:
-		from utilities import bcast_compacted_EMData_all_to_all
-		from utilities import info
+		from EMAN2.utilities import bcast_compacted_EMData_all_to_all
+		from EMAN2.utilities import info
 		bcast_compacted_EMData_all_to_all(projections, myid, comm=mpi_comm)
 		bcast_compacted_EMData_all_to_all(refrings, myid, comm=mpi_comm)
 
@@ -1805,11 +1415,11 @@ def prepare_refrings_projections( volft, kb, nz = -1, delta = 2.0, ref_a = "P", 
 
 def prepare_refrings2( volft, kb, nz, segmask, delta, ref_a, sym, numr, MPI=False, phiEqpsi = "Minus", kbx = None, kby = None, initial_theta = None, delta_theta = None):
 
-	from projection   import prep_vol, prgs
-	from math         import sin, cos, radians
-	from applications import MPI_start_end
-	from utilities    import even_angles
-	from alignment	  import ringwe
+	from EMAN2.projection import prep_vol, prgs
+	from math import sin, cos, radians
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.utilities import even_angles
+	from EMAN2.alignment import ringwe
 
 	# generate list of Eulerian angles for reference projections
 	#  phi, theta, psi
@@ -1844,7 +1454,7 @@ def prepare_refrings2( volft, kb, nz, segmask, delta, ref_a, sym, numr, MPI=Fals
 	else:
 		ncpu = 1
 		myid = 0
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	ref_start, ref_end = MPI_start_end(num_ref, ncpu, myid)
 
 	refrings = []     # list of (image objects) reference projections in Fourier representation
@@ -1869,7 +1479,7 @@ def prepare_refrings2( volft, kb, nz, segmask, delta, ref_a, sym, numr, MPI=Fals
 		print "do not handle this case"
 		sys.exit()
 	if MPI:
-		from utilities import bcast_EMData_to_all
+		from EMAN2.utilities import bcast_EMData_to_all
 		for i in xrange(num_ref):
 			for j in xrange(ncpu):
 				ref_start, ref_end = MPI_start_end(num_ref, ncpu, j)
@@ -1891,8 +1501,8 @@ def prepare_refrings2( volft, kb, nz, segmask, delta, ref_a, sym, numr, MPI=Fals
 	return refrings
 
 def refprojs( volft, kb, ref_angles, cnx, cny, numr, mode, wr ):
-	from projection		import prgs
-	from utilities		import getfvec
+	from EMAN2.projection import prgs
+	from EMAN2.utilities import getfvec
 
 	ref_proj_rings = []     # list of (image objects) reference projections in Fourier representation
 	for i in xrange(len(ref_angles)):
@@ -1909,11 +1519,11 @@ def refprojs( volft, kb, ref_angles, cnx, cny, numr, mode, wr ):
 	return ref_proj_rings
 
 def proj_ali_incore(data, refrings, numr, xrng, yrng, step, finfo=None, sym = "c1", delta_psi = 0.0, rshift = 0.0):
-	from alignment import search_range
+	from EMAN2.alignment import search_range
 	from EMAN2 import Vec2f
 
 	if finfo:
-		from utilities    import get_params_proj
+		from EMAN2.utilities import get_params_proj
 		phi, theta, psi, s2x, s2y = get_params_proj(data)
 		finfo.write("Old parameters: %9.4f %9.4f %9.4f %9.4f %9.4f\n"%(phi, theta, psi, s2x, s2y))
 		finfo.flush()
@@ -1954,7 +1564,7 @@ def proj_ali_incore(data, refrings, numr, xrng, yrng, step, finfo=None, sym = "c
 	t2.set_trans(Vec2f(-s2x, -s2y))
 	data.set_attr("xform.projection", t2)
 	data.set_attr("referencenumber", iref)
-	from pixel_error import max_3D_pixel_error
+	from EMAN2.pixel_error import max_3D_pixel_error
 	ts = t2.get_sym_proj(sym)
 	if(len(ts) > 1):
 		# only do it if it is not c1
@@ -1973,11 +1583,11 @@ def proj_ali_incore(data, refrings, numr, xrng, yrng, step, finfo=None, sym = "c
 	return peak, pixel_error
 
 def proj_ali_incore_zoom(data, refrings, numr, xrng, yrng, step, finfo=None, sym = "c1", delta_psi = 0.0):
-	from alignment import search_range
+	from EMAN2.alignment import search_range
 	from EMAN2 import Vec2f
 
 	if finfo:
-		from utilities    import get_params_proj
+		from EMAN2.utilities import get_params_proj
 		phi, theta, psi, s2x, s2y = get_params_proj(data)
 		finfo.write("Old parameters: %7.2f  %7.2f  %7.2f  %7.2f  %7.2f\n"%(phi, theta, psi, s2x, s2y))
 		finfo.flush()
@@ -2020,7 +1630,7 @@ def proj_ali_incore_zoom(data, refrings, numr, xrng, yrng, step, finfo=None, sym
 
 	data.set_attr("xform.projection", t2)
 	data.set_attr("referencenumber", iref)
-	from pixel_error import max_3D_pixel_error
+	from EMAN2.pixel_error import max_3D_pixel_error
 	ts = t2.get_sym_proj(sym)
 	if(len(ts) > 1):
 		# only do it if it is not c1
@@ -2038,10 +1648,10 @@ def proj_ali_incore_zoom(data, refrings, numr, xrng, yrng, step, finfo=None, sym
 	return peak, pixel_error
 
 def proj_ali_incore_local(data, refrings, list_of_reference_angles, numr, xrng, yrng, step, an, finfo=None, sym='c1', delta_psi = 0.0, rshift = 0.0):
-	from alignment    import search_range
+	from EMAN2.alignment import search_range
 	#from utilities    import set_params_proj, get_params_proj
-	from math         import cos, sin, pi, radians
-	from EMAN2        import Vec2f
+	from math import cos, sin, pi, radians
+	from EMAN2 import Vec2f
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -2084,7 +1694,7 @@ def proj_ali_incore_local(data, refrings, list_of_reference_angles, numr, xrng, 
 		t2 = Transform({"type":"spider","phi":phi,"theta":theta,"psi":psi})
 		t2.set_trans(Vec2f(-s2x, -s2y))
 		data.set_attr("xform.projection", t2)
-		from pixel_error import max_3D_pixel_error
+		from EMAN2.pixel_error import max_3D_pixel_error
 		ts = t2.get_sym_proj(sym)
 		if(len(ts) > 1):
 			# only do it if it is not c1
@@ -2096,7 +1706,7 @@ def proj_ali_incore_local(data, refrings, list_of_reference_angles, numr, xrng, 
 			pixel_error = max_3D_pixel_error(t1, t2, numr[-3])
 		#print phi, theta, psi, s2x, s2y, peak, pixel_error
 		if finfo:
-			from utilities import get_params_proj
+			from EMAN2.utilities import get_params_proj
 			phi, theta, psi, s2x, s2y = get_params_proj(data)
 			finfo.write( "New parameters: %6.2f %6.2f %6.2f %6.2f %6.2f   %10.5f  %11.3e\n\n" %(phi, theta, psi, s2x, s2y, peak, pixel_error))
 			finfo.flush()
@@ -2106,11 +1716,11 @@ def proj_ali_incore_local(data, refrings, list_of_reference_angles, numr, xrng, 
 
 
 def proj_ali_incore_local_zoom(data, refrings, list_of_reference_angles, numr, xrng, yrng, step, an, finfo=None, sym='c1', delta_psi = 0.0):
-	from alignment import search_range
-	from utilities    import compose_transform2
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2
 	#from utilities    import set_params_proj, get_params_proj
-	from math         import cos, sin, pi, radians
-	from EMAN2        import Vec2f
+	from math import cos, sin, pi, radians
+	from EMAN2 import Vec2f
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -2164,7 +1774,7 @@ def proj_ali_incore_local_zoom(data, refrings, list_of_reference_angles, numr, x
 	# This trick assures that transformation is only set when at least one reference is found.
 	if( s2x != None ):
 		data.set_attr("xform.projection", t2)
-		from pixel_error import max_3D_pixel_error
+		from EMAN2.pixel_error import max_3D_pixel_error
 		ts = t2.get_sym_proj(sym)
 		if(len(ts) > 1):
 			# only do it if it is not c1
@@ -2186,8 +1796,8 @@ def proj_ali_incore_local_zoom(data, refrings, list_of_reference_angles, numr, x
 
 #  This function is obsoleted
 def proj_ali_incore_delta(data, refrings, numr, xrng, yrng, step, start, delta, finfo=None):
-	from alignment import search_range
-	from utilities    import compose_transform2
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2
 	from EMAN2 import Vec2f
 	ERROR("proj_ali_incore_delta","OBSOLETED",1)
 
@@ -2233,7 +1843,7 @@ def proj_ali_incore_delta(data, refrings, numr, xrng, yrng, step, start, delta, 
 	t2 = Transform({"type":"spider","phi":phi,"theta":theta,"psi":psi})
 	t2.set_trans(Vec2f(-s2x, -s2y))
 	data.set_attr("xform.projection", t2)
-	from pixel_error import max_3D_pixel_error
+	from EMAN2.pixel_error import max_3D_pixel_error
 	ts = t2.get_sym_proj(sym)
 	if(len(ts) > 1):
 		# only do it if it is not c1
@@ -2255,11 +1865,11 @@ def proj_ali_incore_local_psi(data, refrings, numr, xrng, yrng, step, an, dpsi=1
 	"""
 	  dpsi - how far psi can be from the original value.
 	"""
-	from alignment import search_range
-	from utilities    import compose_transform2
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2
 	#from utilities   import set_params_proj, get_params_proj
 	from EMAN2 import Vec2f
-	from math         import cos, sin, pi
+	from math import cos, sin, pi
 	ERROR("proj_ali_incore_local_psi","OBSOLETED",1)
 	if finfo:
 		phi, theta, psi, s2x, s2y = get_params_proj(data)
@@ -2312,7 +1922,7 @@ def proj_ali_incore_local_psi(data, refrings, numr, xrng, yrng, step, an, dpsi=1
 		t2 = Transform({"type":"spider","phi":phi,"theta":theta,"psi":psi})
 		t2.set_trans(Vec2f(-s2x, -s2y))
 		data.set_attr("xform.projection", t2)
-		from pixel_error import max_3D_pixel_error
+		from EMAN2.pixel_error import max_3D_pixel_error
 		ts = t2.get_sym_proj(sym)
 		if(len(ts) > 1):
 			# only do it if it is not c1
@@ -2339,7 +1949,7 @@ def ornq_gridding(image, crefim, shifts, shrink, kb, mode, numr, cnx, cny, delta
 		cnx, cny in FORTRAN convention
 	"""
 	#from math import pi, cos, sin, radians
-	from alignment import ang_n
+	from EMAN2.alignment import ang_n
 	#from utilities import info
 	peak = -1.0E23
 	for ll,iq in enumerate(shifts):
@@ -2367,10 +1977,10 @@ def ornq_gridding(image, crefim, shifts, shrink, kb, mode, numr, cnx, cny, delta
 
 
 def ali3D_gridding(data, volprep, refang, delta_psi, shifts, shrink, numr, wr, cnx, myid, main_node, kb3D = None):
-	from projection import prgs,prgl
-	from alignment import ornq_gridding
-	from fundamentals import prep_refim_gridding
-	from utilities import wrap_mpi_gatherv
+	from EMAN2.projection import prgs,prgl
+	from EMAN2.alignment import ornq_gridding
+	from EMAN2.fundamentals import prep_refim_gridding
+	from EMAN2.utilities import wrap_mpi_gatherv
 	from mpi import mpi_barrier, MPI_COMM_WORLD
 	###from time import time
 	#  Input data has to be CTF-multiplied, preshifted, and prepped for gridding
@@ -2401,10 +2011,9 @@ def ali3D_gridding(data, volprep, refang, delta_psi, shifts, shrink, numr, wr, c
 	mpi_barrier(MPI_COMM_WORLD)
 	return newpar,simis
 
-'''
 def prepare_refproj(volprep, refang, delta_psi = 1.0, mempercpu = 1.e9, kb3D = None):
-	from projection import prgs,prgl
-	from fundamentals import fft
+	from EMAN2.projection import prgs,prgl
+	from EMAN2.fundamentals import fft
 	from math import sqrt
 	ny = volprep.get_ysize()
 	if kb3D:  ny /= 2
@@ -2427,274 +2036,65 @@ def prepare_refproj(volprep, refang, delta_psi = 1.0, mempercpu = 1.e9, kb3D = N
 	else:
 		refproj = None
 	return refproj
-'''
 
-def ali3D_direct(data, volprep, refang, delta_psi, shifts, myid, main_node, lentop = 1000, kb3D = None):
-	from projection import prgs,prgl
-	from fundamentals import fft
-	from utilities import wrap_mpi_gatherv
+
+def ali3D_direct(data, volprep, refproj, refang, delta_psi, shifts, myid, main_node, kb3D = None):
+	from EMAN2.projection import prgs,prgl
+	from EMAN2.fundamentals import fft
+	from EMAN2.utilities import wrap_mpi_gatherv
 	from math import sqrt
 	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from time import time
+	###from time import time
 	#  Input data has to be CTF-multiplied, preshifted
-	#  Output - newpar, see structure
-	#    newpar = [[i, [worst_similarity, sum_all_similarities], [[-1, -1.0e23] for j in xrange(lentop)]] for i in xrange(len(data))]
-	#    newpar = [[params],[],... len(data)]
-	#    params = [particleID, [worst_similarity, sum_all_similarities],[imageallparams]]]
-	#    imageallparams = [[orientation, similarity],[],...  number of all orientations ]
-	#  Coding of orientations:
-	#    hash = ang*100000000 + lpsi*1000 + ishift
-	#    ishift = hash%1000
-	#    ipsi = (hash/1000)%100000
-	#    iang  = hash/100000000
-	#  To get best matching for particle #kl:
-	#     hash_best = newpar[kl][-1][0][0]
-	#     best_sim  = newpar[kl][-1][0][1]
-	#  To sort:
-	from operator import itemgetter#, attrgetter, methodcaller
-	#   params.sort(key=itemgetter(2))
-
-	at = time()
+	###at = time()
 	npsi = int(360./delta_psi)
 	nang = len(refang)
-	ndat = len(data)
-	newpar = [[i, [1.0e23,0.0], [] ] for i in xrange(ndat)]
-	#newpar = [[i, [1.0e23,1.0e23], []] for i in xrange(len(data))]
+	simis = [-1.0e23]*len(data)
+	newpar = [None]*len(data)
+	if refproj: nrefproj = 0
 	for i in xrange(nang):
-		#if myid == main_node:  print "  Angle :",i,time()-at
-		iang = i*100000000
+		###if myid == main_node:  print "  Angle :",i,time()-at
 		for j in xrange(npsi):
-			iangpsi = j*1000 + iang
 			psi = j*delta_psi
-			if kb3D:  temp = fft(prgs(volprep, kb3D, [refang[i][0],refang[i][1],psi, 0.0,0.0]))
-			else:     temp = prgl(volprep,[ refang[i][0],refang[i][1],psi, 0.0,0.0], 1, False)
-			temp.set_attr("is_complex",0)
-			nrmref = sqrt(Util.innerproduct(temp, temp, None))
+			if refproj :
+				temp   = refproj[nrefproj][0]
+				nrmref = refproj[nrefproj][1]
+				nrefproj += 1
+			else:
+				if kb3D:  temp = fft(prgs(volprep, kb3D, [refang[i][0],refang[i][1],psi, 0.0,0.0]))
+				else:     temp = prgl(volprep,[ refang[i][0],refang[i][1],psi, 0.0,0.0], 1, False)
+				temp.set_attr("is_complex",0)
+				nrmref = sqrt(temp.cmp("dot", temp, dict(negative = 0)))
+				
 			for kl,emimage in enumerate(data):
 				for im in xrange(len(shifts)):
-					peak = Util.innerproduct(temp, emimage[im],None)
+					peak = temp.cmp("dot", emimage[im], dict(negative = 0))
 					peak /= nrmref
 					#print  "%4d     %12.3e     %12.5f     %12.5f     %12.5f     %12.5f     %12.5f"%(i,peak,refang[i][0],refang[i][1],psi,sxs/shrink,sys/shrink)
-					newpar[kl][-1].append([im + iangpsi, peak])
-					#newpar[kl][-1].sort(key=itemgetter(1),reverse=True)
-					#del newpar[kl][-1][-1]
-					'''
-					toto = -1
-					for k in xrange(lentop):
-						if(peak > newpar[kl][-1][k][1]):
-							toto = k
-							break
-					if( toto == 0 ):  newpar[kl][-1] = [[im + iangpsi, peak]] + newpar[kl][-1][:lentop-1]
-					elif(toto > 0 ):  newpar[kl][-1] = newpar[kl][-1][:toto-1] + [[im + iangpsi, peak]] + newpar[kl][-1][toto:lentop-1]
-					'''
-					newpar[kl][1][1] += peak
-					#  Store the worst one
-					if( peak < newpar[kl][1][0]):  newpar[kl][1][0] = peak
-		for kl in xrange(ndat):
-			newpar[kl][-1].sort(key=itemgetter(1),reverse=True)
-			newpar[kl][-1] = newpar[kl][-1][:min(lentop, len(newpar[kl][-1]))]
-
-		
+					if(peak > simis[kl]):
+						#best = i
+						simis[kl]  = peak
+						newpar[kl] = [refang[i][0],refang[i][1],psi,shifts[im][0],shifts[im][1]]
+			
 	#print  " >>>  %4d   %12.3e       %12.5f     %12.5f     %12.5f     %12.5f     %12.5f"%(best,simis[0],newpar[0][0],newpar[0][1],newpar[0][2],newpar[0][3],newpar[0][4])
+
 	###if myid == main_node:  print "  Finished :",time()-at
-	#mpi_barrier(MPI_COMM_WORLD)
-	#simis  = wrap_mpi_gatherv(simis, main_node, MPI_COMM_WORLD)
-	#newpar = wrap_mpi_gatherv(newpar, main_node, MPI_COMM_WORLD)
-	for kl in xrange(ndat):
-		newpar[kl][-1].sort(key=itemgetter(1),reverse=True)
-		newpar[kl][-1] = newpar[kl][-1][:1]
-	mpi_barrier(MPI_COMM_WORLD)
-	return newpar
 
-
-def ali3D_direct_preselect(data, volprep, oldcodedparams, refang, delta_psi, shifts, myid, main_node, lentop = 1000, kb3D = None):
-	from projection import prgs,prgl
-	from fundamentals import fft
-	from utilities import wrap_mpi_gatherv
-	from math import sqrt
-	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from time import time
-	#  Input data has to be CTF-multiplied, preshifted
-	#  Output - newpar, see structure, shifts are sublist of angles
-	#    newpar = [[i, 1.0e23, [[j, -1.0e11,[[q,-1.0e22] for q in xrange(lshift)]] for j in xrange(lentop)]] for i in xrange(ldat)]
-	#    ??? newpar = [[params],[],... len(data)]
-	#    params = [particleID, worstsimilarity,[imageallparams]]]
-	#    imageallparams = [[orientation, similarity],[],...  number of all orientations ]
-	#  Coding of orientations:
-	#    hash = ang*100000 + lpsi
-	#    ipsi = hash%100000
-	#    iang  = hash/100000
-	#  To get best matching for particle #kl:
-	#     hash_best = newpar[kl][-1][0][0]
-	#     best_sim  = newpar[kl][-1][0][1]
-	#  To delete  shifts:
-	#for i in xrange(ldat):
-    #for j in xrange(lentop):
-    #    del newpar[i][2][j][-1]
-
-	#  To extract list of valid angles:
-	#	for i in xrange(ldat):
-    # 		newpar[i][2] = [newpar[i][2][j][0] for j in xrange(len(newpar[i][2])) ]
-    #  as a result, oldcodedparams[im][2] will contain a list of valid angles for image im
-
-
-	#  To sort:
-	from operator import itemgetter#, attrgetter, methodcaller
-	#   params.sort(key=itemgetter(2))
-
-	at = time()
-	npsi = int(360./delta_psi)
-	nang = len(refang)
-	lshift = len(shifts)
-	#newpar = [[i, 1.0e23, [[-1, -1.0e23] for j in xrange(lentop)]] for i in xrange(len(data))]
-	newpar = [[i, 1.0e23, []] for i in xrange(len(data))]
-	#newpar = [[i, 1.0e23, [ [j, -1.0e11, [[q,-1.0e22] for q in xrange(lshift)]] for j in xrange(lentop)] ] for i in xrange(ldat)]
-	for i in xrange(nang):
-		#if myid == main_node:  print "  Angle :",i,time()-at
-		iang = i*100000
-		for j in xrange(npsi):
-			iangpsi = j + iang
-			psi = j*delta_psi
-			if kb3D:  temp = fft(prgs(volprep, kb3D, [refang[i][0],refang[i][1],psi, 0.0,0.0]))
-			else:     temp = prgl(volprep,[ refang[i][0],refang[i][1],psi, 0.0,0.0], 1, False)
-			temp.set_attr("is_complex",0)
-			nrmref = sqrt(Util.innerproduct(temp, temp))
-			for kl,emimage in enumerate(data):
-				try:
-					junk = oldcodedparams[kl][2].index(iangpsi)
-					newpar[kl][2].append([iangpsi, -1.0, []])
-					for im in xrange(lshift):
-						peak = Util.innerproduct(temp, emimage[im])
-						peak /= nrmref
-						#print  "%4d     %12.3e     %12.5f     %12.5f     %12.5f     %12.5f     %12.5f"%(i,peak,refang[i][0],refang[i][1],psi,sxs/shrink,sys/shrink)
-						newpar[kl][-1][2].append([im, peak])
-						#newpar[kl][-1].sort(key=itemgetter(1),reverse=True)
-						#del newpar[kl][-1][-1]
-						'''
-						toto = -1
-						for k in xrange(lentop):
-							if(peak > newpar[kl][-1][k][1]):
-								toto = k
-								break
-						if( toto == 0 ):  newpar[kl][-1] = [[im + iangpsi, peak]] + newpar[kl][-1][:lentop-1]
-						elif(toto > 0 ):  newpar[kl][-1] = newpar[kl][-1][:toto-1] + [[im + iangpsi, peak]] + newpar[kl][-1][toto:lentop-1]
-						'''
-						#  Store the worst one
-						if( peak < newpar[kl][1]):  newpar[kl][1] = peak
-
-					#  Store sum of shift scores
-					newpar[kl][2][-1][1] = sum([newpar[kl][2][-1][2][im][1] for im in xrange(lshift)])
-				except:
-					#  No valid angles
-					pass
-					
-		for kl in xrange(len(data)):
-			newpar[kl][2].sort(key=itemgetter(1),reverse=True)
-			newpar[kl][2] = newpar[kl][2][:min(lentop, len(newpar[kl][2]))]
-
-		
-	#print  " >>>  %4d   %12.3e       %12.5f     %12.5f     %12.5f     %12.5f     %12.5f"%(best,simis[0],newpar[0][0],newpar[0][1],newpar[0][2],newpar[0][3],newpar[0][4])
-	###if myid == main_node:  print "  Finished :",time()-at
 	#mpi_barrier(MPI_COMM_WORLD)
 	#simis  = wrap_mpi_gatherv(simis, main_node, MPI_COMM_WORLD)
 	#newpar = wrap_mpi_gatherv(newpar, main_node, MPI_COMM_WORLD)
 	mpi_barrier(MPI_COMM_WORLD)
-	return newpar
+	return newpar,simis
 
 
 
-def ali3D_direct_local(data, volprep, refang, delta_psi, shifts, an, oldangs, myid, main_node, lentop = 1000, kb3D = None):
-	from projection import prgs,prgl
-	from fundamentals import fft
-	from utilities import wrap_mpi_gatherv, getfvec
-	from math import sqrt
-	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from time import time
-	#  Input data has to be CTF-multiplied, preshifted
-	#  Output - newpar, see structure
-	#    newpar = [[i, [worst_similarity, sum_all_similarities]], [[-1, -1.0e23] for j in xrange(lentop)]] for i in xrange(len(data))]
-	#    newpar = [[params],[],... len(data)]
-	#    params = [particleID, [worst_similarity, sum_all_similarities],[imageallparams]]]
-	#    imageallparams = [[orientation, similarity],[],...  number of all orientations ]
-	#  Coding of orientations:
-	#    hash = ang*100000000 + lpsi*1000 + ishift
-	#    ishift = hash%1000
-	#    ipsi = (hash/1000)%100000
-	#    iang  = hash/100000000
-	#  To get best matching for particle #kl:
-	#     hash_best = newpar[kl][-1][0][0]
-	#     best_sim  = newpar[kl][-1][0][1]
-	#  To sort:
-	from operator import itemgetter#, attrgetter, methodcaller
-	#   params.sort(key=itemgetter(2))
-
-	from math import cos, radians
-	ac = cos(radians(an))
-	dvec = [None]*len(data)
-	for kl in xrange(len(data)):
-		dvec[kl] = getfvec(oldangs[kl][0], oldangs[kl][1])
-	
-
-	at = time()
-	npsi = int(360./delta_psi)
-	nang = len(refang)
-	newpar = [[i, [1.0e23,0.0], [[-1, -1.0e23] for j in xrange(lentop)]] for i in xrange(len(data))]
-	#newpar = [[i, 1.0e23, []] for i in xrange(len(data))]
-	for i in xrange(nang):
-		#if myid == main_node:  print "  Angle :",i,time()-at
-		iang = i*100000000
-		rdir = getfvec(refang[i][0],refang[i][1])
-		for j in xrange(npsi):
-			iangpsi = j*1000 + iang
-			psi = j*delta_psi
-			if kb3D:  temp = fft(prgs(volprep, kb3D, [refang[i][0],refang[i][1],psi, 0.0,0.0]))
-			else:     temp = prgl(volprep,[ refang[i][0],refang[i][1],psi, 0.0,0.0], 1, False)
-			temp.set_attr("is_complex",0)
-			nrmref = sqrt(Util.innerproduct(temp, temp))
-			for kl,emimage in enumerate(data):
-				#  Check psi first which is faster
-				qt = (oldangs[kl][2]-psi)%360.0
-				if( qt > 180.0 ): qt = 360. - qt
-				if(qt < an):
-					if( (dvec[kl][0]*rdir[0] + dvec[kl][1]*rdir[1] + dvec[kl][2]*rdir[2]) >= ac ):
-						for im in xrange(len(shifts)):
-							peak = Util.innerproduct(temp, emimage[im])
-							peak /= nrmref
-							#print  "%4d     %12.3e     %12.5f     %12.5f     %12.5f     %12.5f     %12.5f"%(i,peak,refang[i][0],refang[i][1],psi,sxs/shrink,sys/shrink)
-							newpar[kl][-1].append([im + iangpsi, peak])
-							#newpar[kl][-1].sort(key=itemgetter(1),reverse=True)
-							#del newpar[kl][-1][-1]
-							'''
-							toto = -1
-							for k in xrange(lentop):
-								if(peak > newpar[kl][-1][k][1]):
-									toto = k
-									break
-							if( toto == 0 ):  newpar[kl][-1] = [[im + iangpsi, peak]] + newpar[kl][-1][:lentop-1]
-							elif(toto > 0 ):  newpar[kl][-1] = newpar[kl][-1][:toto-1] + [[im + iangpsi, peak]] + newpar[kl][-1][toto:lentop-1]
-							'''
-							#  Store the worst one
-							newpar[kl][1][1] += peak
-							if( peak < newpar[kl][1][0]):  newpar[kl][1][0] = peak
-		for kl in xrange(len(data)):
-			newpar[kl][-1].sort(key=itemgetter(1),reverse=True)
-			newpar[kl][-1] = newpar[kl][-1][:min(lentop, len(newpar[kl][-1]))]
-
-		
-	#print  " >>>  %4d   %12.3e       %12.5f     %12.5f     %12.5f     %12.5f     %12.5f"%(best,simis[0],newpar[0][0],newpar[0][1],newpar[0][2],newpar[0][3],newpar[0][4])
-	###if myid == main_node:  print "  Finished :",time()-at
-	#mpi_barrier(MPI_COMM_WORLD)
-	#simis  = wrap_mpi_gatherv(simis, main_node, MPI_COMM_WORLD)
-	#newpar = wrap_mpi_gatherv(newpar, main_node, MPI_COMM_WORLD)
-	mpi_barrier(MPI_COMM_WORLD)
-	return newpar
 
 def proj_ali_incore_direct(data, ref_angs, numr, xrng, yrng, step, finfo=None, sym = "c1", delta_psi = 0.0, rshift = 0.0):
-	from alignment import search_range
+	from EMAN2.alignment import search_range
 	from EMAN2 import Vec2f
 
 	if finfo:
-		from utilities    import get_params_proj
+		from EMAN2.utilities import get_params_proj
 		phi, theta, psi, s2x, s2y = get_params_proj(data)
 		finfo.write("Old parameters: %9.4f %9.4f %9.4f %9.4f %9.4f\n"%(phi, theta, psi, s2x, s2y))
 		finfo.flush()
@@ -2735,7 +2135,7 @@ def proj_ali_incore_direct(data, ref_angs, numr, xrng, yrng, step, finfo=None, s
 	t2.set_trans(Vec2f(-s2x, -s2y))
 	data.set_attr("xform.projection", t2)
 	data.set_attr("referencenumber", iref)
-	from pixel_error import max_3D_pixel_error
+	from EMAN2.pixel_error import max_3D_pixel_error
 	ts = t2.get_sym_proj(sym)
 	if(len(ts) > 1):
 		# only do it if it is not c1
@@ -2759,9 +2159,9 @@ def proj_ali_helical(data, refrings, numr, xrng, yrng, stepx, ynumber, psi_max=1
 	"""
 	  psi_max - how much psi can differ from 90 or 270 degrees
 	"""
-	from alignment import search_range
-	from utilities    import compose_transform2, get_params_proj
-	from math         import cos, sin, pi
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2, get_params_proj
+	from math import cos, sin, pi
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -2810,9 +2210,9 @@ def proj_ali_helical_local(data, refrings, numr, xrng, yrng, stepx,ynumber, an, 
 	"""
 	  psi_max - how much psi can differ from 90 or 270 degrees
 	"""
-	from alignment import search_range
-	from utilities    import compose_transform2, get_params_proj
-	from math         import cos, sin, radians
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2, get_params_proj
+	from math import cos, sin, radians
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -2865,8 +2265,8 @@ def proj_ali_helical_90(data, refrings, numr, xrng, yrng, stepx, ynumber, psi_ma
 	"""
 	  psi_max - how much psi can differ from 90 or 270 degrees
 	"""
-	from alignment import search_range
-	from utilities    import compose_transform2, get_params_proj
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2, get_params_proj
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -2908,9 +2308,9 @@ def proj_ali_helical_90_local(data, refrings, numr, xrng, yrng, stepx, ynumber, 
 	"""
 	  psi_max - how much psi can differ from 90 or 270 degrees
 	"""
-	from alignment import search_range
-	from utilities    import compose_transform2, get_params_proj
-	from math         import cos, sin, radians
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2, get_params_proj
+	from math import cos, sin, radians
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -2953,9 +2353,9 @@ def proj_ali_helicon_local(data, refrings, numr, xrng, yrng, stepx,ynumber, an, 
 	"""
 	  psi_max - how much psi can differ from 90 or 270 degrees
 	"""
-	from alignment import search_range
-	from utilities    import compose_transform2, get_params_proj
-	from math         import cos, sin, radians
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2, get_params_proj
+	from math import cos, sin, radians
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -3009,9 +2409,9 @@ def proj_ali_helicon_90_local_direct(data, refrings, xrng, yrng, \
 	"""
 	  psi_max - how much psi can differ from 90 or 270 degrees
 	"""
-	from utilities    import compose_transform2, get_params_proj
-	from alignment    import directaligridding
-	from math         import cos, sin, radians
+	from EMAN2.utilities import compose_transform2, get_params_proj
+	from EMAN2.alignment import directaligridding
+	from math import cos, sin, radians
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -3069,9 +2469,9 @@ def proj_ali_helicon_90_local_direct1(data, refrings, xrng, yrng, \
 	"""
 	  psi_max - how much psi can differ from either 90 or 270 degrees
 	"""
-	from utilities    import inverse_transform2, get_params_proj
-	from alignment    import directaligridding1
-	from math         import cos, sin, radians
+	from EMAN2.utilities import inverse_transform2, get_params_proj
+	from EMAN2.alignment import directaligridding1
+	from math import cos, sin, radians
 	
 	nx   = data.get_xsize()
 	ny   = data.get_ysize()
@@ -3100,9 +2500,9 @@ def proj_ali_helicon_90_local(data, refrings, numr, xrng, yrng, stepx, ynumber, 
 	"""
 	  psi_max - how much psi can differ from 90 or 270 degrees
 	"""
-	from alignment import search_range
-	from utilities    import compose_transform2, get_params_proj
-	from math         import cos, sin, pi
+	from EMAN2.alignment import search_range
+	from EMAN2.utilities import compose_transform2, get_params_proj
+	from math import cos, sin, pi
 
 	mode = "F"
 	nx   = data.get_xsize()
@@ -3141,9 +2541,9 @@ def proj_ali_helicon_90_local(data, refrings, numr, xrng, yrng, stepx, ynumber, 
 		return -1.0e23, 0.0, 0.0, 0.0, 0.0, 0.0
 
 def ali_vol_func(params, data):
-	from utilities    import model_gauss
-	from fundamentals import rot_shift3D, cyclic_shift
-	from morphology   import binarize
+	from EMAN2.utilities import model_gauss
+	from EMAN2.fundamentals import rot_shift3D, cyclic_shift
+	from EMAN2.morphology import binarize
 	#print  params
 	#print  data[3]
 	#cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale= compose_transform3(data[3][0], data[3][1], data[3][2], data[3][3], data[3][4], data[3][5], data[3][6], params[0], params[1], params[2],params[3], params[4], params[5],1.0)
@@ -3155,9 +2555,9 @@ def ali_vol_func(params, data):
 	return res
 
 def ali_vol_func_julio(params, data):
-	from utilities    import model_gauss
-	from fundamentals import rot_shift3D, cyclic_shift
-	from morphology   import binarize
+	from EMAN2.utilities import model_gauss
+	from EMAN2.fundamentals import rot_shift3D, cyclic_shift
+	from EMAN2.morphology import binarize
 	#print  params
 	#print  data[3]
 	#cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale= compose_transform3(data[3][0], data[3][1], data[3][2], data[3][3], data[3][4], data[3][5], data[3][6], params[0], params[1], params[2],params[3], params[4], params[5],1.0)
@@ -3184,8 +2584,8 @@ def ali_vol_func_julio(params, data):
 	return res
 
 def ali_vol_func_grid(params, data):
-	from fundamentals import rot_shift3D_grid, cyclic_shift
-	from morphology   import binarize
+	from EMAN2.fundamentals import rot_shift3D_grid, cyclic_shift
+	from EMAN2.morphology import binarize
 
 	# data[0]: image output from prepi3D (segment)
 	# data[5]: kb from prepi3D
@@ -3211,8 +2611,8 @@ def ali_vol_func_grid(params, data):
 	return res
 
 def ali_vol_func_nopsi(params, data):
-	from utilities    import compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.utilities import compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	#print  params
 	#print  data[3]
 	#cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale= compose_transform3(data[3][0], data[3][1], data[3][2], data[3][3], data[3][4], data[3][5], data[3][6], params[0], params[1], params[2],params[3], params[4], params[5],1.0)
@@ -3224,8 +2624,8 @@ def ali_vol_func_nopsi(params, data):
 	return res
 
 def ali_vol_func_rotate(params, data):
-	from utilities    import compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.utilities import compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale= compose_transform3(data[3][0], data[3][1], data[3][2], data[3][3], data[3][4], data[3][5], data[3][7], params[0], params[1], params[2],0.0,0.0,0.0,1.0)
 	x = rot_shift3D(data[0], cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale)
 	res = -x.cmp(data[4], data[1], {"mask":data[2]})
@@ -3233,8 +2633,8 @@ def ali_vol_func_rotate(params, data):
 	return res
 
 def ali_vol_func_shift(params, data):
-	from utilities    import compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.utilities import compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale= compose_transform3(data[3][0], data[3][1], data[3][2], data[3][3], data[3][4], data[3][5], data[3][7], 0.0,0.0,0.0, params[0], params[1], params[2],1.0)
 	x = rot_shift3D(data[0], cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale)
 	res = -x.cmp(data[4], data[1], {"mask":data[2]})
@@ -3242,8 +2642,8 @@ def ali_vol_func_shift(params, data):
 	return res
 
 def ali_vol_func_scale(params, data):
-	from utilities    import compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.utilities import compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale= compose_transform3(data[3][0], data[3][1], data[3][2], data[3][3], data[3][4], data[3][5], data[3][7], params[0], params[1], params[2], params[3], params[4], params[5], params[6])
 	x = rot_shift3D(data[0], cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale)
 	res = -x.cmp(data[4], data[1], {"mask":data[2]})
@@ -3251,8 +2651,8 @@ def ali_vol_func_scale(params, data):
 	return res
 
 def ali_vol_func_only_scale(params, data):
-	from utilities    import compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.utilities import compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale= compose_transform3(data[3][0], data[3][1], data[3][2], data[3][3], data[3][4], data[3][5], data[3][7], 0.0,0.0,0.0,0.0,0.0,0.0, params[0])
 	x = rot_shift3D(data[0], cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale)
 	res = -x.cmp(data[4], data[1], {"mask":data[2]})
@@ -3268,8 +2668,8 @@ def helios_func(params, data):
 	return  q
 
 def helios(vol, pixel_size, dp, dphi, section_use = 0.75, radius = 0.0, rmin = 0.0):
-	from alignment    import helios_func
-	from utilities    import amoeba
+	from EMAN2.alignment import helios_func
+	from EMAN2.utilities import amoeba
 	nx = vol.get_xsize()
 	ny = vol.get_ysize()
 	nz = vol.get_zsize()
@@ -3283,7 +2683,7 @@ def helios(vol, pixel_size, dp, dphi, section_use = 0.75, radius = 0.0, rmin = 0
 	return  vol.helicise(pixel_size, new_params[0][0], new_params[0][1], section_use, radius), new_params[0][0], new_params[0][1]
 
 def helios7(vol, pixel_size, dp, dphi, section_use = 0.75, radius = 0.0, rmin = 0.0):
-	from alignment    import helios_func
+	from EMAN2.alignment import helios_func
 	nx = vol.get_xsize()
 	ny = vol.get_ysize()
 	nz = vol.get_zsize()
@@ -3372,8 +2772,8 @@ def update_favj(ave, data, jtot, mirror, numr):
 	#print_col(ave)
 
 def fine_2D_refinement(data, br, mask, tavg, group = -1):
-	from utilities import amoeba
-	from fundamentals 	import rtshgkb, prepg
+	from EMAN2.utilities import amoeba
+	from EMAN2.fundamentals import rtshgkb, prepg
 
 	# IMAGES ARE SQUARES!
 	nx = data[0].get_xsize()
@@ -3438,7 +2838,7 @@ def align2d(image, refim, xrng=[0, 0], yrng=[0, 0], step=1, first_ring=1, last_r
 	     Output: ang, sxs, sys, mirror, peak
 	"""
 	#from utilities import print_col
-	from alignment import Numrinit, ringwe
+	from EMAN2.alignment import Numrinit, ringwe
 	step = float(step)
 	nx = refim.get_xsize()
 	ny = refim.get_ysize()
@@ -3464,7 +2864,7 @@ def align2dshc(image, refim, xrng=0, yrng=0, step=1, first_ring=1, last_ring=0, 
 	     Output: ang, sxs, sys, mirror, peak
 	"""
 	#from utilities import print_col
-	from alignment import Numrinit, ringwe
+	from EMAN2.alignment import Numrinit, ringwe
 	step = float(step)
 	nx = refim.get_xsize()
 	ny = refim.get_ysize()
@@ -3492,9 +2892,9 @@ def align2dshc(image, refim, xrng=0, yrng=0, step=1, first_ring=1, last_ring=0, 
 '''
 
 def align2d_scf(image, refim, xrng=-1, yrng=-1, ou = -1):
-	from fundamentals import scf, rot_shift2D, ccf, mirror
-	from fundamentals import fft
-	from utilities import peak_search
+	from EMAN2.fundamentals import scf, rot_shift2D, ccf, mirror
+	from EMAN2.fundamentals import fft
+	from EMAN2.utilities import peak_search
 	from math import radians, sin, cos
 	nx = image.get_xsize()
 	ny = image.get_xsize()
@@ -3512,7 +2912,7 @@ def align2d_scf(image, refim, xrng=-1, yrng=-1, ou = -1):
 	#alpha2, sxs, sys, mirr, peak2 = align2d_no_mirror(mirror(sci), scr,  first_ring = 1, last_ring=ou, mode="H")
 
 
-	from alignment import Numrinit, ringwe, ornq
+	from EMAN2.alignment import Numrinit, ringwe, ornq
 	# center in SPIDER convention
 	cnx = nx//2+1
 	cny = ny//2+1
@@ -3560,7 +2960,7 @@ def align2d_scf(image, refim, xrng=-1, yrng=-1, ou = -1):
 		cx = int(p2[0][1])
 		cy = int(p2[0][2])
 		ccf1 = ccf2
-	from utilities import model_blank
+	from EMAN2.utilities import model_blank
 	#print cx,cy
 	z = model_blank(3,3)
 	for i in xrange(3):
@@ -3576,10 +2976,10 @@ def align2d_scf(image, refim, xrng=-1, yrng=-1, ou = -1):
 
 
 def multalign2d_scf(image, refrings, frotim, numr, xrng=-1, yrng=-1, ou = -1):
-	from fundamentals import scf, rot_shift2D, ccf, mirror
-	from utilities import peak_search, model_blank
+	from EMAN2.fundamentals import scf, rot_shift2D, ccf, mirror
+	from EMAN2.utilities import peak_search, model_blank
 	from math import radians, sin, cos
-	from alignment import ang_n
+	from EMAN2.alignment import ang_n
 
 	nx = image.get_xsize()
 	ny = image.get_xsize()
@@ -3730,8 +3130,8 @@ def parabl(Z):
 '''
 
 def align2d_direct2(image, refim, xrng=1, yrng=1, psimax=1, psistep=1, ou = -1):
-	from fundamentals import fft, rot_shift2D, ccf, mirror
-	from utilities import peak_search, model_circle, model_blank, inverse_transform2
+	from EMAN2.fundamentals import fft, rot_shift2D, ccf, mirror
+	from EMAN2.utilities import peak_search, model_circle, model_blank, inverse_transform2
 	from math import radians, sin, cos
 	
 	nx = image.get_xsize()
@@ -3779,70 +3179,9 @@ def align2d_direct2(image, refim, xrng=1, yrng=1, psimax=1, psistep=1, ou = -1):
 	bang, bsx, bsy, i = inverse_transform2(bang, bsx, bsy)
 	return bang, bsx, bsy, ama
 
-
-def align2d_direct3(input_images, refim, xrng=1, yrng=1, psimax=180, psistep=1, ou = -1, CTF = None):
-	from fundamentals import fft, rot_shift2D, ccf, mirror
-	from filter       import filt_ctf
-	from utilities    import peak_search, model_circle, model_blank, inverse_transform2
-	from math import radians, sin, cos
-	
-	nx = input_images[0].get_xsize()
-	if(ou<0):  ou = nx//2-1
-	mask = model_circle(ou,nx,nx)
-	nk = int(psimax/psistep)
-	nm = 2*nk+1
-	nc = nk + 1
-	refs = [None]*nm*2
-	for i in xrange(nm):
-		temp = rot_shift2D(refim, (i-nc)*psistep)*mask
-		refs[2*i] = [fft(temp), fft(mirror(temp))]
-		temp = rot_shift2D(refim, (i-nc)*psistep+180.0)*mask
-		refs[2*i+1] = [fft(temp), fft(mirror(temp))]
-	del temp
-
-	results = []
-	mir = 0
-	for image in input_images:
-		if CTF:  ims = filt_ctf(fft(image), image.get_attr("ctf"))
-		else:    ims = fft(image)
-		ama = -1.e23
-		bang = 0.
-		bsx = 0.
-		bsy = 0.
-		for i in xrange(nm*2):
-			for mirror_flag in [0, 1]:
-				c = ccf(ims, refs[i][mirror_flag])
-				w = Util.window(c,2*xrng+1,2*yrng+1)
-				pp =peak_search(w)[0]
-				px = int(pp[4])
-				py = int(pp[5])
-				if( pp[0] == 1.0 and px == 0 and py == 0):
-					pass #XSH, YSH, PEAKV = 0.,0.,0.
-				else:
-					ww = model_blank(3,3)
-					ux = int(pp[1])
-					uy = int(pp[2])
-					for k in xrange(3):
-						for l in xrange(3):
-							ww[k,l] = w[k+ux-1,l+uy-1]
-					XSH, YSH, PEAKV = parabl(ww)
-					#print i,pp[-1],XSH, YSH,px+XSH, py+YSH, PEAKV
-					if(PEAKV >ama):
-						ama = PEAKV
-						bsx = px+round(XSH,2)
-						bsy = py+round(YSH,2)
-						bang = i
-						mir = mirror_flag
-		# returned parameters have to be inverted
-		bang = (bang//2-nc)*psistep + 180.*(bang%2)
-		bang, bsx, bsy, _ = inverse_transform2(bang, (1 - 2*mir)*bsx, bsy, mir)
-		results.append([bang, bsx, bsy, mir, ama])
-	return results
-
-
 def align2d_direct(image, refim, xrng=1, yrng=1, psimax=1, psistep=1, ou = -1):
-	from fundamentals import fft, rot_shift2D, ccf
-	from utilities import model_blank, model_circle, peak_search, compose_transform2, inverse_transform2
+	from EMAN2.fundamentals import fft, rot_shift2D, ccf
+	from EMAN2.utilities import model_blank, model_circle, peak_search, compose_transform2, inverse_transform2
 	from math import radians, sin, cos
 
 	nx = image.get_xsize()
@@ -3922,7 +3261,7 @@ def align2d_no_mirror(image, refim, xrng=0, yrng=0, step=1, first_ring=1, last_r
 	     Output: ang, sxs, sys, mirror, peak  # Mirror==0
 	"""
 	#from utilities import print_col
-	from alignment import Numrinit, ringwe
+	from EMAN2.alignment import Numrinit, ringwe
 	step = float(step)
 	nx = refim.get_xsize()
 	ny = refim.get_ysize()
@@ -3950,7 +3289,7 @@ def align2d_peaks(image, refim, xrng=0, yrng=0, step=1, first_ring=1, last_ring=
 	     quadratic interpolation
 	"""
 	#from utilities import print_col
-	from alignment import Numrinit, ringwe
+	from EMAN2.alignment import Numrinit, ringwe
 	step = float(step)
 	nx = refim.get_xsize()
 	ny = refim.get_ysize()
@@ -3973,9 +3312,9 @@ def align2d_g(image, refim, xrng=0, yrng=0, step=1, first_ring=1, last_ring=0, r
 	"""  Determine shift and rotation between image and reference image
 	     quadratic interpolation
 	"""
-	from development import ormy2
-	from alignment import Numrinit, ringwe
-	from fundamentals import fft
+	from EMAN2.development import ormy2
+	from EMAN2.alignment import Numrinit, ringwe
+	from EMAN2.fundamentals import fft
 	
 	step = float(step)
 	nx = refim.get_xsize()
@@ -4014,9 +3353,9 @@ def directali(inima, refs, psimax=1.0, psistep=1.0, xrng=1, yrng=1, updown = "bo
 	updown - one of three keywords: both, up, down, indicating which angle to consider, 0, 180, or both.
 	PAP 12/20/2014
 	"""
-	from fundamentals import fft, rot_shift2D, ccf
-	from utilities    import peak_search, model_blank, inverse_transform2, compose_transform2
-	from alignment    import parabl
+	from EMAN2.fundamentals import fft, rot_shift2D, ccf
+	from EMAN2.utilities import peak_search, model_blank, inverse_transform2, compose_transform2
+	from EMAN2.alignment import parabl
 
 	nr = int(2*psimax/psistep)+1
 	nc = nr//2
@@ -4138,7 +3477,7 @@ def directali(inima, refs, psimax=1.0, psistep=1.0, xrng=1, yrng=1, updown = "bo
 
 
 def preparerefsgrid(refs, psimax=1.0, psistep=1.0):
-	from fundamentals import prepi, fft
+	from EMAN2.fundamentals import prepi, fft
 	from EMAN2 import Processor
 
 	M = refs.get_xsize()
@@ -4164,47 +3503,6 @@ def preparerefsgrid(refs, psimax=1.0, psistep=1.0):
 
 	return  ref
 
-
-def preparerefsgrid1(refs, psimax=1.0, psistep=1.0):
-	from fundamentals import prepi, fft
-	from EMAN2 import Processor
-
-	M = refs.get_xsize()
-	alpha = 1.75
-	K = 6
-	N = M*2  # npad*image size
-	r = M/2
-	v = K/2.0/N
-	params = {"filter_type" : Processor.fourier_filter_types.KAISER_SINH_INVERSE,
-	          "alpha" : alpha, "K":K,"r":r,"v":v,"N":N}
-	kb = Util.KaiserBessel(alpha, K, r, v, N)
-
-	nr = int(2*psimax/psistep)+1
-	nc = nr//2
-# 	if updown == "up" :  reduced_psiref = psiref -  90.0
-# 	else:                reduced_psiref = psiref - 270.0
-
-
-	
-	ref = [None]*nr
-	ima,kb = prepi(refs)
-	from math import radians
-	psisteprad = radians(psistep)
-# if psimax > 0:
-# 		bnr = int(round(reduced_psiref/psistep)) - nc
-# 		enr = nr + bnr
-	for i in xrange(0,nr):
-		# gridding rotation
-		ref[i] = fft(ima.rot_scale_conv_new_background_twice((i-nc)*psisteprad, 0.,0., kb, 1.))
-
-# 	if psimax == 0:
-# 		ref[0] = fft(ima.rot_scale_conv_new_background_twice(radians(reduced_psiref), 0.,0., kb, 1.))
-
-		
-		
-	return  ref
-	
-	
 def directaligridding(inima, refs, psimax=1.0, psistep=1.0, xrng=1, yrng=1, stepx = 1.0, stepy = 1.0, updown = "both"):
 	"""
 	Direct 2D alignment within a predefined angular range.  If the range is large the method will be very slow.
@@ -4213,9 +3511,9 @@ def directaligridding(inima, refs, psimax=1.0, psistep=1.0, xrng=1, yrng=1, step
 	PAP 12/27/2014
 	"""
 	#  Eventually will have to pass kb here
-	from fundamentals import fft, rot_shift2D, ccf, prepi
-	from utilities    import peak_search, model_blank, inverse_transform2, compose_transform2
-	from alignment    import parabl
+	from EMAN2.fundamentals import fft, rot_shift2D, ccf, prepi
+	from EMAN2.utilities import peak_search, model_blank, inverse_transform2, compose_transform2
+	from EMAN2.alignment import parabl
 	from EMAN2 import Processor
 	print  "  directaligridding  ",psimax, psistep, xrng, yrng, stepx, stepy, updown
 	M = inima.get_xsize()
@@ -4285,7 +3583,7 @@ def directaligridding(inima, refs, psimax=1.0, psistep=1.0, xrng=1, yrng=1, step
 		imm = Processor.EMFourierFilter(imm, params)
 
 	#fft(ima).write_image('imap.hdf')
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	e1 = ref[0]['phi']
 	f1,e2,e3,e4,e5 = get_params_proj(inima)
 	print " in ali  ", e1,f1,psimax, psistep, xrng, yrng, wnx, wny, rnx, rny, stepxx, stepyy, nr,updown 
@@ -4417,9 +3715,9 @@ def directaligridding1(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1, yrng=1, 
 	PAP 01/01/2015
 	"""
 
-	from fundamentals import fft, rot_shift2D, ccf, prepi
-	from utilities    import peak_search, model_blank, inverse_transform2, compose_transform2
-	from alignment    import parabl
+	from EMAN2.fundamentals import fft, rot_shift2D, ccf, prepi
+	from EMAN2.utilities import peak_search, model_blank, inverse_transform2, compose_transform2
+	from EMAN2.alignment import parabl
 	from EMAN2 import Processor
 	#print  "  directaligridding1  ",psimax, psistep, xrng, yrng, stepx, stepy, updown
 
@@ -4606,11 +3904,10 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 	PAP 01/16/2015
 	"""
 
-	from fundamentals import fft, rot_shift2D, ccf, prepi
-	from utilities    import peak_search, model_blank, inverse_transform2, compose_transform2
-	from alignment    import parabl
+	from EMAN2.fundamentals import fft, rot_shift2D, ccf, prepi
+	from EMAN2.utilities import peak_search, model_blank, inverse_transform2, compose_transform2
+	from EMAN2.alignment import parabl
 	from EMAN2 import Processor
-	#from time  import time
 	#print  "  directaligridding1  ",psimax, psistep, xrng, yrng, stepx, stepy, updown
 	#print  "IN         %6.2f %6.2f  %6.2f"%(psiref, txref, tyref)
 
@@ -4630,18 +3927,15 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 	nr = int(2*psimax/psistep)+1
 	nc = nr//2
 	if updown == "up" :  reduced_psiref = psiref -  90.0
-	else:                reduced_psiref = psiref - 270.0
+	else:                reduced_psiref = psiref - 180.0
+
+	#  Limit psi search to within psimax range
+	#  It makes no sense, as it still searches within the entire range of psi_max
+	bnr = max( int(round(reduced_psiref/psistep))+ nc-nr,  nc-nr)
+	enr = min( int(round(reduced_psiref/psistep))+ nc+1+nr, nc+nr+1)
+	
 	
 
-#  Limit psi search to within psimax range
-#  It makes no sense, as it still searches within the entire range of psi_max
-# 	bnr = int(round(reduced_psiref/psistep)) - nc
-# 	enr = nr + bnr
-	
-	bnr = min(max(int(round(reduced_psiref/psistep)) - nc, -nc), nr-nc-1)
-	enr = max(min(int(round(reduced_psiref/psistep))+nr-nc,nr-nc),-nc)
-
-	if enr <= bnr: return 0.0, 0.0, 0.0, peak
 	N = inima.get_ysize()  # assumed image is square, but because it is FT take y.
 	#  Window for ccf sampled by gridding
 	#   We quietly assume the search range for translations is always much less than the ccf size,
@@ -4654,23 +3948,19 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 	w = model_blank( wnx, wny)
 	stepxx = 2*stepx
 	stepyy = 2*stepy
-	
-	nicx = N//2 + 2*txref #  here one would have to add or subtract the old value.
-	nicy = N//2 + 2*tyref
+	nicx = N//2 - 2*txref #  here one would have to add or subtract the old value.
+	nicy = N//2 - 2*tyref
 	wxc = wnx//2
 	wyc = wny//2
 
 	if updown == "up" :
 		ima = inima
-		nicx = N//2 - 2*txref #  here one would have to add or subtract the old value.
-		nicy = N//2 - 2*tyref
 		#ima = inima.FourInterpol(N, N, 1,0)
 		#ima = Processor.EMFourierFilter(ima,params)
 
 	if updown == "down" :
 		#  This yields rotation by 180 degrees.  There is no extra shift as the image was padded 2x, so it is even-sized, but two rows are incorrect
 		imm = inima.conjg()
-
 		#imm = rot_shift2D(inima,180.0, interpolation_method = 'linear')
 		#imm = imm.FourInterpol(N, N, 1,0)
 		#imm = Processor.EMFourierFilter(imm,params)
@@ -4689,22 +3979,18 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 	from sys import exit
 	exit()
 	"""
-	#if ( rny == 0 ) : return  0.0, 0.0, 0.0, -1.e23     ## do nothing for rny=0 @ming
-	
-	for i in xrange(bnr, enr):
+	if ( rny == 0 ) : return  0.0, 0.0, 0.0, -1.e23     ## do nothing for rny=0 @ming
+	for i in xrange(bnr, enr, 1):
 		if updown == "up" :
-			c = ccf(ima,ref[nc+i])
-			#print "compute ccf time", time() - startc
+			c = ccf(ima,ref[i])
 			#c.write_image('gcc.hdf')
 			#p = peak_search(window2d(c,4*xrng+1,4*yrng+1),5)
 			#for q in p: print q
 			for iy in xrange(-rny, rny + 1):
 				for ix in xrange(-rnx, rnx + 1):
 					w[ix+rnx,iy+rny] = c.get_pixel_conv7(ix*stepxx+nicx, iy*stepyy+nicy, 0.0, kb)
-	
+
 			pp = peak_search(w)[0]
-			
-			#print "find peak time", time()-startpp
 			#print '  peak   ',i,pp
 			#from sys import exit
 			#exit()
@@ -4740,12 +4026,9 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 				"""
 				if(PEAKV>ma2):
 					ma2  = PEAKV
-					#if psimax > 0:
-					oma2 = pp+[XSH, YSH,int(pp[4])+XSH, int(pp[5])+YSH, PEAKV,i*psistep]
-					# if psimax == 0: 
-# 						oma2 = pp+[XSH, YSH,int(pp[4])+XSH, int(pp[5])+YSH, PEAKV,reduced_psiref]
+					oma2 = pp+[XSH, YSH,int(pp[4])+XSH, int(pp[5])+YSH, PEAKV,(i-nc)*psistep]
 		if updown == "down" :
-			c = ccf(imm,ref[nc+i])
+			c = ccf(imm,ref[i])
 			for iy in xrange(-rny, rny + 1):
 				for ix in xrange(-rnx, rnx + 1):
 					w[ix+rnx,iy+rny] = c.get_pixel_conv7(ix*stepxx+nicx, iy*stepyy+nicy, 0.0, kb)
@@ -4778,10 +4061,7 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 				"""
 				if(PEAKV>ma4):
 					ma4 = PEAKV
-					#if psimax > 0:
-					oma4 = pp+[XSH, YSH,int(pp[4])+XSH, int(pp[5])+YSH, PEAKV,i*psistep]
-				# 	if psimax == 0:
-# 						oma4 = pp+[XSH, YSH,int(pp[4])+XSH, int(pp[5])+YSH, PEAKV,reduced_psiref]
+					oma4 = pp+[XSH, YSH,int(pp[4])+XSH, int(pp[5])+YSH, PEAKV,(i-nc)*psistep]
 
 	if( oma2[-2] > oma4[-2] ):
 		peak = oma2[-2]
@@ -4797,7 +4077,6 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 		nalpha = oma2[-1]
 		ntx    = oma2[-4]*stepx - txref
 		nty    = oma2[-3]*stepy - tyref
-		#print "oma2[-4]*stepx - txref",oma2[-4]*stepx,  txref
 		#print  "        %6.2f %6.2f  %6.2f"%(nalpha, ntx, nty)
 	else:
 		peak = oma4[-2]
@@ -4806,7 +4085,7 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 		#print oma3
 		#print oma4
 
-		nalpha, ntx, nty, junk = compose_transform2(-oma4[-1], oma4[-4]*stepx + txref,oma4[-3]*stepy + tyref,1.0,180.,0,0,1)
+		nalpha, ntx, nty, junk = compose_transform2(-oma4[-1], oma4[-4]*stepx - txref,oma4[-3]*stepy - tyref,1.0,180.,0,0,1)
 		#nalpha = oma4[-1] + 180.0
 		#ntx    = oma4[-4]*stepx
 		#nty    = oma4[-3]*stepy
@@ -4815,7 +4094,7 @@ def directaligriddingconstrained(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1
 		#print  "        %6.2f %6.2f  %6.2f"%(nalpha, ntx, nty)
 	#print  "OUT        %6.2f %6.2f  %6.2f"%(nalpha, ntx, nty)
 	return  nalpha, ntx, nty, peak
-	
+
 def directaligriddingconstrained3dccf(inima, kb, ref, psimax=1.0, psistep=1.0, xrng=1, yrng=1, \
 			stepx = 1.0, stepy = 1.0, psiref = 0., txref = 0., tyref = 0., updown = "up"):
 	"""
@@ -4829,9 +4108,9 @@ def directaligriddingconstrained3dccf(inima, kb, ref, psimax=1.0, psistep=1.0, x
 	PAP 01/16/2015
 	"""
 
-	from fundamentals import fft, rot_shift2D, ccf, prepi
-	from utilities    import peak_search, model_blank, inverse_transform2, compose_transform2
-	from alignment    import parabl
+	from EMAN2.fundamentals import fft, rot_shift2D, ccf, prepi
+	from EMAN2.utilities import peak_search, model_blank, inverse_transform2, compose_transform2
+	from EMAN2.alignment import parabl
 	from EMAN2 import Processor
 	#print  "  directaligridding1  ",psimax, psistep, xrng, yrng, stepx, stepy, updown
 	#print  "IN         %6.2f %6.2f  %6.2f"%(psiref, txref, tyref)
@@ -5046,7 +4325,7 @@ def directaligriddingconstrained3dccf(inima, kb, ref, psimax=1.0, psistep=1.0, x
 
 def alignment3Dsnake(partition, snakeknots, nsegs, initialori, ctx, psistep, stepx, stepy, txref, tyref, nc, rnx, rny, updown = "up"):
 	from scipy import interpolate
-	from utilities    import inverse_transform2, compose_transform2
+	from EMAN2.utilities import inverse_transform2, compose_transform2
 	#1. setting basis parameters for b-spline
 	#patitions[ivol] = 2        ##only for test. should be removed later.@ming
 	pt = partition
@@ -5106,7 +4385,7 @@ def alignment3Dsnake(partition, snakeknots, nsegs, initialori, ctx, psistep, ste
 	sy    =sy0
 	
 	##3. refine snake's b-spline coefficients using amoeba. added@ming
-	from utilities import amoeba
+	from EMAN2.utilities import amoeba
 	params0 = angrot0+sx0+sy0
 	params  = angrot+sx+sy
 	ftol = 1.e-8
@@ -5247,11 +4526,11 @@ def flexhelicalali(params,data):
 	return sx_sum
 	
 def ali_nvol(v, mask):
-	from alignment    import alivol_mask_getref, alivol_mask
-	from statistics   import ave_var
-	from utilities    import set_params3D, get_params3D ,compose_transform3
+	from EMAN2.alignment import alivol_mask_getref, alivol_mask
+	from EMAN2.statistics import ave_var
+	from EMAN2.utilities import set_params3D, get_params3D ,compose_transform3
 
-	from fundamentals import rot_shift3D
+	from EMAN2.fundamentals import rot_shift3D
 	ocrit = 1.0e20
 	gogo = True
 	niter = 0
@@ -5279,7 +4558,7 @@ def ali_nvol(v, mask):
 	return v
 
 def alivol_mask_getref( v, mask ):
-	from utilities import set_params3D
+	from EMAN2.utilities import set_params3D
 	v50S_ref = v.copy()
 	v50S_ref *= mask
 	cnt = v50S_ref.phase_cog()
@@ -5287,8 +4566,8 @@ def alivol_mask_getref( v, mask ):
 	return v50S_ref
 
 def alivol_mask( v, vref, mask ):
-	from utilities    import set_params3D, get_params3D,compose_transform3
-	from applications import ali_vol_shift, ali_vol_rotate
+	from EMAN2.utilities import set_params3D, get_params3D,compose_transform3
+	from EMAN2.applications import ali_vol_shift, ali_vol_rotate
 	v50S_i = v.copy()
 	v50S_i *= mask
 	cnt = v50S_i.phase_cog()
@@ -5304,11 +4583,11 @@ def alivol_mask( v, vref, mask ):
 	return phi,tht,psi,s3x,s3y,s3z
 
 def ali_mvol(v, mask):
-	from alignment    import alivol_m
-	from statistics   import ave_var
-	from utilities    import set_params3D, get_params3D ,compose_transform3
+	from EMAN2.alignment import alivol_m
+	from EMAN2.statistics import ave_var
+	from EMAN2.utilities import set_params3D, get_params3D ,compose_transform3
 
-	from fundamentals import rot_shift3D
+	from EMAN2.fundamentals import rot_shift3D
 	ocrit = 1.0e20
 	gogo = True
 	niter = 0
@@ -5337,8 +4616,8 @@ def ali_mvol(v, mask):
 	return v
 
 def alivol_m( v, vref, mask ):
-	from utilities    import set_params3D, get_params3D,compose_transform3
-	from applications import ali_vol_shift, ali_vol_rotate
+	from EMAN2.utilities import set_params3D, get_params3D,compose_transform3
+	from EMAN2.applications import ali_vol_shift, ali_vol_rotate
 	vola = v.copy()
 	vola *= mask
 	set_params3D( vola,   (0.0,0.0,0.0,0.0,0.0,0.0,0,1.0) )
@@ -5354,8 +4633,8 @@ def alivol_m( v, vref, mask ):
 # =================== SHC
 '''
 def Xshc0(data, cimages, refrings, numr, xrng, yrng, step, an = -1.0, sym = "c1", finfo=None):
-	from utilities    import compose_transform2
-	from math         import cos, sin, degrees, radians
+	from EMAN2.utilities import compose_transform2
+	from math import cos, sin, degrees, radians
 	from EMAN2 import Vec2f
 
 	number_of_checked_refs = 0
@@ -5426,7 +4705,7 @@ def Xshc0(data, cimages, refrings, numr, xrng, yrng, step, an = -1.0, sym = "c1"
 		data.set_attr("xform.projection", t2)
 		data.set_attr("previousmax", peak)
 		#  Find the pixel error that is minimum over symmetry transformations
-		from pixel_error import max_3D_pixel_error
+		from EMAN2.pixel_error import max_3D_pixel_error
 		ts = t2.get_sym_proj(sym)
 		if(len(ts) > 1):
 			# only do it if it is not c1
@@ -5443,8 +4722,8 @@ def Xshc0(data, cimages, refrings, numr, xrng, yrng, step, an = -1.0, sym = "c1"
 '''
 
 def shc(data, refrings, list_of_reference_angles, numr, xrng, yrng, step, an = -1.0, sym = "c1", finfo=None):
-	from alignment import search_range
-	from math         import cos, sin, degrees, radians
+	from EMAN2.alignment import search_range
+	from math import cos, sin, degrees, radians
 	from EMAN2 import Vec2f
 	#  Templates have to have psi zero, remove once tested.
 	assert(refrings[0].get_attr("psi") == 0.0)
@@ -5472,7 +4751,7 @@ def shc(data, refrings, list_of_reference_angles, numr, xrng, yrng, step, an = -
 	if finfo:
 		finfo.write("Old parameters: %9.4f %9.4f %9.4f %9.4f %9.4f\n"%(dp["phi"], dp["theta"], dp["psi"], -dp["tx"], -dp["ty"]))
 		finfo.flush()
-		from utilities import get_params_proj
+		from EMAN2.utilities import get_params_proj
 		z1,z2,z3,z4,z5 = get_params_proj(data, "xform.anchor")
 		finfo.write("Anc parameters: %9.4f %9.4f %9.4f %9.4f %9.4f\n"%(z1,z2,z3,-z4,-z5))
 		finfo.flush()
@@ -5516,7 +4795,7 @@ def shc(data, refrings, list_of_reference_angles, numr, xrng, yrng, step, an = -
 		data.set_attr("xform.projection", t2)
 		data.set_attr("previousmax", peak)
 		#  Find the pixel error that is minimum over symmetry transformations
-		from pixel_error import max_3D_pixel_error
+		from EMAN2.pixel_error import max_3D_pixel_error
 		ts = t2.get_sym_proj(sym)
 		if(len(ts) > 1):
 			# only do it if it is not c1
@@ -5542,21 +4821,21 @@ def shc(data, refrings, list_of_reference_angles, numr, xrng, yrng, step, an = -
 def center_projections_3D(data, ref_vol = None, ali3d_options = None, onx = -1, shrinkage = 1.0, \
 							mpi_comm = None, myid = 0, main_node = 0, log = None ):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore,  proj_ali_incore_local, shc
-	from utilities       import bcast_number_to_all, bcast_EMData_to_all, 	wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
-	from utilities       import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
-	from projection      import prep_vol
-	from statistics      import hist_list
-	from utilities		 import params_2D_3D
-	from applications    import MPI_start_end
-	from filter          import filt_ctf
-	from global_def      import Util
-	from fundamentals    import resample, fshift
-	from multi_shc       import do_volume, shc_multi
-	from EMAN2           import EMUtil, EMData
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, shc
+	from EMAN2.utilities import bcast_number_to_all, bcast_EMData_to_all, wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
+	from EMAN2.utilities import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.utilities import params_2D_3D
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf
+	from global_def import Util
+	from EMAN2.fundamentals import resample, fshift
+	from EMAN2.multi_shc import do_volume, shc_multi
+	from EMAN2 import EMUtil, EMData
 	import types
-	from time            import time
+	from time import time
 
 	ir     = ali3d_options.ir
 	rs     = ali3d_options.rs
@@ -5577,7 +4856,7 @@ def center_projections_3D(data, ref_vol = None, ali3d_options = None, onx = -1, 
 		mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	if myid == main_node:
@@ -5828,7 +5107,7 @@ def individual_process(file_name_of_pickled_object_for_which_we_want_to_know_the
 
 def total_size_of_object_in_memory(my_object):
 	import inspect, os, subprocess
-	from utilities import random_string
+	from EMAN2.utilities import random_string
 
 	file_name_my_object = random_string()
 	while os.path.exists(file_name_my_object):
@@ -5885,9 +5164,9 @@ def determine_maximum_number_of_processes_per_node_from_all_nodes_that_belong_to
 def calculate_number_of_cones(volft, kb, delta, sym, cnx, cny, numr, mode, wr_four):
 
 	import sys
-	from alignment import prepare_refrings, refprojs, Numrinit, ringwe
-	from morphology import bracket_def, goldsearch_astigmatism
-	from applications import computenumberofrefs
+	from EMAN2.alignment import prepare_refrings, refprojs, Numrinit, ringwe
+	from EMAN2.morphology import bracket_def, goldsearch_astigmatism
+	from EMAN2.applications import computenumberofrefs
 	from utilities import even_angles, assign_projangles, cone_ang, print_from_process
 	
 	
@@ -5913,7 +5192,7 @@ def calculate_number_of_cones(volft, kb, delta, sym, cnx, cny, numr, mode, wr_fo
 	
 	memory_for_one_item = refrings_memory_increase/LOW_LIMIT_FOR_NUMBER_OF_REFERENCES_THAT_FIT_MEMORY + 1
 
-	import psutil
+	import EMAN2.psutil as psutil
 	machine_memory_that_can_be_allocated = psutil.avail_phymem() - (psutil.TOTAL_PHYMEM*LEAVE_THIS_FRACTION_OF_TOTAL_MEMORY_UNALLOCATED)
 	machine_memory_that_can_be_allocated *= FRACTION_OF_MEMORY_THAT_CAN_BE_ALLOCATED
 
@@ -5923,9 +5202,9 @@ def calculate_number_of_cones(volft, kb, delta, sym, cnx, cny, numr, mode, wr_fo
 		error_status = [1]
 		
 	from mpi import mpi_reduce, MPI_INT, MPI_SUM, MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size
-	from utilities import if_error_then_all_processes_exit_program
+	from EMAN2.utilities import if_error_all_processes_quit_program
 	error_status = mpi_reduce(error_status, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-	if_error_then_all_processes_exit_program(error_status)	
+	if_error_all_processes_quit_program(error_status)	
 
 	number_of_concurrent_processes_per_node = determine_maximum_number_of_processes_per_node_from_all_nodes_that_belong_to_the_same_mpi_run()
 	number_of_references_that_fit_in_memory = (machine_memory_that_can_be_allocated/number_of_concurrent_processes_per_node)/memory_for_one_item
@@ -5950,14 +5229,14 @@ def calculate_number_of_cones(volft, kb, delta, sym, cnx, cny, numr, mode, wr_fo
 
 def generate_indices_and_refrings(nima, projangles, volft, kb, nx, delta, an, rangle, ref_a, sym, numr, MPI, phiEqpsi = "Zero"):
 	
-	from alignment import prepare_refrings, refprojs, Numrinit, ringwe, generate_list_of_reference_angles_for_search
-	from alignment import reduce_indices_so_that_angles_map_only_to_asymmetrix_unit_and_keep_mirror_info
-	from morphology import bracket_def, goldsearch_astigmatism
-	from applications import computenumberofrefs
-	from utilities import even_angles, assign_projangles_f, assign_projangles, cone_ang_f
-	from utilities import cone_ang_with_index
+	from EMAN2.alignment import prepare_refrings, refprojs, Numrinit, ringwe, generate_list_of_reference_angles_for_search
+	from EMAN2.alignment import reduce_indices_so_that_angles_map_only_to_asymmetrix_unit_and_keep_mirror_info
+	from EMAN2.morphology import bracket_def, goldsearch_astigmatism
+	from EMAN2.applications import computenumberofrefs
+	from EMAN2.utilities import even_angles, assign_projangles_f, assign_projangles, cone_ang_f
+	from EMAN2.utilities import cone_ang_with_index
 	import sys
-	from projection import prep_vol
+	from EMAN2.projection import prep_vol
 
 	cnx = cny = nx//2 + 1
 	# numr = Numrinit(1,15)
@@ -5974,7 +5253,7 @@ def generate_indices_and_refrings(nima, projangles, volft, kb, nx, delta, an, ra
 			ref_angles[0][1] = 0.01
 		if( rangle > 0.0 ):
 			# shake
-			from utilities import rotate_shift_params
+			from EMAN2.utilities import rotate_shift_params
 			ref_angles = rotate_shift_params(anglelist, [ delta*rangle, delta*rangle, delta*rangle ])
 		
 		#=========================================================================
@@ -6012,7 +5291,7 @@ def generate_indices_and_refrings(nima, projangles, volft, kb, nx, delta, an, ra
 				ref_angles[0][1] = 0.01
 			if( rangle > 0.0 ):
 				# shake
-				from utilities import rotate_shift_params
+				from EMAN2.utilities import rotate_shift_params
 				ref_angles = rotate_shift_params(anglelist, [ delta*rangle, delta*rangle, delta*rangle ])
 			
 			#=========================================================================
@@ -6048,7 +5327,7 @@ def generate_indices_and_refrings(nima, projangles, volft, kb, nx, delta, an, ra
 			# assignments = assign_projangles_f(projangles, coneangles)
 
 			mapped_projangles = [[0.0, 0.0, 0.0] for i in xrange(len(projangles))]
-
+			
 			for i in xrange(len(projangles)):
 				mapped_projangles[i][1] = projangles[i][1]
 				if projangles[i][1] < 90:
@@ -6104,50 +5383,3 @@ def generate_indices_and_refrings(nima, projangles, volft, kb, nx, delta, an, ra
 
 ### end: code that supports cone implementation
 ########################################################################################################################
-
-def frame_alignment(movie_stack, particle_radius, templates, x_half_size, psi_half_size, y_half_size = None, apply_alignment_in_place = False):
-	
-	from utilities import model_circle, list_prod, calculate_space_size
-	from statistics import ccc
-	import numpy as np
-	from fundamentals import rot_shift2D
-	
-	if y_half_size == None:
-		y_half_size = x_half_size
-	
-	NUMBER_OF_FRAMES = len(movie_stack)
-	# x_half_size, y_half_size, psi_half_size = 5, 5, 5
-	image_movement_space_size = x_length, y_length, psi_length = calculate_space_size(x_half_size, y_half_size, psi_half_size)
-	
-	nx = movie_stack[0].get_xsize()
-	mask = model_circle(particle_radius, nx, nx)
-	
-	space_size = [NUMBER_OF_FRAMES] + image_movement_space_size
-	new_ccEMData = EMData(list_prod(space_size), 1)
-
-	for k in range(NUMBER_OF_FRAMES):
-		# print "k", k
-		for psi_i in range(psi_length):
-			for y_i in range(y_length):
-				for x_i in range(x_length):
-					Util.write_nd_array(new_ccEMData, space_size, [k, x_i, y_i, psi_i], ccc(movie_stack[k], templates[x_i][y_i][psi_i], mask))
-	
-	result = Util.max_sum_along_line_in_nd_array(new_ccEMData, space_size, NUMBER_OF_FRAMES)
-	
-	if apply_alignment_in_place:
-		[x_i, y_i, psi_i, x_j, y_j, psi_j] = result
-		xxx = np.linspace(-x_half_size, x_half_size, x_length)
-		yyy = np.linspace(-y_half_size, y_half_size, y_length)
-		ppp = np.linspace(-psi_half_size, psi_half_size, psi_length)
-		
-		x = np.linspace(xxx[x_i], xxx[x_j], NUMBER_OF_FRAMES)
-		y = np.linspace(yyy[y_i], yyy[y_j], NUMBER_OF_FRAMES)
-		psi = np.linspace(ppp[psi_i], ppp[psi_j], NUMBER_OF_FRAMES)
-		
-		
-		for i in range(NUMBER_OF_FRAMES):
-			movie_stack[i] = rot_shift2D(movie_stack[i], -psi[i], -x[i], -y[i], 0, interpolation_method="linear")
-			return None
-			
-	else:
-		return result

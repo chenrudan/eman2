@@ -52,13 +52,12 @@ the pixel error would be 99999.99. For the simplicity of the program, there are 
 stack. If indeed only one stack is desired, one could use sxcpy.py to concatenate all 
 stacks into one stack.
 '''
-from	global_def 	import *
-from global_def import SPARX_MPI_TAG_UNIVERSAL
+from global_def import *
 
 def main():
 	import	global_def
-	from	optparse 	import OptionParser
-	from	EMAN2 		import EMUtil
+	from optparse import OptionParser
+	from EMAN2 import EMUtil
 	import	os
 	import	sys
 	from time import time
@@ -84,13 +83,13 @@ def main():
 
 	(options,args) = parser.parse_args()
 	
-	from mpi          import mpi_init, mpi_comm_rank, mpi_comm_size, MPI_COMM_WORLD
-	from mpi          import mpi_barrier, mpi_send, mpi_recv, mpi_bcast, MPI_INT, mpi_finalize, MPI_FLOAT
-	from applications import MPI_start_end, within_group_refinement, ali2d_ras
-	from pixel_error  import multi_align_stability
-	from utilities    import send_EMData, recv_EMData
-	from utilities    import get_image, bcast_number_to_all, set_params2D, get_params2D
-	from utilities    import group_proj_by_phitheta, model_circle, get_input_from_string
+	from mpi import mpi_init, mpi_comm_rank, mpi_comm_size, MPI_COMM_WORLD, MPI_TAG_UB
+	from mpi import mpi_barrier, mpi_send, mpi_recv, mpi_bcast, MPI_INT, mpi_finalize, MPI_FLOAT
+	from EMAN2.applications import MPI_start_end, within_group_refinement, ali2d_ras
+	from EMAN2.pixel_error import multi_align_stability
+	from EMAN2.utilities import send_EMData, recv_EMData
+	from EMAN2.utilities import get_image, bcast_number_to_all, set_params2D, get_params2D
+	from EMAN2.utilities import group_proj_by_phitheta, model_circle, get_input_from_string
 
 	sys.argv = mpi_init(len(sys.argv), sys.argv)
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
@@ -108,7 +107,7 @@ def main():
 		exit()		 
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	global_def.BATCH = True
 
@@ -181,12 +180,12 @@ def main():
 			if proc_to_stay == main_node:
 				if myid == main_node: 	proj_list.append(proj_list_all[i])
 			elif myid == main_node:
-				mpi_send(len(proj_list_all[i]), 1, MPI_INT, proc_to_stay, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-				mpi_send(proj_list_all[i], len(proj_list_all[i]), MPI_INT, proc_to_stay, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				mpi_send(len(proj_list_all[i]), 1, MPI_INT, proc_to_stay, MPI_TAG_UB, MPI_COMM_WORLD)
+				mpi_send(proj_list_all[i], len(proj_list_all[i]), MPI_INT, proc_to_stay, MPI_TAG_UB, MPI_COMM_WORLD)
 			elif myid == proc_to_stay:
-				img_per_grp = mpi_recv(1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				img_per_grp = mpi_recv(1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 				img_per_grp = int(img_per_grp[0])
-				temp = mpi_recv(img_per_grp, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				temp = mpi_recv(img_per_grp, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 				proj_list.append(map(int, temp))
 				del temp
 			mpi_barrier(MPI_COMM_WORLD)
@@ -201,7 +200,7 @@ def main():
 	#   Compute stability per projection projection direction, equal number assigned, thus overlaps
 	elif options.grouping == "GEV":
 		if options.delta == -1.0: ERROR("Angular step for reference projections is required for GEV method","sxproj_stability",1)
-		from utilities import even_angles, nearestk_to_refdir, getvec
+		from EMAN2.utilities import even_angles, nearestk_to_refdir, getvec
 		refproj = even_angles(options.delta)
 		img_begin, img_end = MPI_start_end(len(refproj), number_of_proc, myid)
 		# Now each processor keeps its own share of reference projections
@@ -253,27 +252,27 @@ def main():
 			proj_params.append([phi, theta, psi, s2x, s2y])
 		img_begin, img_end = MPI_start_end(nima, number_of_proc, myid)
 		print "  C  ",myid,"  ",time()-st
-		from utilities import nearest_proj
+		from EMAN2.utilities import nearest_proj
 		proj_list, mirror_list = nearest_proj(proj_params, img_per_grp, range(img_begin, img_begin+1))#range(img_begin, img_end))
 		refprojdir = proj_params[img_begin: img_end]
 		del proj_params, mirror_list
 		print "  D  ",myid,"  ",time()-st
 	else:  ERROR("Incorrect projection grouping option","sxproj_stability",1)
 	"""
-	from utilities import write_text_file
+	from EMAN2.utilities import write_text_file
 	for i in xrange(len(proj_list)):
 		write_text_file(proj_list[i],"projlist%06d_%04d"%(i,myid))
 	"""
 
 	###########################################################################################################
 	# Begin stability test
-	from utilities import get_params_proj, read_text_file
+	from EMAN2.utilities import get_params_proj, read_text_file
 	#if myid == 0:
 	#	from utilities import read_text_file
 	#	proj_list[0] = map(int, read_text_file("lggrpp0.txt"))
 
 
-	from utilities import model_blank
+	from EMAN2.utilities import model_blank
 	aveList = [model_blank(nx,ny)]*len(proj_list)
 	if options.grouping == "GRP":  refprojdir = [[0.0,0.0,-1.0]]*len(proj_list)
 	for i in xrange(len(proj_list)):
@@ -281,7 +280,7 @@ def main():
 		class_data = EMData.read_images(stack, proj_list[i])
 		#print "  R  ",myid,"  ",time()-st
 		if options.CTF :
-			from filter import filt_ctf
+			from EMAN2.filter import filt_ctf
 			for im in xrange(len(class_data)):  #  MEM LEAK!!
 				atemp = class_data[im].copy()
 				btemp = filt_ctf(atemp, atemp.get_attr("ctf"), binary=1)
@@ -333,7 +332,7 @@ def main():
 				members.append(proj_list[i][s[1]])
 				pix_err.append(s[0])
 			# Then put the unstable members into attr 'members' and 'pix_err'
-			from fundamentals import rot_shift2D
+			from EMAN2.fundamentals import rot_shift2D
 			avet.to_zero()
 			if options.grouping == "GRP":
 				aphi = 0.0
@@ -390,34 +389,34 @@ def main():
 					aveList[im].write_image(args[1], km)
 					km += 1
 			else:
-				nl = mpi_recv(1, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				nl = mpi_recv(1, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 				nl = int(nl[0])
 				for im in xrange(nl):
 					ave = recv_EMData(i, im+i+70000)
-					nm = mpi_recv(1, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					nm = mpi_recv(1, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 					nm = int(nm[0])
-					members = mpi_recv(nm, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					members = mpi_recv(nm, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 					ave.set_attr('members', map(int, members))
-					members = mpi_recv(nm, MPI_FLOAT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					members = mpi_recv(nm, MPI_FLOAT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 					ave.set_attr('pixerr', map(float, members))
-					members = mpi_recv(3, MPI_FLOAT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					members = mpi_recv(3, MPI_FLOAT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 					ave.set_attr('refprojdir', map(float, members))
 					ave.write_image(args[1], km)
 					km += 1
 	else:
-		mpi_send(len(aveList), 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+		mpi_send(len(aveList), 1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 		for im in xrange(len(aveList)):
 			send_EMData(aveList[im], main_node,im+myid+70000)
 			members = aveList[im].get_attr('members')
-			mpi_send(len(members), 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-			mpi_send(members, len(members), MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			mpi_send(len(members), 1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
+			mpi_send(members, len(members), MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 			members = aveList[im].get_attr('pixerr')
-			mpi_send(members, len(members), MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			mpi_send(members, len(members), MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 			try:
 				members = aveList[im].get_attr('refprojdir')
-				mpi_send(members, 3, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				mpi_send(members, 3, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 			except:
-				mpi_send([-999.0,-999.0,-999.0], 3, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				mpi_send([-999.0,-999.0,-999.0], 3, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 	global_def.BATCH = False
 	mpi_barrier(MPI_COMM_WORLD)

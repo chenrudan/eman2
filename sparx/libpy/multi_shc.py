@@ -6,7 +6,7 @@ def generate_uneven_projections_directions(count, half_sphere=False, output_file
 	Returns: list of projections directions
 	"""
 	from random import random, uniform
-	from utilities import write_text_row
+	from EMAN2.utilities import write_text_row
 	from math import sin, pi
 	max_theta = 180.0
 	if half_sphere: max_theta = 90.0
@@ -48,8 +48,8 @@ def orient_params(params, refparams, indexes=None, sym = "c1"):
 	#  Any problems would be due to how even_angles generates reference angles
 	#
 	#  The function returns rotation object and properly rotated/mirrored params
-	from utilities import rotation_between_anglesets
-	from pixel_error import angle_diff, angle_diff_sym
+	from EMAN2.utilities import rotation_between_anglesets
+	from EMAN2.pixel_error import angle_diff, angle_diff_sym
 	from EMAN2 import Transform
 
 	n = len(params)
@@ -102,7 +102,7 @@ def orient_params(params, refparams, indexes=None, sym = "c1"):
 def find_common_subset(projs, target_threshold=2.0, minimal_subset_size=3, sym = "c1"):
 	#  projs - [reference set of angles, set of angles1, set of angles2, ... ]
 	# the function is written for multiple sets of angles
-	from utilities import getvec, getfvec
+	from EMAN2.utilities import getvec, getfvec
 	from math import acos, degrees
 	from copy import deepcopy
 	from EMAN2 import Vec2f, Transform
@@ -252,19 +252,19 @@ def shuffle_configurations(params):
 #  It is kept on main proc
 def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, number_of_runs=2 ):
 
-	from alignment    import Numrinit, prepare_refrings, proj_ali_incore_local, shc
-	from utilities    import model_circle, get_input_from_string, get_params_proj, set_params_proj
-	from utilities    import wrap_mpi_gatherv, wrap_mpi_bcast, wrap_mpi_send, wrap_mpi_recv, wrap_mpi_split
-	from mpi          import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD
-	from mpi          import mpi_barrier, mpi_comm_split, mpi_comm_free, mpi_finalize
-	from projection   import prep_vol
-	from statistics   import hist_list
-	from applications import MPI_start_end
-	from filter       import filt_ctf
-	from global_def   import Util, ERROR
-	from time         import time
-	from random       import shuffle, random
-	from copy         import deepcopy
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore_local, shc
+	from EMAN2.utilities import model_circle, get_input_from_string, get_params_proj, set_params_proj
+	from EMAN2.utilities import wrap_mpi_gatherv, wrap_mpi_bcast, wrap_mpi_send, wrap_mpi_recv, wrap_mpi_split
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD
+	from mpi import mpi_barrier, mpi_comm_split, mpi_comm_free, mpi_finalize
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf
+	from global_def import Util, ERROR
+	from time import time
+	from random import shuffle, random
+	from copy import deepcopy
 
 
 	ir     = ali3d_options.ir
@@ -287,7 +287,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 		mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -414,7 +414,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 			if orient_and_shuffle:
 				# adjust params to references, calculate psi, calculate previousmax
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 					generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 				for im in xrange(nima):
@@ -532,7 +532,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 			#=========================================================================
 			# centering, for d unnecessary, for cn, n>1 only z can move
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data[image_start:image_end], total_nima, mpi_subrank, mpi_subsize, 0, mpi_comm=mpi_subcomm) #estimate_3D_center_MPI(data, number_of_runs*total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -557,7 +557,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 			params_0 = wrap_mpi_bcast(params, mpi_subroots[0], mpi_comm)
 
 			if mpi_subrank == 0:
-				from utilities import write_text_row
+				from EMAN2.utilities import write_text_row
 				write_text_row(params, "qparams%04d%04d.hdf"%(myid,total_iter) )
 			"""
 
@@ -582,7 +582,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 					#   neither is needed
 					del subset, avg_diff_per_image
 					# if myid == 2:  print  " params before orient  ",myid,params[:4],params[-4:]
-					from utilities import write_text_row
+					from EMAN2.utilities import write_text_row
 					#write_text_row(params_0,"bparamszero%04d%04d.txt"%(myid,total_iter))
 					#write_text_row(params,"bparams%04d%04d.txt"%(myid,total_iter))
 				params = wrap_mpi_bcast(params, 0, mpi_subcomm)
@@ -664,7 +664,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 								mirror_and_reduce_dsym([GA[0][1],GA[i][1]], sym)
 
 						#  ---  Stopping criterion
-						from statistics import table_stat
+						from EMAN2.statistics import table_stat
 						from math import sqrt
 						q1,q2,q3,q4 = table_stat([GA[i][0] for i in xrange(number_of_runs)])
 						# Terminate if variation of L2 norms less than (L2threshold*100)% of their average
@@ -688,7 +688,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 						#  Now do the crossover
 						all_params = []
 
-						from utilities import nearestk_projangles
+						from EMAN2.utilities import nearestk_projangles
 						from random import random, randint, shuffle
 						# select random pairs of solutions
 						ipl = range(number_of_runs)
@@ -792,7 +792,7 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 				vol = do_volume(data[image_start:image_end], ali3d_options, 0, mpi_subcomm)
 
 				if len(ali3d_options.moon_elimination) > 0:
-					from utilities import eliminate_moons
+					from EMAN2.utilities import eliminate_moons
 					vol = eliminate_moons(vol, ali3d_options.moon_elimination)
 
 				if mpi_subrank == 0:
@@ -880,13 +880,13 @@ def ali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, n
 # parameters: list of (all) projections | reference volume | ...
 def ali3d_multishc_2(stack, ref_vol, ali3d_options, mpi_comm = None, log = None ):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore_local, shc
-	from utilities       import model_circle, get_input_from_string, get_params_proj, wrap_mpi_gatherv, wrap_mpi_bcast, wrap_mpi_split
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from projection      import prep_vol
-	from statistics      import hist_list
-	from applications    import MPI_start_end
-	from filter          import filt_ctf
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore_local, shc
+	from EMAN2.utilities import model_circle, get_input_from_string, get_params_proj, wrap_mpi_gatherv, wrap_mpi_bcast, wrap_mpi_split
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf
 	from global_def import Util
 	from time import time
 
@@ -910,7 +910,7 @@ def ali3d_multishc_2(stack, ref_vol, ali3d_options, mpi_comm = None, log = None 
 		mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -1012,15 +1012,15 @@ def ali3d_multishc_2(stack, ref_vol, ali3d_options, mpi_comm = None, log = None 
 	del qvol
 	"""
 
-	from projection   import prep_vol, prgs
-	from alignment import ringwe
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.alignment import ringwe
 	cnx = nx//2 + 1
 	cny = nx//2 + 1
 	wr_four  = ringwe(numr, "F")
 	from math import pi, sin, cos
 	qv = pi/180.
 	volft, kb = prep_vol(ref_vol)
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	for im in xrange(nima):
 		phi,theta,psi,tx,ty = get_params_proj(data[im])
 		prjref = prgs(volft, kb, [phi,theta,psi, 0.0, 0.0])
@@ -1132,7 +1132,7 @@ def ali3d_multishc_2(stack, ref_vol, ali3d_options, mpi_comm = None, log = None 
 			#=========================================================================
 			# centering
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -1199,7 +1199,7 @@ def ali3d_multishc_2(stack, ref_vol, ali3d_options, mpi_comm = None, log = None 
 def volume_reconstruction(data, options, mpi_comm):
 	from mpi import mpi_comm_rank
 	from reconstruction import recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
-	from utilities import bcast_EMData_to_all, model_circle
+	from EMAN2.utilities import bcast_EMData_to_all, model_circle
 	
 	myid = mpi_comm_rank(mpi_comm)
 	sym  = options.sym
@@ -1235,7 +1235,7 @@ def volume_reconstruction(data, options, mpi_comm):
 def volume_recsp(data, options):
 
 	from reconstruction import recons3d_4nn, recons3d_4nn_ctf
-	from utilities import bcast_EMData_to_all, model_circle
+	from EMAN2.utilities import bcast_EMData_to_all, model_circle
 	
 	sym  = options.sym
 	sym = sym[0].lower() + sym[1:]
@@ -1267,11 +1267,11 @@ def volume_recsp(data, options):
 # remaining parameters must be set for all
 # size of mpi_communicator must be >= runs_count
 def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, ref_vol=None):
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from mpi import mpi_comm_rank, mpi_comm_size, mpi_finalize, mpi_comm_split, mpi_barrier
-	from utilities import set_params_proj, wrap_mpi_bcast, write_text_row, drop_image, write_text_file
+	from EMAN2.utilities import set_params_proj, wrap_mpi_bcast, write_text_row, drop_image, write_text_file
 	from random import random
-	from utilities import bcast_EMData_to_all
+	from EMAN2.utilities import bcast_EMData_to_all
 
 	mpi_rank = mpi_comm_rank(mpi_comm)
 	mpi_size = mpi_comm_size(mpi_comm)
@@ -1279,7 +1279,7 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 	assert (mpi_size >= runs_count)
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 	
 	projections = []
@@ -1302,7 +1302,7 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 				"""
 			del all_projs_params
 		else:
-			from utilities import even_angles
+			from EMAN2.utilities import even_angles
 			prms = even_angles(float(ali3d_options.delta[0]), theta2 = 180.0, symmetry = sym)
 			from random import shuffle
 			shuffle(prms)
@@ -1330,7 +1330,7 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 				proj_begin, proj_end = MPI_start_end(n_projs, mpi_subsize, mpi_subrank)
 				ref_vol = do_volume(projections[proj_begin:proj_end], ali3d_options, 0, mpi_comm=mpi_subcomm)
 			else:
-				from utilities import model_blank
+				from EMAN2.utilities import model_blank
 				nx = projections[0].get_xsize()
 				ref_vol = model_blank(nx,nx,nx)
 			bcast_EMData_to_all(ref_vol, mpi_rank, 0, comm=mpi_comm)
@@ -1369,13 +1369,13 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 			set_params_proj( projections[iP], out_params[0][iP] )
 		"""
 		temp = []
-		from utilities import get_params_proj
+		from EMAN2.utilities import get_params_proj
 		for i in xrange(n_projs):
 			set_params_proj( projections[i], out_params[i] )
 		write_text_row(out_params, log.prefix + "refparams2.txt")
 		"""
 		log.add("  WILL RECONSTRUCT  ")
-		from utilities import model_circle
+		from EMAN2.utilities import model_circle
 		tvol = volume_recsp(projections, ali3d_options)
 		LL2 = tvol.cmp("dot", tvol, dict(negative = 0, mask = model_circle(22, 48, 48, 48)))
 		log.add(" LLLLLLL2 norm of reference volume:  %f"%LL2)
@@ -1390,7 +1390,7 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 	# proj_begin, proj_end  = MPI_start_end(n_projs, mpi_size, mpi_rank)
 
 	projections = wrap_mpi_bcast(projections, 0, mpi_comm)
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 
 
 	if (mpi_size > n_projs):
@@ -1402,7 +1402,7 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 			proj_begin, proj_end = MPI_start_end(n_projs, mpi_subsize, mpi_subrank)
 			ref_vol = do_volume(projections[proj_begin:proj_end], ali3d_options, 0, mpi_comm=mpi_subcomm)
 		else:
-			from utilities import model_blank
+			from EMAN2.utilities import model_blank
 			nx = projections[0].get_xsize()
 			ref_vol = model_blank(nx,nx,nx)
 		bcast_EMData_to_all(ref_vol, mpi_rank, 0, comm=mpi_comm)
@@ -1412,7 +1412,7 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 
 	if mpi_rank == 0:
 		ref_vol.write_image(log.prefix + "refvol2.hdf")
-		from utilities import model_circle
+		from EMAN2.utilities import model_circle
 		nx = ref_vol.get_xsize()
 		L2 = ref_vol.cmp("dot", ref_vol, dict(negative = 0, mask = model_circle(ali3d_options.ou, nx,nx,nx)))
 		log.add(" L2 norm of reference volume:  %f"%L2)
@@ -1420,7 +1420,7 @@ def multi_shc(all_projs, subset, runs_count, ali3d_options, mpi_comm, log=None, 
 	"""
 	if mpi_rank == 17:
 		temp = []
-		from utilities import get_params_proj
+		from EMAN2.utilities import get_params_proj
 		for i in xrange(n_projs):
 			#projections[i].set_attr("stable", 1)
 			t1,t2,t3,t4,t5 = get_params_proj( projections[i])
@@ -1463,7 +1463,7 @@ def reduce_dsym_angles(p1, sym):
 			p1[i][1] = 180.0 - p1[i][1]
 			p1[i][0] = (p1[i][0] +180.0)%360.0
 	"""
-	from utilities import get_symt
+	from EMAN2.utilities import get_symt
 	from EMAN2 import Vec2f, Transform
 	t = get_symt(sym)
 	phir = 360.0/int(sym[1:])
@@ -1489,12 +1489,12 @@ def mirror_and_reduce_dsym(params, sym):
 	# For D symmetry there are two equivalen positions that agree with given Dn symmetry
 	#  The second is rotated by 360/(2n) degrees.
 	
-	from utilities import get_symt, get_sym, getfvec
+	from EMAN2.utilities import get_symt, get_sym, getfvec
 	from EMAN2 import Vec2f, Transform, EMData
-	from pixel_error import angle_diff
+	from EMAN2.pixel_error import angle_diff
 
 	def discangset(pari, para, sym = "d3"):
-		from pixel_error import max_3D_pixel_error
+		from EMAN2.pixel_error import max_3D_pixel_error
 		ts = get_symt(sym)
 		ks = len(ts)
 		for i in xrange(ks):  ts[i] = ts[i].inverse()
@@ -1662,7 +1662,7 @@ def mirror_and_reduce_dsym(params, sym):
 # Not used anywhere
 def get_dsym_angles(p1, sym):
 	#  works only for d symmetry
-	from utilities import get_symt
+	from EMAN2.utilities import get_symt
 	from EMAN2 import Vec2f, Transform
 	t = get_symt(sym)
 	ns = int(sym[1:])
@@ -1696,16 +1696,16 @@ def get_dsym_angles(p1, sym):
 # parameters: list of (all) projections | reference volume | ...
 def Xali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, number_of_runs=2 ):
 
-	from alignment    import Numrinit, prepare_refrings, proj_ali_incore_local, shc
-	from utilities    import model_circle, get_input_from_string, get_params_proj, set_params_proj, wrap_mpi_gatherv, wrap_mpi_bcast, wrap_mpi_send, wrap_mpi_recv
-	from mpi          import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_comm_split, mpi_comm_free
-	from projection   import prep_vol
-	from statistics   import hist_list
-	from applications import MPI_start_end
-	from filter       import filt_ctf
-	from global_def   import Util, ERROR
-	from time         import time
-	from random       import shuffle
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore_local, shc
+	from EMAN2.utilities import model_circle, get_input_from_string, get_params_proj, set_params_proj, wrap_mpi_gatherv, wrap_mpi_bcast, wrap_mpi_send, wrap_mpi_recv
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_comm_split, mpi_comm_free
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf
+	from global_def import Util, ERROR
+	from time import time
+	from random import shuffle
 
 	ir     = ali3d_options.ir
 	rs     = ali3d_options.rs
@@ -1725,7 +1725,7 @@ def Xali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, 
 		mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -1945,7 +1945,7 @@ def Xali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, 
 			#=========================================================================
 			# centering
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data[image_start:image_end], total_nima, mpi_subrank, mpi_subsize, 0, mpi_comm=mpi_subcomm) #estimate_3D_center_MPI(data, number_of_runs*total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -1969,7 +1969,7 @@ def Xali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, 
 				params.append([phi, theta, psi, sx, sy])
 			params_0 = wrap_mpi_bcast(params, mpi_subroots[0], mpi_comm)
 			if mpi_subrank == 0:
-				from utilities import write_text_row
+				from EMAN2.utilities import write_text_row
 				write_text_row(params, "qparams%04d%04d.hdf"%(myid,total_iter) )
 			#=========================================================================
 			if orient_and_shuffle and not terminate:
@@ -2079,8 +2079,8 @@ def Xali3d_multishc(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, 
 
 
 def proj_ali_incore_multi(data, refrings, numr, xrng = 0.0, yrng = 0.0, step=1.0, an = 1.0, nsoft = -1, finfo=None, sym="c1"):
-	from utilities    import compose_transform2
-	from math         import cos, pi, radians, degrees
+	from EMAN2.utilities import compose_transform2
+	from math import cos, pi, radians, degrees
 	from EMAN2 import Vec2f, Transform
 	from global_def import Util
 
@@ -2189,9 +2189,9 @@ def proj_ali_incore_multi(data, refrings, numr, xrng = 0.0, yrng = 0.0, step=1.0
 	"""
 
 def shc_multi(data, refrings, numr, xrng, yrng, step, an, nsoft, sym, finfo=None):
-	from utilities    import compose_transform2
-	from fundamentals import mirror
-	from math         import cos, pi
+	from EMAN2.utilities import compose_transform2
+	from EMAN2.fundamentals import mirror
+	from math import cos, pi
 	from EMAN2 import Vec2f, Transform
 	from global_def import Util
 
@@ -2246,7 +2246,7 @@ def shc_multi(data, refrings, numr, xrng, yrng, step, an, nsoft, sym, finfo=None
 		#  Make sure nothing is repeated
 		if(peaks_count>1):
 			taken = [params[k][1] for k in xrange(peaks_count)]
-			from utilities import findall
+			from EMAN2.utilities import findall
 			i = 0
 			while(i<peaks_count):
 				ll = findall(taken[i], taken)
@@ -2298,7 +2298,7 @@ def shc_multi(data, refrings, numr, xrng, yrng, step, an, nsoft, sym, finfo=None
 			else:
 				data.set_attr("xform.projection" + str(i), t2)
 				data.set_attr("weight" + str(i), params[i][0]/ws)
-			from pixel_error import max_3D_pixel_error
+			from EMAN2.pixel_error import max_3D_pixel_error
 			pixel_error += max_3D_pixel_error(t1, t2, numr[-3])
 			#  preserve params, they might be needed if peaks_count<nsoft
 			params[i] = [params[i][0], phi, theta, psi, s2x, s2y, iref]
@@ -2332,7 +2332,7 @@ def shc_multi(data, refrings, numr, xrng, yrng, step, an, nsoft, sym, finfo=None
 				from sys import exit
 				exit()
 
-			from utilities import getfvec
+			from EMAN2.utilities import getfvec
 			t1 = data.get_attr("xform.projection")
 			dp = t1.get_params("spider")
 			n1,n2,n3 = getfvec(dp["phi"],dp["theta"])
@@ -2371,7 +2371,7 @@ def shc_multi(data, refrings, numr, xrng, yrng, step, an, nsoft, sym, finfo=None
 					refvecs[3*i+0] = n1
 					refvecs[3*i+1] = n2
 					refvecs[3*i+2] = n3
-			from utilities import nearestk_to_refdir
+			from EMAN2.utilities import nearestk_to_refdir
 			nrst = nearestk_to_refdir(refvecs, datanvec, howmany = bsoft-peaks_count)
 			del refvecs
 			#  it does not use mir, do it by hand
@@ -2462,17 +2462,17 @@ def shc_multi(data, refrings, numr, xrng, yrng, step, an, nsoft, sym, finfo=None
 # parameters: list of (all) projections | reference volume | ...
 def ali3d_multishc_soft(stack, ref_vol, ali3d_options, mpi_comm = None, log = None, nsoft=2 ):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore_local
-	from utilities       import get_im, file_type, model_circle, get_input_from_string, get_params_proj, wrap_mpi_gatherv, wrap_mpi_bcast
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
-	from projection      import prep_vol
-	from statistics      import hist_list
-	from applications    import MPI_start_end
-	from filter          import filt_ctf
-	from global_def      import Util
-	from EMAN2           import EMUtil, EMData
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore_local
+	from EMAN2.utilities import get_im, file_type, model_circle, get_input_from_string, get_params_proj, wrap_mpi_gatherv, wrap_mpi_bcast
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf
+	from global_def import Util
+	from EMAN2 import EMUtil, EMData
 	import types
-	from time            import time
+	from time import time
 
 	ir     = ali3d_options.ir
 	rs     = ali3d_options.rs
@@ -2492,7 +2492,7 @@ def ali3d_multishc_soft(stack, ref_vol, ali3d_options, mpi_comm = None, log = No
 		mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -2530,7 +2530,7 @@ def ali3d_multishc_soft(stack, ref_vol, ali3d_options, mpi_comm = None, log = No
 	if( type(stack) is types.StringType ):
 		if myid == main_node:
 			if file_type(stack) == "bdb":
-				from EMAN2db import db_open_dict
+				from EMAN2.EMAN2db import db_open_dict
 				dummy = db_open_dict(stack, True)
 			# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 			# active = EMUtil.get_all_attributes(stack, 'active')
@@ -2672,7 +2672,7 @@ def ali3d_multishc_soft(stack, ref_vol, ali3d_options, mpi_comm = None, log = No
 			#=========================================================================
 			# centering
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -2715,7 +2715,7 @@ def ali3d_multishc_soft(stack, ref_vol, ali3d_options, mpi_comm = None, log = No
 					assert(total_nima == len(params))
 				previousmax = wrap_mpi_gatherv(previousmax, 0, mpi_comm)
 				if myid == main_node:
-					from utilities import write_text_row, write_text_file
+					from EMAN2.utilities import write_text_row, write_text_file
 					write_text_row(params, "soft/params%04d.txt"%total_iter)
 					write_text_file(previousmax, "soft/previousmax%04d.txt"%total_iter)
 				del previousmax, params
@@ -2753,7 +2753,7 @@ def ali3d_multishc_soft(stack, ref_vol, ali3d_options, mpi_comm = None, log = No
 
 def get_softy(im):
 	w = [im.get_attr('weight')]
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	p1,p2,p3,p4,p5 = get_params_proj(im)
 	x = [[p1,p2,p3,p4,p5]]
 	i = 1
@@ -2772,11 +2772,11 @@ def get_softy(im):
 # options - the same for all cpus
 # return - volume the same for all cpus
 def do_volume(data, options, iter, mpi_comm):
-	from EMAN2          import Util
-	from mpi            import mpi_comm_rank
-	from filter       import filt_table
+	from EMAN2 import Util
+	from mpi import mpi_comm_rank
+	from EMAN2.filter import filt_table
 	from reconstruction import recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
-	from utilities      import bcast_EMData_to_all
+	from EMAN2.utilities import bcast_EMData_to_all
 	import types
 	
 	myid = mpi_comm_rank(mpi_comm)
@@ -2794,23 +2794,23 @@ def do_volume(data, options, iter, mpi_comm):
 		vol = data
 
 	if myid == 0:
-		from morphology import threshold
-		from filter     import filt_tanl, filt_btwl
-		from utilities  import model_circle, get_im
+		from EMAN2.morphology import threshold
+		from EMAN2.filter import filt_tanl, filt_btwl
+		from EMAN2.utilities import model_circle, get_im
 		import types
 		nx = vol.get_xsize()
 		if(options.mask3D == None):
 			last_ring   = int(options.ou)
 			mask3D = model_circle(last_ring, nx, nx, nx)
 		elif(options.mask3D == "auto"):
-			from utilities import adaptive_mask
+			from EMAN2.utilities import adaptive_mask
 			mask3D = adaptive_mask(vol)
 		else:
 			if( type(options.mask3D) == types.StringType ):  mask3D = get_im(options.mask3D)
 			else:  mask3D = (options.mask3D).copy()
 			nxm = mask3D.get_xsize()
 			if( nx != nxm):
-				from fundamentals import rot_shift3D
+				from EMAN2.fundamentals import rot_shift3D
 				mask3D = Util.window(rot_shift3D(mask3D,scale=float(nx)/float(nxm)),nx,nx,nx)
 				nxm = mask3D.get_xsize()
 				assert(nx == nxm)
@@ -2821,8 +2821,8 @@ def do_volume(data, options, iter, mpi_comm):
 		vol = threshold(vol)
 		#Util.mul_img(vol, mask3D)
 		if( options.pwreference ):
-			from utilities    import read_text_file
-			from fundamentals import rops_table, fftip, fft
+			from EMAN2.utilities import read_text_file
+			from EMAN2.fundamentals import rops_table, fftip, fft
 			rt = read_text_file( options.pwreference )
 			fftip(vol)
 			ro = rops_table(vol)
@@ -2854,8 +2854,8 @@ def do_volume(data, options, iter, mpi_comm):
 
 def no_of_processors_restricted_by_data__do_volume(projections, ali3d_options, iter, mpi_comm):
 	from mpi import mpi_comm_rank, mpi_comm_size, mpi_finalize, mpi_comm_split, mpi_barrier, MPI_COMM_WORLD
-	from utilities      import bcast_EMData_to_all
-	from applications import MPI_start_end
+	from EMAN2.utilities import bcast_EMData_to_all
+	from EMAN2.applications import MPI_start_end
 
 	mpi_size = mpi_comm_size(mpi_comm)
 	n_projs = len(projections)
@@ -2870,7 +2870,7 @@ def no_of_processors_restricted_by_data__do_volume(projections, ali3d_options, i
 			proj_begin, proj_end = MPI_start_end(n_projs, mpi_subsize, mpi_subrank)
 			ref_vol = do_volume(projections[proj_begin:proj_end], ali3d_options, 0, mpi_comm=mpi_subcomm)
 		else:
-			from utilities import model_blank
+			from EMAN2.utilities import model_blank
 			nx = projections[0].get_xsize()
 			ref_vol = model_blank(nx,nx,nx)
 		bcast_EMData_to_all(ref_vol, mpi_rank, 0, comm=mpi_comm)
@@ -2893,20 +2893,20 @@ def no_of_processors_restricted_by_data__do_volume(projections, ali3d_options, i
 def ali3d_base(stack, ref_vol = None, ali3d_options = None, shrinkage = 1.0, mpi_comm = None, log = None, nsoft = 3, \
 		saturatecrit = 0.95, pixercutoff = 1.0, zoom = False):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore,  proj_ali_incore_local, shc, center_projections_3D
-	from utilities       import bcast_number_to_all, bcast_EMData_to_all, 	wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
-	from utilities       import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
-	from projection      import prep_vol
-	from statistics      import hist_list
-	from applications    import MPI_start_end
-	from filter          import filt_ctf
-	from global_def      import Util
-	from fundamentals    import resample, fshift
-	from multi_shc       import do_volume, shc_multi
-	from EMAN2           import EMUtil, EMData
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, shc, center_projections_3D
+	from EMAN2.utilities import bcast_number_to_all, bcast_EMData_to_all, wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
+	from EMAN2.utilities import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf
+	from global_def import Util
+	from EMAN2.fundamentals import resample, fshift
+	from EMAN2.multi_shc import do_volume, shc_multi
+	from EMAN2 import EMUtil, EMData
 	import types
-	from time            import time
+	from time import time
 
 	ir     = ali3d_options.ir
 	rs     = ali3d_options.rs
@@ -2927,7 +2927,7 @@ def ali3d_base(stack, ref_vol = None, ali3d_options = None, shrinkage = 1.0, mpi
 		mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -3240,7 +3240,7 @@ def ali3d_base(stack, ref_vol = None, ali3d_options = None, shrinkage = 1.0, mpi
 			#=========================================================================
 			# centering
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -3283,7 +3283,7 @@ def ali3d_base(stack, ref_vol = None, ali3d_options = None, shrinkage = 1.0, mpi
 					assert(total_nima == len(params))
 				previousmax = wrap_mpi_gatherv(previousmax, 0, mpi_comm)
 				if myid == main_node:
-					from utilities import write_text_row, write_text_file
+					from EMAN2.utilities import write_text_row, write_text_file
 					write_text_row(params, "soft/params%04d.txt"%total_iter)
 					write_text_file(previousmax, "soft/previousmax%04d.txt"%total_iter)
 
@@ -3325,7 +3325,7 @@ def ali3d_base(stack, ref_vol = None, ali3d_options = None, shrinkage = 1.0, mpi
 			if( ( terminate or (Iter == max_iter) ) and (myid == main_node) ):
 				if( type(stack) is types.StringType ):
 					from EMAN2 import Vec2f, Transform
-					from EMAN2db import db_open_dict
+					from EMAN2.EMAN2db import db_open_dict
 					DB = db_open_dict(stack)
 					for im in xrange(len(params)):
 						t = Transform({"type":"spider","phi":params[im][0],"theta":params[im][1],"psi":params[im][2]})
@@ -3348,7 +3348,7 @@ def ali3d_base(stack, ref_vol = None, ali3d_options = None, shrinkage = 1.0, mpi
 """
 # Not used anymore
 def calculate_matrix_rot(projs):
-	from utilities import rotation_between_anglesets
+	from EMAN2.utilities import rotation_between_anglesets
 	sc = len(projs)
 	matrix_rot  = [[[0.0,0.0,0.0,0.0,0.0] for i in xrange(sc)] for k in xrange(sc)]
 	for i in xrange(sc):

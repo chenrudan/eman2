@@ -681,7 +681,7 @@ def fit_tanh(dres, low = 0.1):
 		fall_off = 0.2
 		return freq, fall_off
 
-	from utilities import amoeba
+	from EMAN2.utilities import amoeba
 	args   = [freq, 0.1]
 	scale  = [0.05, 0.05]
 	result = amoeba(args, scale, fit_tanh_func, data = dres)
@@ -735,7 +735,7 @@ def fit_tanh1(dres, low = 0.1):
 		freq = 0.2
 		fall_off = 0.2
 		return freq, fall_off
-	from utilities import amoeba
+	from EMAN2.utilities import amoeba
 	args   = [freq, 0.1]
 	scale  = [0.05, 0.05]
 	result = amoeba(args, scale, fit_tanh_func, data = dres)
@@ -769,10 +769,10 @@ def filt_matched(ima, SNR, Pref):
 		See paper Alignment under noise by PRB et al
 	"""
 
-	from filter import filt_from_fsc_bwt, filt_table
+	from EMAN2.filter import filt_from_fsc_bwt, filt_table
 	from math import sqrt
 	from EMAN2 import EMData
-	from fundamentals import rops_table
+	from EMAN2.fundamentals import rops_table
 	
 	ctf_2 = ima.get_attr('ctf_2')
 	PU = ima.get_attr('PU')
@@ -805,10 +805,10 @@ def filt_matched(ima, SNR, Pref):
 	return res	
 
 def filt_vols( vols, fscs, mask3D ):
-	from math          import sqrt
-	from filter        import fit_tanh, filt_tanl, filt_table
-	from fundamentals  import rops_table
-	from morphology    import threshold
+	from math import sqrt
+	from EMAN2.filter import fit_tanh, filt_tanl, filt_table
+	from EMAN2.fundamentals import rops_table
+	from EMAN2.morphology import threshold
 
 	flmin = 1.0
 	flmax = -1.0
@@ -840,13 +840,13 @@ def filt_vols( vols, fscs, mask3D ):
 	return vols
 
 def filterlocal(ui, vi, m, falloff, myid, main_node, number_of_proc):
-	from mpi 	  	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv, mpi_send, mpi_recv
-	from mpi 	  	  import MPI_SUM, MPI_FLOAT, MPI_INT
-	from utilities import bcast_number_to_all, bcast_list_to_all, model_blank, bcast_EMData_to_all, reduce_EMData_to_root
-	from morphology import threshold_outside
-	from filter import filt_tanl
-	from fundamentals import fft, fftip
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv, mpi_send, mpi_recv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_TAG_UB
+	from EMAN2.utilities import bcast_number_to_all, bcast_list_to_all, model_blank, bcast_EMData_to_all, reduce_EMData_to_root
+	from EMAN2.morphology import threshold_outside
+	from EMAN2.filter import filt_tanl
+	from EMAN2.fundamentals import fft, fftip
 
 	if(myid == main_node):
 

@@ -75,20 +75,8 @@ def insert_slices(reconstructor, proj):
 	for i in xrange(len(xforms)):
 		reconstructor.insert_slice( proj, xforms[i], weights[i] )
 
-def insert_slices_pdf(reconstructor, proj):
-	xforms =   proj.get_attr("xform.projection") 
-	weights =  proj.get_attr_default("weight", 1.0) 
-	reconstructor.insert_slice( proj, xforms, weights )
-	ixform = 0
-	while True:
-		ixform += 1
-		xform_proj = proj.get_attr_default("xform.projection" + str(ixform), None)
-		if xform_proj == None:
-			return 
-		weights = proj.get_attr_default("weight" + str(ixform), 1.0)
-		reconstructor.insert_slice( proj, xforms, weights)
 
-def recons3d_4nn(stack_name, list_proj=[], symmetry="c1", npad=4, snr=None, weighting=1, varsnr=False, xysize=-1, zsize = -1):
+def recons3d_4nn(stack_name, list_proj=[], symmetry="c1", npad=4, snr=None, weighting=1, varsnr=True, xysize=-1, zsize = -1):
 	"""
 	Perform a 3-D reconstruction using Pawel's FFT Back Projection algorithm.
 
@@ -131,10 +119,12 @@ def recons3d_4nn(stack_name, list_proj=[], symmetry="c1", npad=4, snr=None, weig
 	weight = EMData()
 	params = {"npad":npad, "symmetry":symmetry, "weighting":weighting, "fftvol":fftvol, "weight":weight}
 	if ( xysize == -1 and zsize == -1 ):
-		params["size"] = size
-		if snr != None:
+		if snr is None:
+			params["size"] = size
+		else:
+			params["size"] = size
 			params["snr"] = snr
-			#params["varsnr"] = int(varsnr)
+			params["varsnr"] = int(varsnr)
 		r = Reconstructors.get("nn4", params)
 	else:
 		if ( xysize != -1 and zsize != -1):
@@ -186,11 +176,11 @@ def recons3d_4nn(stack_name, list_proj=[], symmetry="c1", npad=4, snr=None, weig
 	return fftvol
 
 
-def recons3d_4nn_MPI(myid, prjlist, symmetry="c1", finfo=None, snr = 1.0, npad=2, xysize=-1, zsize=-1, mpi_comm=None):
-	from utilities  import reduce_EMData_to_root, pad
-	from EMAN2      import Reconstructors
-	from utilities  import iterImagesList
-	from mpi        import MPI_COMM_WORLD
+def recons3d_4nn_MPI(myid, prjlist, symmetry="c1", info=None, snr = 1.0, npad=2, xysize=-1, zsize=-1, mpi_comm=None):
+	from EMAN2.utilities import reduce_EMData_to_root, pad
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import iterImagesList
+	from mpi import MPI_COMM_WORLD
 	import types
 
 	if mpi_comm == None:
@@ -232,27 +222,38 @@ def recons3d_4nn_MPI(myid, prjlist, symmetry="c1", finfo=None, snr = 1.0, npad=2
 		r = Reconstructors.get( "nn4_rect", params )
 	r.setup()
 
-	if not (finfo is None): nimg = 0
+	if not (info is None): nimg = 0
 	while prjlist.goToNext():
 		prj = prjlist.image()
+		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
+		# active = prj.get_attr_default('active', 1)
+		# if(active == 1):
+		# 	if dopad:
+		# 		prj = pad(prj, imgsize,imgsize, 1, "circumference")
+		# 	insert_slices(r, prj)
+		# 	if( not (info is None) ):
+		# 		nimg += 1
+		# 		info.write("Image %4d inserted.\n" %(nimg) )
+		# 		info.flush()
+
 		if dopad:
 			prj = pad(prj, imgsize,imgsize, 1, "circumference")
 		insert_slices(r, prj)
-		if( not (finfo is None) ):
+		if( not (info is None) ):
 			nimg += 1
-			finfo.write("Image %4d inserted.\n" %(nimg) )
-			finfo.flush()
+			info.write("Image %4d inserted.\n" %(nimg) )
+			info.flush()
 
-	if not (finfo is None): 
-		finfo.write( "Begin reducing ...\n" )
-		finfo.flush()
+	if not (info is None): 
+		info.write( "Begin reducing ...\n" )
+		info.flush()
 
 	reduce_EMData_to_root(fftvol, myid, comm=mpi_comm)
 	reduce_EMData_to_root(weight, myid, comm=mpi_comm)
 
 	if myid == 0:  dummy = r.finish(True)
 	else:
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		if ( xysize == -1 and zsize == -1 ):
 			fftvol = model_blank(imgsize, imgsize, imgsize)
 		else:
@@ -267,11 +268,11 @@ def recons3d_4nn_MPI(myid, prjlist, symmetry="c1", finfo=None, snr = 1.0, npad=2
 '''
 # secondrun
 def secondrunrecons3d_4nnw_MPI(myid, prjlist, prevol, symmetry="c1", finfo=None, npad=2, mpi_comm=None):
-	from utilities     import reduce_EMData_to_root, pad, get_params_proj
-	from EMAN2         import Reconstructors
-	from utilities     import iterImagesList, model_blank, model_circle, reshape_1d, read_text_file
-	from fundamentals  import fft, rops
-	from mpi           import MPI_COMM_WORLD
+	from EMAN2.utilities import reduce_EMData_to_root, pad, get_params_proj
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import iterImagesList, model_blank, model_circle, reshape_1d, read_text_file
+	from EMAN2.fundamentals import fft, rops
+	from mpi import MPI_COMM_WORLD
 	import types
 
 	if mpi_comm == None:
@@ -317,8 +318,8 @@ def secondrunrecons3d_4nnw_MPI(myid, prjlist, prevol, symmetry="c1", finfo=None,
 	r = Reconstructors.get( "nn4_ctfw", params )
 	r.setup()
 
-	from projection import prep_vol, prgs
-	from filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.filter import filt_ctf
 	#volft,kb = prep_vol(prevol)
 
 	#mask2d = model_circle(imgsize//2-2, imgsize,imgsize)
@@ -381,18 +382,18 @@ def secondrunrecons3d_4nnw_MPI(myid, prjlist, prevol, symmetry="c1", finfo=None,
 		print  "  STARTING FINISH"
 		dummy = r.finish(True)
 	else:
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		fftvol = model_blank(imgsize, imgsize, imgsize)
 	return fftvol
 '''
 '''
 #chc5
 def recons3d_4nnw_MPI(myid, prjlist, prevol, symmetry="c1", finfo=None, npad=2, mpi_comm=None):
-	from utilities     import reduce_EMData_to_root, pad, get_params_proj
-	from EMAN2         import Reconstructors
-	from utilities     import iterImagesList, model_blank, model_circle, reshape_1d, read_text_file
-	from fundamentals  import fft, rops
-	from mpi           import MPI_COMM_WORLD
+	from EMAN2.utilities import reduce_EMData_to_root, pad, get_params_proj
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import iterImagesList, model_blank, model_circle, reshape_1d, read_text_file
+	from EMAN2.fundamentals import fft, rops
+	from mpi import MPI_COMM_WORLD
 	import types
 
 	if mpi_comm == None:
@@ -428,8 +429,8 @@ def recons3d_4nnw_MPI(myid, prjlist, prevol, symmetry="c1", finfo=None, npad=2, 
 		del temp
 
 		st = rops(pad(prevol,bigsize,bigsize,bigsize,0.0))*(bigsize**6)/4.
-		from utilities import info
-		from utilities import write_text_file
+		from EMAN2.utilities import info
+		from EMAN2.utilities import write_text_file
 		#zizi = [st.get_value_at(i) for i in xrange(st.get_xsize())]
 		#for i in xrange(st.get_xsize()):  st.set_value_at(i,1.0)#/st.get_value_at(i))
 		#info(st,None,"refvol")
@@ -461,8 +462,8 @@ def recons3d_4nnw_MPI(myid, prjlist, prevol, symmetry="c1", finfo=None, npad=2, 
 	r = Reconstructors.get( "nn4_ctfw", params )
 	r.setup()
 
-	from projection import prep_vol, prgs
-	from filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.filter import filt_ctf
 	#volft,kb = prep_vol(prevol)
 
 	#mask2d = model_circle(imgsize//2-2, imgsize,imgsize)
@@ -509,12 +510,12 @@ def recons3d_4nnw_MPI(myid, prjlist, prevol, symmetry="c1", finfo=None, npad=2, 
 		print  "  STARTING FINISH"
 		dummy = r.finish(True)
 	else:
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		fftvol = model_blank(imgsize, imgsize, imgsize)
 	return fftvol
 '''
 
-def recons3d_4nnw_MPI(myid, prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", finfo=None, npad=2, xysize=-1, zsize=-1, mpi_comm=None, smearstep = 0.0, fsc = None):
+def recons3d_4nnw_MPI(myid, prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", info=None, npad=2, xysize=-1, zsize=-1, mpi_comm=None, smearstep = 0.0, fsc = None):
 	"""
 		recons3d_4nn_ctf - calculate CTF-corrected 3-D reconstruction from a set of projections using three Eulerian angles, two shifts, and CTF settings for each projeciton image
 		Input
@@ -525,10 +526,10 @@ def recons3d_4nnw_MPI(myid, prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1",
 			sign: sign of the CTF 
 			symmetry: point-group symmetry to be enforced, each projection will enter the reconstruction in all symmetry-related directions.
 	"""
-	from utilities  import reduce_EMData_to_root, pad
-	from EMAN2      import Reconstructors
-	from utilities  import iterImagesList, set_params_proj, model_blank
-	from mpi        import MPI_COMM_WORLD
+	from EMAN2.utilities import reduce_EMData_to_root, pad
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import iterImagesList, set_params_proj, model_blank
+	from mpi import MPI_COMM_WORLD
 	import types
 
 	if mpi_comm == None:
@@ -550,7 +551,7 @@ def recons3d_4nnw_MPI(myid, prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1",
 	bnx     = imgsize*npad//2+1
 	if  fsc:
 		from math import sqrt
-		from utilities import reshape_1d
+		from EMAN2.utilities import reshape_1d
 		t = [0.0]*len(fsc)
 		for i in xrange(len(fsc)):
 			t[i] = min(max(fsc[i],0.0), 0.999)
@@ -617,7 +618,7 @@ def recons3d_4nnw_MPI(myid, prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1",
 		bckgnoise.append(prj)
 
 	datastamp = bckgdata[1]
-	if not (finfo is None): nimg = 0
+	if not (info is None): nimg = 0
 	while prjlist.goToNext():
 		prj = prjlist.image()
 		try:
@@ -639,26 +640,26 @@ def recons3d_4nnw_MPI(myid, prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1",
 
 		prj.set_attr("bckgnoise", bckgnoise[indx])
 		insert_slices(r, prj)
-		if not (finfo is None):
+		if not (info is None):
 			nimg += 1
-			finfo.write(" %4d inserted\n" %(nimg) )
-			finfo.flush()
+			info.write(" %4d inserted\n" %(nimg) )
+			info.flush()
 	del pad
-	if not (finfo is None): 
-		finfo.write( "begin reduce\n" )
-		finfo.flush()
+	if not (info is None): 
+		info.write( "begin reduce\n" )
+		info.flush()
 		
 	reduce_EMData_to_root(fftvol, myid, comm=mpi_comm)
 	reduce_EMData_to_root(weight, myid, comm=mpi_comm)
 
-	if not (finfo is None): 
-		finfo.write( "after reduce\n" )
-		finfo.flush()
+	if not (info is None): 
+		info.write( "after reduce\n" )
+		info.flush()
 
 	if myid == 0 :
 		dummy = r.finish(True)
 	else:
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		if ( xysize == -1 and zsize == -1 ):
 			fftvol = model_blank(imgsize, imgsize, imgsize)
 		else:
@@ -673,7 +674,7 @@ def recons3d_4nnw_MPI(myid, prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1",
 
 
 '''
-def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", finfo=None, npad=2, mpi_comm=None, smearstep = 0.0, main_node = 0):
+def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", info=None, npad=2, mpi_comm=None, smearstep = 0.0, main_node = 0):
 	"""
 		recons3d_4nn_ctf - calculate CTF-corrected 3-D reconstruction from a set of projections using three Eulerian angles, two shifts, and CTF settings for each projeciton image
 		Input
@@ -683,15 +684,15 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 			sign: sign of the CTF
 			symmetry: point-group symmetry to be enforced, each projection will enter the reconstruction in all symmetry-related directions.
 	"""
-	from utilities  import reduce_EMData_to_root, get_im, send_string_to_all
-	from statistics import fsc
-	from utilities  import get_image, send_EMData, recv_EMData
+	from EMAN2.utilities import reduce_EMData_to_root, get_im, send_string_to_all
+	from EMAN2.statistics import fsc
+	from EMAN2.utilities import get_image, send_EMData, recv_EMData
 
-	from EMAN2      import Reconstructors
-	from utilities  import model_blank, cmdexecute
-	from mpi        import MPI_COMM_WORLD, mpi_barrier, mpi_comm_size 
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import model_blank, cmdexecute
+	from mpi import MPI_COMM_WORLD, mpi_barrier, mpi_comm_size 
 	import types
-	from statistics import fsc
+	from EMAN2.statistics import fsc
 	import datetime
 	
 	if mpi_comm == None:
@@ -747,7 +748,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 	for iset in xrange(2):
 		reconstructed_vol_files = []
 		for iter_no_of_splits in range(no_of_splits):
-			if not (finfo is None): nimg = 0
+			if not (info is None): nimg = 0
 	
 			fftvol = EMData()
 			weight = EMData()
@@ -774,16 +775,16 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 				except:
 					ERROR("Problem with indexing ptcl_source_image.","recons3d_4nnf_MPI   %s"%stmp,1, myid)
 
-			if not (finfo is None): 
-				finfo.write( "begin reduce\n" )
-				finfo.flush()
+			if not (info is None): 
+				info.write( "begin reduce\n" )
+				info.flush()
 		
 			reduce_EMData_to_root(fftvol, myid, main_node, comm=mpi_comm)
 			reduce_EMData_to_root(weight, myid, main_node, comm=mpi_comm)
 			
-			if not (finfo is None): 
-				finfo.write( "after reduce\n" )
-				finfo.flush()
+			if not (info is None): 
+				info.write( "after reduce\n" )
+				info.flush()
 	
 			if myid == 0:
 				tmpid = datetime.datetime.now().strftime('%Y-%m-%d--%I-%M-%f')[:-3]
@@ -882,7 +883,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 		fourier_shell_correlation[0] = 1.0
 
 		from math import sqrt
-		from utilities import reshape_1d
+		from EMAN2.utilities import reshape_1d
 		t = [0.0]*len(fourier_shell_correlation)
 		t = reshape_1d(t,len(t),npad*len(t))
 		for i in xrange(len(t):
@@ -917,7 +918,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 
 '''
 '''
-def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", finfo=None, npad=2, mpi_comm=None, smearstep = 0.0):
+def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", info=None, npad=2, mpi_comm=None, smearstep = 0.0):
 	"""
 		recons3d_4nn_ctf - calculate CTF-corrected 3-D reconstruction from a set of projections using three Eulerian angles, two shifts, and CTF settings for each projeciton image
 		Input
@@ -927,12 +928,12 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 			sign: sign of the CTF
 			symmetry: point-group symmetry to be enforced, each projection will enter the reconstruction in all symmetry-related directions.
 	"""
-	from utilities  import reduce_EMData_to_root, random_string, get_im
-	from EMAN2      import Reconstructors
-	from utilities  import model_blank
-	from mpi        import MPI_COMM_WORLD, mpi_barrier
+	from EMAN2.utilities import reduce_EMData_to_root, random_string, get_im
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import model_blank
+	from mpi import MPI_COMM_WORLD, mpi_barrier
 	import types
-	from statistics import fsc
+	from EMAN2.statistics import fsc
 	import datetime
 	
 	if mpi_comm == None:
@@ -981,7 +982,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 	weight_file = []
 
 	for iset in xrange(2):
-		if not (finfo is None): nimg = 0
+		if not (info is None): nimg = 0
 
 		fftvol = EMData()
 		weight = EMData()
@@ -1008,21 +1009,21 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 	
 			image.set_attr("bckgnoise", bckgnoise[indx])
 			insert_slices(r, image)
-			if not (finfo is None):
+			if not (info is None):
 				nimg += 1
-				finfo.write(" %4d inserted\n" %(nimg) )
-				finfo.flush()
+				info.write(" %4d inserted\n" %(nimg) )
+				info.flush()
 
-		if not (finfo is None): 
-			finfo.write( "begin reduce\n" )
-			finfo.flush()
+		if not (info is None): 
+			info.write( "begin reduce\n" )
+			info.flush()
 	
 		reduce_EMData_to_root(fftvol, myid, main_node, comm=mpi_comm)
 		reduce_EMData_to_root(weight, myid, main_node, comm=mpi_comm)
 		
-		if not (finfo is None): 
-			finfo.write( "after reduce\n" )
-			finfo.flush()
+		if not (info is None): 
+			info.write( "after reduce\n" )
+			info.flush()
 
 		if myid == 0:
 			tmpid = datetime.datetime.now().strftime('%Y-%m-%d--%I-%M-%f')[:-3]
@@ -1041,7 +1042,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 		fourier_shell_correlation = fsc(get_im(results_list[0]), fftvol, 1.0)[1]
 
 		from math import sqrt
-		from utilities import reshape_1d
+		from EMAN2.utilities import reshape_1d
 		t = [0.0]*len(fourier_shell_correlation)
 		t = reshape_1d(t,len(t),npad*len(t))
 		for i in xrange(len(t)):
@@ -1075,7 +1076,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 		return None, None, None
 '''
 
-def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", finfo=None, npad=2, mpi_comm=None, smearstep = 0.0):
+def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", info=None, npad=2, mpi_comm=None, smearstep = 0.0):
 	"""
 		recons3d_4nn_ctf - calculate CTF-corrected 3-D reconstruction from a set of projections using three Eulerian angles, two shifts, and CTF settings for each projeciton image
 		Input
@@ -1085,18 +1086,18 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 			sign: sign of the CTF
 			symmetry: point-group symmetry to be enforced, each projection will enter the reconstruction in all symmetry-related directions.
 	"""
-	from utilities  import reduce_EMData_to_root, random_string, get_im
-	from EMAN2      import Reconstructors
-	from utilities  import model_blank
-	from mpi        import MPI_COMM_WORLD, mpi_barrier
+	from EMAN2.utilities import reduce_EMData_to_root, random_string, get_im
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import model_blank
+	from mpi import MPI_COMM_WORLD, mpi_barrier
 	import types
-	from statistics import fsc
+	from EMAN2.statistics import fsc
 	import datetime
 	
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
-
-	imgsize = list_of_prjlist[0].get_xsize()
+	main_node = 0
+	imgsize = list_of_prjlist[0][0].get_xsize()
 	
 	if( smearstep > 0.0 ):
 		#if myid == 0:  print "  Setting smear in prepare_recons_ctf"
@@ -1139,7 +1140,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 	weight_file = []
 
 	for iset in xrange(2):
-		if not (finfo is None): nimg = 0
+		if not (info is None): nimg = 0
 
 		fftvol = EMData()
 		weight = EMData()
@@ -1166,21 +1167,21 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 	
 			image.set_attr("bckgnoise", bckgnoise[indx])
 			insert_slices(r, image)
-			if not (finfo is None):
+			if not (info is None):
 				nimg += 1
-				finfo.write(" %4d inserted\n" %(nimg) )
-				finfo.flush()
+				info.write(" %4d inserted\n" %(nimg) )
+				info.flush()
 
-		if not (finfo is None): 
-			finfo.write( "begin reduce\n" )
-			finfo.flush()
+		if not (info is None): 
+			info.write( "begin reduce\n" )
+			info.flush()
 	
 		reduce_EMData_to_root(fftvol, myid, main_node, comm=mpi_comm)
 		reduce_EMData_to_root(weight, myid, main_node, comm=mpi_comm)
 		
-		if not (finfo is None): 
-			finfo.write( "after reduce\n" )
-			finfo.flush()
+		if not (info is None): 
+			info.write( "after reduce\n" )
+			info.flush()
 
 		if myid == 0:
 			"""
@@ -1200,7 +1201,7 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 		fourier_shell_correlation = fsc(results_list[0], results_list[1], 1.0)[1]
 		"""
 		from math import sqrt
-		from utilities import reshape_1d
+		from EMAN2.utilities import reshape_1d
 		t = [0.0]*len(fourier_shell_correlation)
 		t = reshape_1d(t,len(t),npad*len(t))
 		for i in xrange(len(t)):
@@ -1233,26 +1234,29 @@ def recons3d_4nnf_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmet
 	else:
 		return None, None, None
 
-def recons3d_4nnfs_MPI(myid, main_node, prjlist, upweighted = True, finfo=None, mpi_comm=None, smearstep = 0.0, CTF = True, compensate = False, target_size=-1):
+def recons3d_4nnfs_MPI(myid, list_of_prjlist, bckgdata, snr = 1.0, sign=1, symmetry="c1", info=None, npad=2, mpi_comm=None, smearstep = 0.0, CTF = True):
 	"""
 		recons3d_4nn_ctf - calculate CTF-corrected 3-D reconstruction from a set of projections using three Eulerian angles, two shifts, and CTF settings for each projeciton image
 		Input
 			list_of_prjlist: list of lists of projections to be included in the reconstruction
+			bckgdata = [get_im("tsd.hdf"),read_text_file("data_stamp.txt")]
+			snr: Signal-to-Noise Ratio of the data 
+			sign: sign of the CTF
+			symmetry: point-group symmetry to be enforced, each projection will enter the reconstruction in all symmetry-related directions.
 	"""
-	from utilities  import reduce_EMData_to_root, random_string, get_im
-	from EMAN2      import Reconstructors
-	from utilities  import model_blank
-	from filter		import filt_table
-	from mpi        import MPI_COMM_WORLD, mpi_barrier
+	from EMAN2.utilities import reduce_EMData_to_root, random_string, get_im
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import model_blank
+	from mpi import MPI_COMM_WORLD, mpi_barrier
 	import types
-	from statistics import fsc
+	from EMAN2.statistics import fsc
 	import datetime
-	from reconstruction import insert_slices_pdf
 	
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
-	imgsize = prjlist[0].get_ysize()  # It can be Fourier, so take y-size
-	'''
+	main_node = 0
+	imgsize = list_of_prjlist[0][0].get_xsize()
+	
 	if( smearstep > 0.0 ):
 		#if myid == 0:  print "  Setting smear in prepare_recons_ctf"
 		ns = 1
@@ -1270,7 +1274,7 @@ def recons3d_4nnfs_MPI(myid, main_node, prjlist, upweighted = True, finfo=None, 
 		for i in xrange(-2*ns,2*ns+1,1):
 			smear += [i*smearstep,0.0,0.0,float(prj.count(i))]
 		#if myid == 0:  print "  Smear  ",smear
-	'''
+
 	#from utilities import model_blank, get_im, read_text_file
 	#bckgdata = [get_im("tsd.hdf"),read_text_file("data_stamp.txt")]
 
@@ -1279,206 +1283,122 @@ def recons3d_4nnfs_MPI(myid, main_node, prjlist, upweighted = True, finfo=None, 
 	nnx = bckgdata[0].get_xsize()
 	nny = bckgdata[0].get_ysize()
 	"""
-	'''
 	bckgnoise = []
 	for i in xrange(1):
 		prj = model_blank(600,1,1,1)
 		#for k in xrange(nnx):  prj[k] = bckgdata[i].get_value_at(k,i)
 		bckgnoise.append(prj)
-	'''
-	#datastamp = bckgdata[1]
-	"""
-	#  Do the FSC shtick.
-	if cfsc:
-		bnx     = len(cfsc)*npad*2
-		refvol  = model_blank(bnx)
-		if(npad > 1):
-			from utilities import reshape_1d
-			bfsc = reshape_1d(cfsc, len(cfsc), bnx)
-			for i in xrange(bnx):  refvol[i] = bfsc[i]
-			del bfsc
-		else:  refvol[i] = cfsc[i]
-	else:
-		#  Set refvol to longer array so in finish it can be used to return regularization part
-		refvol = model_blank(target_size)  # fill fsc with zeroes so the first reconstruction is done using simple Wiener filter.
-	"""
 
-	refvol = model_blank(target_size)
+	#datastamp = bckgdata[1]
+
+	#  Do the FSC shtick.
+	bnx     = imgsize*npad//2+1
+	refvol = model_blank(bnx)  # fill fsc with zeroes so the first reconstruction is done using simple Wiener filter.
 	refvol.set_attr("fudge", 1.0)
 
-
-	if CTF: do_ctf = 1
-	else:   do_ctf = 0
-	if not (finfo is None): nimg = 0
-
-	fftvol = EMData()
-	weight = EMData()
-	#if( smearstep > 0.0 ):  fftvol.set_attr("smear", smear)
-
-
-	from utilities import info
-	params = {"size":target_size, "npad":2, "snr":1.0, "sign":1, "symmetry":"c1", "refvol":refvol, "fftvol":fftvol, "weight":weight, "do_ctf": do_ctf}
-	r = Reconstructors.get( "nn4_ctfw", params )
-	r.setup()
-	for image in prjlist:
-		if not upweighted: insert_slices_pdf(r, filt_table(image, image.get_attr("bckgnoise")) )
-		else:              insert_slices_pdf(r, image)
-
-	if not (finfo is None): 
-		finfo.write( "begin reduce\n" )
-		finfo.flush()
-
-	reduce_EMData_to_root(fftvol, myid, main_node, comm=mpi_comm)
-	reduce_EMData_to_root(weight, myid, main_node, comm=mpi_comm)
-
-	if not (finfo is None): 
-		finfo.write( "after reduce\n" )
-		finfo.flush()
-
-
-	if myid == main_node:
-		dummy = r.finish(compensate)
-	mpi_barrier(mpi_comm)
-
-	if myid == main_node: return fftvol, weight, refvol
-	else: return None, None, None
-
-def recons3d_4nnstruct_MPI(myid, main_node, prjlist, paramstructure, refang, delta, upweighted = True, finfo=None, mpi_comm=None, smearstep = 0.0, CTF = True, compensate = False, target_size=-1, avgnorm = 1.0):
-	"""
-		recons3d_4nn_ctf - calculate CTF-corrected 3-D reconstruction from a set of projections using three Eulerian angles, two shifts, and CTF settings for each projeciton image
-		Input
-			list_of_prjlist: list of lists of projections to be included in the reconstruction
-	"""
-	from utilities  import reduce_EMData_to_root, random_string, get_im, findall
-	from EMAN2      import Reconstructors
-	from utilities  import model_blank
-	from filter		import filt_table
-	from mpi        import MPI_COMM_WORLD, mpi_barrier
-	import types
-	from statistics import fsc
-	import datetime
-	from reconstruction import insert_slices_pdf
-	
-	if mpi_comm == None:
-		mpi_comm = MPI_COMM_WORLD
-	imgsize = prjlist[0][0].get_ysize()  # It can be Fourier, so take y-size
-	'''
-	if( smearstep > 0.0 ):
-		#if myid == 0:  print "  Setting smear in prepare_recons_ctf"
-		ns = 1
-		smear = []
-		for j in xrange(-ns,ns+1):
-			if( j != 0):
-				for i in xrange(-ns,ns+1):
-					for k in xrange(-ns,ns+1):
-						smear += [i*smearstep,j*smearstep,k*smearstep,1.0]
-		# Deal with theta = 0.0 cases
-		prj = []
-		for i in xrange(-ns,ns+1):
-			for k in xrange(-ns,ns+1):
-				prj.append(i+k)
-		for i in xrange(-2*ns,2*ns+1,1):
-			smear += [i*smearstep,0.0,0.0,float(prj.count(i))]
-		#if myid == 0:  print "  Smear  ",smear
-	'''
-	#from utilities import model_blank, get_im, read_text_file
-	#bckgdata = [get_im("tsd.hdf"),read_text_file("data_stamp.txt")]
-
-	
-	"""
-	nnx = bckgdata[0].get_xsize()
-	nny = bckgdata[0].get_ysize()
-	"""
-	'''
-	bckgnoise = []
-	for i in xrange(1):
-		prj = model_blank(600,1,1,1)
-		#for k in xrange(nnx):  prj[k] = bckgdata[i].get_value_at(k,i)
-		bckgnoise.append(prj)
-	'''
-	#datastamp = bckgdata[1]
-	"""
-	#  Do the FSC shtick.
-	if cfsc:
-		bnx     = len(cfsc)*npad*2
-		refvol  = model_blank(bnx)
-		if(npad > 1):
-			from utilities import reshape_1d
-			bfsc = reshape_1d(cfsc, len(cfsc), bnx)
-			for i in xrange(bnx):  refvol[i] = bfsc[i]
-			del bfsc
-		else:  refvol[i] = cfsc[i]
-	else:
-		#  Set refvol to longer array so in finish it can be used to return regularization part
-		refvol = model_blank(target_size)  # fill fsc with zeroes so the first reconstruction is done using simple Wiener filter.
-	"""
-
-	refvol = model_blank(target_size)
-	refvol.set_attr("fudge", 1.0)
-
+	results_list = []
+	fftvol_file =[]
+	weight_file = []
 
 	if CTF: do_ctf = 1
 	else:   do_ctf = 0
 
-	if not (finfo is None): nimg = 0
+	for iset in xrange(1):
+		if not (info is None): nimg = 0
 
-	fftvol = EMData()
-	weight = EMData()
-	#if( smearstep > 0.0 ):  fftvol.set_attr("smear", smear)
+		fftvol = EMData()
+		weight = EMData()
+		if( smearstep > 0.0 ):  fftvol.set_attr("smear", smear)
+
+		params = {"size":imgsize, "npad":npad, "snr":snr, "sign":sign, "symmetry":symmetry, "refvol":refvol, "fftvol":fftvol, "weight":weight, "do_ctf": do_ctf}
+		r = Reconstructors.get( "nn4_ctfw", params )
+		r.setup()
+		for image in list_of_prjlist[iset]:
+			"""
+			try:
+				#raise ValueError('A very specific thing happened')
+				stmp = image.get_attr("ptcl_source_image")
+			except:
+				try:
+					stmp = image.get_attr("ctf")
+					stmp = round(stmp.defocus,4)
+				except:
+					ERROR("Either ptcl_source_image or ctf has to be present in the header.","recons3d_4nnw_MPI",1, myid)
+			try:
+				indx = datastamp.index(stmp)
+			except:
+				ERROR("Problem with indexing ptcl_source_image.","recons3d_4nnf_MPI",1, myid)
+			image.set_attr("bckgnoise", bckgnoise[indx])
+			"""
+			image.set_attr("bckgnoise", bckgnoise[0])
+			insert_slices(r, image)
+			if not (info is None):
+				nimg += 1
+				info.write(" %4d inserted\n" %(nimg) )
+				info.flush()
+
+		if not (info is None): 
+			info.write( "begin reduce\n" )
+			info.flush()
+	
+		reduce_EMData_to_root(fftvol, myid, main_node, comm=mpi_comm)
+		reduce_EMData_to_root(weight, myid, main_node, comm=mpi_comm)
+		
+		if not (info is None): 
+			info.write( "after reduce\n" )
+			info.flush()
+
+		if myid == 0:
+			"""
+			tmpid = datetime.datetime.now().strftime('%Y-%m-%d--%I-%M-%f')[:-3]
+			fftvol_file.append("fftvol__%s__idx%d.hdf"%(tmpid, iset))
+			weight_file.append("weight__%s__idx%d.hdf"%(tmpid, iset))
+			fftvol.write_image(fftvol_file[-1])
+			weight.write_image(weight_file[-1])
+			"""
+			dummy = r.finish(True)
+			results_list.append(fftvol)
+			#if(iset == 0):  fftvol.write_image(results_list[-1])
+
+		mpi_barrier(mpi_comm)
+
+	"""
+
+	if myid == 0:
+		fourier_shell_correlation = fsc(results_list[0], results_list[1], 1.0)[1]
+		from math import sqrt
+		from EMAN2.utilities import reshape_1d
+		t = [0.0]*len(fourier_shell_correlation)
+		t = reshape_1d(t,len(t),npad*len(t))
+		for i in xrange(len(t)):
+			t[i] = min(max(t[i], 0.0), 0.999)
+
+		ovol = []
+		for idx in range(2):
+			fftvol = get_im(fftvol_file[idx])
+			weight = get_im(weight_file[idx])
+			refvol = model_blank(bnx,1,1,0.0)
+			for i in xrange(min(bnx,len(t))):  
+				refvol.set_value_at(i, t[i])
+			refvol.set_attr("fudge", 1.0)
+			
+			params = {"size":imgsize, "npad":npad, "snr":snr, "sign":sign, "symmetry":symmetry, "refvol":refvol, "fftvol":fftvol, "weight":weight}
+			r = Reconstructors.get("nn4_ctfw", params)
+			r.setup()
+			
+			dummy = r.finish(True)
+			ovol.append(fftvol)
 
 
-	from utilities import info
-	params = {"size":target_size, "npad":2, "snr":1.0, "sign":1, "symmetry":"c1", "refvol":refvol, "fftvol":fftvol, "weight":weight, "do_ctf": do_ctf}
-	r = Reconstructors.get( "nn4_ctfw", params )
-	r.setup()
-
-	for im in xrange(len(prjlist)):
-		#  parse projection structure, generate three lists:
-		#  [ipsi+iang], [ishift], [probability]
-		#  Number of orientations for a given image
-		numbor = len(paramstructure[im][2])
-		ipsiandiang = [ paramstructure[im][2][i][0]/1000  for i in xrange(numbor) ]
-		allshifts   = [ paramstructure[im][2][i][0]%1000  for i in xrange(numbor) ]
-		probs       = [ paramstructure[im][2][i][1] for i in xrange(numbor) ]
-		#  Find unique projection directions
-		tdir = list(set(ipsiandiang))
-		bckgn = prjlist[im][0].get_attr("bckgnoise")
-		#  For each unique projection direction:
-		for ii in xrange(len(tdir)):
-			#  Find the number of times given projection direction appears on the list, it is the number of different shifts associated with it.
-			lshifts = findall(tdir[ii], ipsiandiang)
-			toprab  = 0.0
-			for ki in xrange(len(lshifts)):  toprab += probs[lshifts[ki]]
-			recdata = Util.mult_scalar(prjlist[im][allshifts[lshifts[0]]], probs[lshifts[0]]/toprab)
-			recdata.set_attr_dict({"padffted":1, "is_complex":0})
-			for ki in xrange(1,len(lshifts)):
-				Util.add_img(recdata, Util.mult_scalar(prjlist[im][allshifts[lshifts[ki]]], probs[lshifts[ki]]/toprab))
-			recdata.set_attr_dict({"padffted":1, "is_complex":1})
-			if not upweighted:  recdata = filt_table(recdata, bckgn )
-			recdata.set_attr("bckgnoise", bckgn )
-			ipsi = tdir[ii]%100000
-			iang = tdir[ii]/100000
-			r.insert_slice( recdata, Transform({"type":"spider","phi":refang[iang][0],"theta":refang[iang][1],"psi":refang[iang][2]+ipsi*delta}), toprab*avgnorm/paramstructure[im][1][0])
-	#  clean stuff
-	del bckgn, recdata, tdir, ipsiandiang, allshifts, probs
-	if not (finfo is None):
-		finfo.write( "begin reduce\n" )
-		finfo.flush()
-
-	reduce_EMData_to_root(fftvol, myid, main_node, comm=mpi_comm)
-	reduce_EMData_to_root(weight, myid, main_node, comm=mpi_comm)
-
-	if not (finfo is None): 
-		finfo.write( "after reduce\n" )
-		finfo.flush()
-
-
-	if myid == main_node:
-		dummy = r.finish(compensate)
+		cmd = "{} {} {} {} {} {}".format("rm -f", fftvol_file[0], fftvol_file[1], weight_file[0], weight_file[1], results_list[0] )
+		import subprocess
+		outcome = subprocess.call(cmd, shell=True)
+	"""
 	mpi_barrier(mpi_comm)
-
-	if myid == main_node: return fftvol, weight, refvol
-	else: return None, None, None
+	if myid == 0:
+		return results_list[0]#, results_list[1], fourier_shell_correlation
+	else:
+		return None, None, None
 
 
 def recons3d_4nn_ctf(stack_name, list_proj = [], snr = 1.0, sign=1, symmetry="c1", verbose=0, npad=2, xysize = -1, zsize = -1 ):
@@ -1499,8 +1419,8 @@ def recons3d_4nn_ctf(stack_name, list_proj = [], snr = 1.0, sign=1, symmetry="c1
 	     vol = do_reconstruction(filepattern, start, end, anglelist, symmetry)
 	"""
 	import types
-	from EMAN2     import Reconstructors
-	from utilities import pad
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import pad
 
 	# read first image to determine the size to use
 	if list_proj == []:	
@@ -1564,7 +1484,7 @@ def recons3d_4nn_ctf(stack_name, list_proj = [], snr = 1.0, sign=1, symmetry="c1
 	return fftvol
 
 
-def recons3d_4nn_ctf_MPI(myid, prjlist, snr = 1.0, sign=1, symmetry="c1", finfo=None, npad=2, xysize=-1, zsize=-1, mpi_comm=None, smearstep = 0.0):
+def recons3d_4nn_ctf_MPI(myid, prjlist, snr = 1.0, sign=1, symmetry="c1", info=None, npad=2, xysize=-1, zsize=-1, mpi_comm=None, smearstep = 0.0):
 	"""
 		recons3d_4nn_ctf - calculate CTF-corrected 3-D reconstruction from a set of projections using three Eulerian angles, two shifts, and CTF settings for each projeciton image
 		Input
@@ -1574,10 +1494,10 @@ def recons3d_4nn_ctf_MPI(myid, prjlist, snr = 1.0, sign=1, symmetry="c1", finfo=
 			sign: sign of the CTF 
 			symmetry: point-group symmetry to be enforced, each projection will enter the reconstruction in all symmetry-related directions.
 	"""
-	from utilities  import reduce_EMData_to_root, pad
-	from EMAN2      import Reconstructors
-	from utilities  import iterImagesList, set_params_proj
-	from mpi        import MPI_COMM_WORLD
+	from EMAN2.utilities import reduce_EMData_to_root, pad
+	from EMAN2 import Reconstructors
+	from EMAN2.utilities import iterImagesList, set_params_proj
+	from mpi import MPI_COMM_WORLD
 	import types
 
 	if mpi_comm == None:
@@ -1638,7 +1558,7 @@ def recons3d_4nn_ctf_MPI(myid, prjlist, snr = 1.0, sign=1, symmetry="c1", finfo=
 		r = Reconstructors.get( "nn4_ctf_rect", params )
 	r.setup()
 
-	#if not (finfo is None):
+	#if not (info is None):
 	nimg = 0
 	while prjlist.goToNext():
 		prj = prjlist.image()
@@ -1646,26 +1566,26 @@ def recons3d_4nn_ctf_MPI(myid, prjlist, snr = 1.0, sign=1, symmetry="c1", finfo=
 			prj = pad(prj, imgsize, imgsize, 1, "circumference")
 		#if params:
 		insert_slices(r, prj)
-		if not (finfo is None):
+		if not (info is None):
 			nimg += 1
-			finfo.write(" %4d inserted\n" %(nimg) )
-			finfo.flush()
+			info.write(" %4d inserted\n" %(nimg) )
+			info.flush()
 	del pad
-	if not (finfo is None): 
-		finfo.write( "begin reduce\n" )
-		finfo.flush()
+	if not (info is None): 
+		info.write( "begin reduce\n" )
+		info.flush()
 
 	reduce_EMData_to_root(fftvol, myid, comm=mpi_comm)
 	reduce_EMData_to_root(weight, myid, comm=mpi_comm)
 
-	if not (finfo is None): 
-		finfo.write( "after reduce\n" )
-		finfo.flush()
+	if not (info is None): 
+		info.write( "after reduce\n" )
+		info.flush()
 
 	if myid == 0 :
 		dummy = r.finish(True)
 	else:
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		if ( xysize == -1 and zsize == -1 ):
 			fftvol = model_blank(imgsize, imgsize, imgsize)
 		else:
@@ -1740,13 +1660,13 @@ def recons3d_nn_SSNR(stack_name,  mask2D = None, ring_width=1, npad =1, sign=1, 
 		# active = proj.get_attr_default('active', 1)
 		# if(active == 1):
 		if(random_angles  == 2):
-			from  random import  random
+			from random import random
 			phi    = 360.0*random()
 			theta  = 180.0*random()
 			psi    = 360.0*random()
 			xform_proj = Transform( {"type":"spider", "phi":phi, "theta":theta, "psi":psi} )
 		elif(random_angles  == 3):
-			from  random import  random
+			from random import random
 			phi    = 360.0*random()
 			theta  = 180.0*random()
 			psi    = 360.0*random()
@@ -1754,7 +1674,7 @@ def recons3d_nn_SSNR(stack_name,  mask2D = None, ring_width=1, npad =1, sign=1, 
 			ty     = 6.0*(random() - 0.5)
 			xform_proj = Transform( {"type":"spider", "phi":phi, "theta":theta, "psi":psi, "tx":tx, "ty":ty} )
 		elif(random_angles  == 1):
-			from  random import  random
+			from random import random
 			old_xform_proj = proj.get_attr( "xform.projection" )
 			dict = old_xform_proj.get_rotation( "spider" )
 			dict["psi"] = 360.0*random()
@@ -1785,7 +1705,7 @@ def recons3d_nn_SSNR(stack_name,  mask2D = None, ring_width=1, npad =1, sign=1, 
 	return [outlist, vol_ssnr]
 
 def recons3d_nn_SSNR_MPI(myid, prjlist, mask2D, ring_width=1, npad =1, sign=1, symmetry="c1", CTF = False, random_angles = 0, mpi_comm = None):
-	from utilities import reduce_EMData_to_root
+	from EMAN2.utilities import reduce_EMData_to_root
 	from EMAN2 import Reconstructors
 	from mpi import MPI_COMM_WORLD
 
@@ -1816,13 +1736,13 @@ def recons3d_nn_SSNR_MPI(myid, prjlist, mask2D, ring_width=1, npad =1, sign=1, s
 		# active = prj.get_attr_default('active', 1)
 		# if active == 1:
 		if random_angles  == 2:
-			from  random import  random
+			from random import random
 			phi	 = 360.0*random()
 			theta    = 180.0*random()
 			psi	 = 360.0*random()
 			xform_proj = Transform( {"type":"spider", "phi":phi, "theta":theta, "psi":psi} )
 		elif random_angles  == 3:
-			from  random import  random
+			from random import random
 			phi    = 360.0*random()
 			theta  = 180.0*random()
 			psi    = 360.0*random()
@@ -1830,7 +1750,7 @@ def recons3d_nn_SSNR_MPI(myid, prjlist, mask2D, ring_width=1, npad =1, sign=1, s
 			ty     = 6.0*(random() - 0.5)
 			xform_proj = Transform( {"type":"spider", "phi":phi, "theta":theta, "psi":psi, "tx":tx, "ty":ty} )
 		elif random_angles  == 1:
-			from  random import  random
+			from random import random
 			old_xform_proj = prj.get_attr( "xform.projection" )
 			dict = old_xform_proj.get_rotation( "spider" )
 			dict["psi"] = 360.0*random()
@@ -1885,9 +1805,9 @@ class memory_store:
 def bootstrap_nn(proj_stack, volume_stack, list_proj, niter, media="memory", npad=4, symmetry="c1", output=-1, CTF=False, snr=1.0, sign=1, myseed=None ):
 	from random import seed
 	from random import randint
-	from time   import time
-	from sys    import stdout
-	from utilities import set_ctf
+	from time import time
+	from sys import stdout
+	from EMAN2.utilities import set_ctf
 	from EMAN2 import Reconstructors
 
 	if(output == -1):
@@ -1997,8 +1917,8 @@ def recons3d_em(projections_stack, max_iterations_count = 100, radius = -1, min_
 	#
 	"""
 	from time import clock
-	from utilities import model_blank, model_circle, model_square
-	from morphology import threshold_to_minval
+	from EMAN2.utilities import model_blank, model_circle, model_square
+	from EMAN2.morphology import threshold_to_minval
 	import types
 	min_allowed_divisor = 0.0001
 
@@ -2095,12 +2015,12 @@ def recons3d_em_MPI(projections_stack, output_file, max_iterations_count = 100, 
 	#
 	"""
 	from time import clock
-	from utilities import model_blank, model_circle, model_square, circumference
-	from morphology import threshold_to_minval
+	from EMAN2.utilities import model_blank, model_circle, model_square, circumference
+	from EMAN2.morphology import threshold_to_minval
 	import types
 	from string import replace
 	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from utilities import reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, send_EMData, recv_EMData
+	from EMAN2.utilities import reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, send_EMData, recv_EMData
 	min_allowed_divisor = 0.0001
 
 	mpi_n = mpi_comm_size(MPI_COMM_WORLD)
@@ -2224,7 +2144,7 @@ def recons3d_sirt(stack_name, list_proj, radius, lam=1.0e-4, maxit=100, symmetry
 	#
 	"""
 	from math import sqrt
-	from utilities import model_circle
+	from EMAN2.utilities import model_circle
 	#  analyze the symmetries Phil's code has all symmetries ready...
 	nsym=1
 
@@ -2328,7 +2248,7 @@ def recons3d_wbp(stack_name, list_proj, method = "general", const=1.0E4, symmetr
 		symmetry - point group symmetry of the object
 	""" 
 	import types
-	from utilities import get_im
+	from EMAN2.utilities import get_im
 
 	if type(stack_name) == types.StringType:
 		B = EMData()
@@ -2387,7 +2307,7 @@ def recons3d_vwbp(stack_name, list_proj, method = "general", const=1.0E4, symmet
 		WARNING - symmetries not implemented!!!!!!!!!
 	""" 
 	import types
-	from utilities import get_im
+	from EMAN2.utilities import get_im
 
 	if type(stack_name) == types.StringType:
 		B = EMData()
@@ -2427,7 +2347,7 @@ def recons3d_vwbp(stack_name, list_proj, method = "general", const=1.0E4, symmet
 			B.set_attr("xform.projection", symmetry_transforms[iProj][iSym])
 			if   method=="general":  Util.WTF(B, ss, const, iProj*nsym+iSym+1)  # counting in WTF start from 1!
 			elif method=="exact"  :  Util.WTM(B, ss, const, iProj*nsym+iSym+1)  # counting in WTM start from 1!
-			from filter import filt_tanl
+			from EMAN2.filter import filt_tanl
 			B = filt_tanl(B, 0.3, 0.1)
 			Util.BPCQ(B, CUBE, (B.get_ysize()-1)//2)
 		CUBE.write_image(outstack, iProj)
@@ -2461,7 +2381,7 @@ def prepare_wbp(stack_name, list_proj, method = "general", const=1.0E4, symmetry
 	dm=[0.0]*(9*ntripletsWnsym)
 	ss=[0.0]*(6*ntripletsWnsym)
 	count = 0
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	for i in xrange(nimages):
 		if type(stack_name) == types.StringType:
 			B.read_image(stack_name,list_proj[i], True)
@@ -2572,9 +2492,9 @@ def one_swbp(CUBE, B, transform = None, symmetry="c1"):
 	B.set_attr("xform.projection", org_transform)
 
 def prepare_recons(data, symmetry, myid, main_node_half, half_start, step, index, finfo=None, npad = 2, mpi_comm=None):
-	from random     import randint
-	from utilities  import reduce_EMData_to_root
-	from mpi        import mpi_barrier, MPI_COMM_WORLD
+	from random import randint
+	from EMAN2.utilities import reduce_EMData_to_root
+	from mpi import mpi_barrier, MPI_COMM_WORLD
 	from EMAN2 import Reconstructors
 
 	if mpi_comm == None:
@@ -2627,7 +2547,7 @@ def prepare_recons(data, symmetry, myid, main_node_half, half_start, step, index
 
 '''  Not used anywhere?  07/29/2015  PAP
 def prepare_recons_ctf_fftvol(data, snr, symmetry, myid, main_node_half, pidlist, finfo=None, npad = 2, mpi_comm=None):
-	from utilities import reduce_EMData_to_root
+	from EMAN2.utilities import reduce_EMData_to_root
 	from EMAN2 import Reconstructors
 	from mpi import MPI_COMM_WORLD
 
@@ -2657,9 +2577,9 @@ def prepare_recons_ctf_fftvol(data, snr, symmetry, myid, main_node_half, pidlist
 '''
 
 def prepare_recons_ctf(nx, data, snr, symmetry, myid, main_node_half, half_start, step, finfo=None, npad = 2, mpi_comm=None, smearstep = 0.0):
-	from random     import randint
-	from utilities  import reduce_EMData_to_root
-	from mpi        import mpi_barrier, MPI_COMM_WORLD
+	from random import randint
+	from EMAN2.utilities import reduce_EMData_to_root
+	from mpi import mpi_barrier, MPI_COMM_WORLD
 	from EMAN2 import Reconstructors
 
 	if mpi_comm == None:
@@ -2790,9 +2710,9 @@ def rec3D_MPI(data, snr = 1.0, symmetry = "c1", mask3D = None, fsc_curve = None,
 	  in the memory, computes reconstruction and through odd-even, in order to get the resolution
 	'''
 	import os
-	from statistics import fsc_mask
-	from utilities  import model_blank, model_circle, get_image, send_EMData, recv_EMData
-	from mpi        import mpi_comm_size, MPI_COMM_WORLD
+	from EMAN2.statistics import fsc_mask
+	from EMAN2.utilities import model_blank, model_circle, get_image, send_EMData, recv_EMData
+	from mpi import mpi_comm_size, MPI_COMM_WORLD
 	
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
@@ -2841,8 +2761,8 @@ def rec3D_MPI(data, snr = 1.0, symmetry = "c1", mask3D = None, fsc_curve = None,
 		ERROR("Warning: no images were given for reconstruction, this usually means there is an empty group, returning empty volume", "rec3D", 0)
 		return model_blank( 2, 2, 2 ), None
 
-	fftvol_odd_file, weight_odd_file = prepare_recons_ctf(nx, imgdata, snr, symmetry, myid, main_node_odd, odd_start, 2, finfo, npad, mpi_comm=mpi_comm, smearstep = smearstep)
-	fftvol_eve_file, weight_eve_file = prepare_recons_ctf(nx, imgdata, snr, symmetry, myid, main_node_eve, eve_start, 2, finfo, npad, mpi_comm=mpi_comm, smearstep = smearstep)
+	fftvol_odd_file,weight_odd_file = prepare_recons_ctf(nx, imgdata, snr, symmetry, myid, main_node_odd, odd_start, 2, finfo, npad, mpi_comm=mpi_comm, smearstep = smearstep)
+	fftvol_eve_file,weight_eve_file = prepare_recons_ctf(nx, imgdata, snr, symmetry, myid, main_node_eve, eve_start, 2, finfo, npad, mpi_comm=mpi_comm, smearstep = smearstep)
 	del imgdata
 
 	if nproc == 1:
@@ -3005,9 +2925,9 @@ def rec3D_MPI_with_getting_odd_even_volumes_from_files(fftvol_files, weight_file
 	reconstructed_odd_vol_files, reconstructed_eve_vol_files = reconstructed_vol_files
 		
 	import os
-	from statistics import fsc_mask
-	from utilities  import model_blank, model_circle, get_image, send_EMData, recv_EMData
-	from mpi        import mpi_comm_size, MPI_COMM_WORLD
+	from EMAN2.statistics import fsc_mask
+	from EMAN2.utilities import model_blank, model_circle, get_image, send_EMData, recv_EMData
+	from mpi import mpi_comm_size, MPI_COMM_WORLD
 	
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
@@ -3204,9 +3124,9 @@ def rec3D_MPI_noCTF(data, symmetry = "c1", mask3D = None, fsc_curve = None, myid
 	    this is for multireference alignment
 	'''
 	import os
-	from statistics import fsc_mask
-	from utilities  import model_blank, get_image,send_EMData, recv_EMData
-	from mpi        import mpi_comm_size, MPI_COMM_WORLD
+	from EMAN2.statistics import fsc_mask
+	from EMAN2.utilities import model_blank, get_image,send_EMData, recv_EMData
+	from mpi import mpi_comm_size, MPI_COMM_WORLD
 	
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
@@ -3367,9 +3287,9 @@ def rec3D_MPI_noCTF(data, symmetry = "c1", mask3D = None, fsc_curve = None, myid
 	return model_blank(nx,nx,nx),None
 	
 def prepare_recons_ctf_two_chunks(nx,data,snr,symmetry,myid,main_node_half,chunk_ID,finfo=None,npad=2,mpi_comm=None,smearstep = 0.0):
-	from random     import randint
-	from utilities  import reduce_EMData_to_root
-	from mpi        import mpi_barrier, MPI_COMM_WORLD
+	from random import randint
+	from EMAN2.utilities import reduce_EMData_to_root
+	from mpi import mpi_barrier, MPI_COMM_WORLD
 	from EMAN2 import Reconstructors
 
 	if mpi_comm == None:
@@ -3432,16 +3352,16 @@ def prepare_recons_ctf_two_chunks(nx,data,snr,symmetry,myid,main_node_half,chunk
 	return None,None
 	
 def rec3D_two_chunks_MPI(data, snr = 1.0, symmetry = "c1", mask3D = None, fsc_curve = None, \
-		myid = 0, main_node = 0, rstep = 1.0, finfo=None, \
+		myid = 0, main_node = 0, rstep = 1.0,finfo=None, \
 		index=-1, npad = 2, mpi_comm=None, smearstep = 0.0):
 	'''
 	  This function is to be called within an MPI program to do a reconstruction on a dataset kept 
 	  in the memory, computes reconstruction and through odd-even, in order to get the resolution
 	'''
 	import os
-	from statistics import fsc_mask
-	from utilities  import model_blank, model_circle, get_image, send_EMData, recv_EMData
-	from mpi        import mpi_comm_size, MPI_COMM_WORLD
+	from EMAN2.statistics import fsc_mask
+	from EMAN2.utilities import model_blank, model_circle, get_image, send_EMData, recv_EMData
+	from mpi import mpi_comm_size, MPI_COMM_WORLD
 	
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD

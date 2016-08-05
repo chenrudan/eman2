@@ -39,8 +39,8 @@ matplotlib.use('Agg',warn=False)
 
 		 
 import matplotlib.pyplot as plt
-import pylab
-from pylab import *
+import EMAN2.pylab as pylab
+from EMAN2.pylab import *
 
 import sys
 import numpy

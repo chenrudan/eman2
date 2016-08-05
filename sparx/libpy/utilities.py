@@ -49,7 +49,7 @@ def params_2D_3D(alpha, sx, sy, mirror):
 
 def params_3D_2D(phi, theta, psi, s2x, s2y):
 	"""
-		Convert 3D alignment parameters (phi, theta, psi, s2x, s2y)  # there is no mirror in 3D!
+		Convert 3D alignment parameters (phi, theta, psi, s2x, s2y)  # there is no mirror in 3D! 
 		into 2D alignment parameters (alpha, sx, sy, mirror)
 	"""
 	if theta > 90.0:
@@ -86,13 +86,13 @@ def amoeba(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itmax=500, data
 		  scale = the search scale for each variable, a list with one
 			  element for each variable.
 		  func = the function to maximize.
-
+		  
 	   Optional Input:
 		  ftolerance = convergence criterion on the function values (default = 1.e-4)
 		  xtolerance = convergence criterion on the variable values (default = 1.e-4)
 		  itmax = maximum number of iterations allowed (default = 500).
 		  data = data to be passed to func (default = None).
-
+		  
 	   Output:
 		  (varbest,funcvalue,iterations)
 		  varbest = a list of the variables at the maximum.
@@ -105,13 +105,13 @@ def amoeba(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itmax=500, data
 	     off.  But do not set both ftolerance and xtolerance to zero or the routine
 	     will exit immediately without finding the maximum.
 	   - To check for convergence, check if (iterations < itmax).
-
+		  
 	   The function should be defined like func(var,data) where
 	   data is optional data to pass to the function.
 
 	   Example:
-
-	       import amoeba
+	   
+	       import EMAN2.amoeba as amoeba
 	       def afunc(var,data=None): return 1.0-var[0]*var[0]-var[1]*var[1]
 	       print amoeba.amoeba([0.25,0.25],[0.5,0.5],afunc)
 
@@ -152,7 +152,7 @@ def amoeba(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itmax=500, data
 				ssbest = i
 			if fvalue[i] < fvalue[ssworst]:
 				ssworst = i
-
+		    
 		# get the average of the nsimplex-1 best vertices in the simplex
 		pavg = [0.0]*nvar
 		for i in xrange(nsimplex):
@@ -170,7 +170,7 @@ def amoeba(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itmax=500, data
 			frange = abs(fvalue[ssbest]-fvalue[ssworst])/fscale
 		else:
 			frange = 0.0  # all the fvalues are zero in this case
-
+		
 		# have we converged?
 		if (((ftolerance <= 0.0 or frange < ftolerance) and    # converged to maximum
 		 (xtolerance <= 0.0 or simscale < xtolerance)) or  # simplex contracted enough
@@ -221,8 +221,6 @@ def amoeba_multi_level(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itm
 	of lower level refinement.
 	"""
 	#print " ENTER AMOEBA MULTI LEVEL"
-	from mpi import mpi_comm_rank, MPI_COMM_WORLD
-	
 	nvar = len(var)       # number of variables in the minimization
 	nsimplex = nvar + 1   # number of vertices in the simplex
 
@@ -253,7 +251,7 @@ def amoeba_multi_level(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itm
 				ssbest = i
 			if fvalue[i][0] < fvalue[ssworst][0]:
 				ssworst = i
-
+		    
 		# get the average of the nsimplex-1 best vertices in the simplex
 		pavg = [0.0]*nvar
 		for i in xrange(nsimplex):
@@ -271,7 +269,7 @@ def amoeba_multi_level(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itm
 			frange = abs(fvalue[ssbest][0]-fvalue[ssworst][0])/fscale
 		else:
 			frange = 0.0  # all the fvalues are zero in this case
-
+		
 		# have we converged?
 		if (((ftolerance <= 0.0 or frange < ftolerance) and    # converged to maximum
 		(xtolerance <= 0.0 or simscale < xtolerance)) or  # simplex contracted enough
@@ -311,10 +309,7 @@ def amoeba_multi_level(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itm
 			simplex[ssworst][i] = pnew[i]
 		fvalue[ssworst] = fnew
 		iteration += 1
-
-
-		# if mpi_comm_rank(MPI_COMM_WORLD) == 7:
-		# 	print "Iteration:",iteration,"  ",ssbest,"  ", simplex[ssbest], "  ",fvalue[ssbest]
+		#print "Iteration:",iteration,"  ",ssbest,"  ",fvalue[ssbest]
 
 '''
 def golden(func, args=(), brack=None, tol=1.e-4, full_output=0):
@@ -327,7 +322,7 @@ def golden(func, args=(), brack=None, tol=1.e-4, full_output=0):
 
 	Uses analog of bisection method to decrease the bracketed interval.
 	"""
-	from utilities import bracketing
+	from EMAN2.utilities import bracketing
 	if brack is None:
 		xa,xb,xc,fa,fb,fc,funcalls = bracketing(func, args=args)
 	elif len(brack) == 2:
@@ -443,7 +438,7 @@ def bracketing(func, xa=0.0, xb=1.0, args=(), grow_limit=110.0, maxiter=1000):
 
 def ce_fit(inp_image, ref_image, mask_image):
 	""" Fit the histogram of the input image under mask with the reference image.
-
+		    
 	     Usage : ce_fit(inp_image,ref_image,mask_image):
 	    	 A and B, number of iterations and the chi-square
 	"""
@@ -469,8 +464,8 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		7. binarize at ave+sigma and cross-correlate with a circle
 	        The function will return centered_image, and shifts
 	"""
-	from   utilities    import peak_search
-	from   fundamentals import fshift
+	from EMAN2.utilities import peak_search
+	from EMAN2.fundamentals import fshift
 	import types
 	if type(image_to_be_centered) == types.StringType: image_to_be_centered = get_im(image_to_be_centered)
 	if    center_method == 0 :  return  image_to_be_centered,0.,0.
@@ -482,12 +477,12 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		return fshift(image_to_be_centered, -cs[0], -cs[1]), cs[0], cs[1]
 
 	elif center_method == 7:
-		from fundamentals import ccf, cyclic_shift
-		from morphology   import binarize
-		from utilities    import model_blank
-		from EMAN2        import rsconvolution
+		from EMAN2.fundamentals import ccf, cyclic_shift
+		from EMAN2.morphology import binarize
+		from EMAN2.utilities import model_blank
+		from EMAN2 import rsconvolution
 		p = Util.infomask(image_to_be_centered,None,True)
-		cc = binarize(rsconvolution(binarize(image_to_be_centered,p[0]+p[1]),model_blank(5,5,1,1.0/(5.0*5.0))),0.5)
+		cc = binarize(rsconvolution(binarize(image_to_be_centered,p[0]+p[1]),model_blank(5,5,1,1.0/(5.0*5.0))),0.5)	
 		c = ccf(cc, self_defined_reference)
 		p = Util.infomask(c,None,True)[3]
 		nx = c.get_xsize()
@@ -511,14 +506,14 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		return cyclic_shift(image_to_be_centered, -shiftx, -shifty), shiftx, shifty
 
 	elif center_method == 5:
-		from fundamentals import rot_avg_image,ccf
+		from EMAN2.fundamentals import rot_avg_image,ccf
 		from math import sqrt
 		not_centered = True
 		tmp_image = image_to_be_centered.copy()
 		shiftx = 0
 		shifty = 0
 		while (not_centered):
-			reference = rot_avg_image(tmp_image)
+			reference = rot_avg_image(tmp_image)			
 			ccmap = ccf(tmp_image, reference)
 			if searching_range > 0:  ccmap = Util.window(ccmap, searching_range, searching_range, 1, 0, 0, 0)
 			peak  = peak_search(ccmap)
@@ -530,7 +525,7 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		return centered_image, shiftx, shifty
 
 	elif center_method == 6:
-		from morphology import threshold_to_minval
+		from EMAN2.morphology import threshold_to_minval
 		nx = image_to_be_centered.get_xsize()
 		ny = image_to_be_centered.get_ysize()
 		r = nx//2-2
@@ -546,7 +541,7 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 	else :
 		nx = image_to_be_centered.get_xsize()
 		ny = image_to_be_centered.get_ysize()
-		from fundamentals import ccf
+		from EMAN2.fundamentals import ccf	
 		if center_method == 2 :
 			reference = model_gauss(Gauss_radius_inner, nx, ny)
 		if center_method == 3 :
@@ -573,11 +568,11 @@ def common_line_in3D(phiA,thetaA,phiB,thetaB):
 	from math import pi, sqrt, cos, sin, asin, atan2
 
 	piOver=pi/180.0;
-	ph1 = phiA*piOver;
-	th1 = thetaA*piOver;
-	ph2 = phiB*piOver;
+	ph1 = phiA*piOver; 
+	th1 = thetaA*piOver; 
+	ph2 = phiB*piOver; 
 	th2 = thetaB*piOver;
-
+	
  	#nx = cos(thetaBR)*sin(thetaAR)*sin(phiAR) - cos(thetaAR)*sin(thetaBR)*sin(phiBR) ;
 	#ny = cos(thetaAR)*sin(thetaBR)*cos(phiBR) - cos(thetaBR)*sin(thetaAR)*cos(phiAR) ;
 	#nz = sin(thetaAR)*sin(thetaBR)*sin(phiAR-phiBR);
@@ -588,7 +583,7 @@ def common_line_in3D(phiA,thetaA,phiB,thetaB):
 	nz = cos(th2)*sin(ph1)*cos(ph2)-cos(th1)*cos(ph1)*sin(ph2)
 
 	norm = nx*nx + ny*ny + nz*nz
-
+ 
 	if norm < 1e-5:
 		#print 'phiA,thetaA,phiB,thetaB:', phiA, thetaA, phiB, thetaB
 		return 0.0, 0.0
@@ -599,7 +594,7 @@ def common_line_in3D(phiA,thetaA,phiB,thetaB):
 	phiCom    = asin(nz/sqrt(norm))
 	#phiCom   = atan2(ny,nx)
 	thetaCom  = atan2(ny, nx)
-
+	
 	return phiCom*180.0/pi , thetaCom*180.0/pi
 
 def compose_transform2(alpha1, sx1, sy1, scale1, alpha2, sx2, sy2, scale2):
@@ -648,7 +643,7 @@ def compose_transform3(phi1,theta1,psi1,sx1,sy1,sz1,scale1,phi2,theta2,psi2,sx2,
 	Rcomp=R2*R1
 	d = Rcomp.get_params("spider")
 	return d["phi"],d["theta"],d["psi"],d["tx"],d["ty"],d["tz"],d["scale"]
-
+   
 def combine_params2(alpha1, sx1, sy1, mirror1, alpha2, sx2, sy2, mirror2):
 	"""
 	  Combine 2D alignent parameters including mirror: tt = t2*t1
@@ -786,9 +781,9 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 		        it to generate cushion projections within an/2 of the border of unique zone
 	"""
 
-	from math      import pi, sqrt, cos, acos, tan, sin
-	from utilities import even_angles_cd
-	from string    import lower,split
+	from math import pi, sqrt, cos, acos, tan, sin
+	from EMAN2.utilities import even_angles_cd
+	from string import lower,split
 	angles = []
 	symmetryLower = symmetry.lower()
 	symmetry_string = split(symmetry)[0]
@@ -821,7 +816,7 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 			t = n-i-1
 			qt = angles[t][0]
 			if((qt>=badb and qt<bade) or (qt>=bbdb and qt<bbde)):  del angles[t]
-
+			
 		if (int(symmetry_string[1:])%2 == 0):
 			qt = 360.0/2/int(symmetry_string[1:])
 		else:
@@ -832,7 +827,7 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 			if(angles[t][1] == 90.0):
 				if(angles[t][0] >= qt + ant ):  del angles[t]
 	elif(symmetry_string[0]  == "s"):
-
+	
 	#if symetry is "s", deltphi=delta, theata intial=theta1, theta end=90, delttheta=theta2
 		# for helical, theta1 cannot be 0.0
 		if theta1 > 90.0:
@@ -862,7 +857,7 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 					k=int(359.99/cn/delta)
 				elif (symmetry_string[1] =="d"):
 					k=int(359.99/2/cn/delta)
-
+						
 			for i in xrange(k+1):
 					angles.append([i*delta,90.0-j*theta2,90.0])
 
@@ -876,12 +871,12 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 		# c is (sin(thetac),0,cos(thetac))
 		# a is (sin(thetac)cos(Omega),sin(thetac)cos(Omega),cos(thetac))
 		# f is the normalized sum of all 3
-
+		
 		# The possible symmetries are in list_syms
 		# The symmetry determines thetac and Omega
-		# The spherical area is Omega - pi/3;
+		# The spherical area is Omega - pi/3; 
 		#  should be equal to 4 *pi/(3*# Faces)
-		#
+		#		
 		# symmetry ='tet';   delta  = 6;
 
 		scrunch = 0.9  # closeness factor to eliminate oversampling corners
@@ -889,7 +884,7 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 
 		piOver = pi/180.0
 		Count=0   # used to count the number of angles
-
+		
 		if (symmetryLower[0:3] =="tet"):  m=3.0; fudge=0.9 # fudge is a factor used to adjust phi steps
 		elif (symmetryLower[0:3] =="oct"):  m=4.0; fudge=0.8
 		elif (symmetryLower[0:3] =="ico"):  m=5.0; fudge=0.95
@@ -905,7 +900,7 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 		NumPoints = int(Area/(deltaRad*deltaRad))
 		fheight = 1/sqrt(3)/ (tan(OmegaR/2.0))
 
-		z0      = costhetac  # initialize loop
+		z0      = costhetac  # initialize loop	
 		z       = z0
 		phi     = 0
 		Deltaz  = (1-costhetac)/(NumPoints-1)
@@ -924,14 +919,14 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 			r= sqrt(1-z*z)
 			if (z > fheight): phiRmax= OmegaR/2.0
 			if (z<= fheight):
-				thetaR   = acos(z);
+				thetaR   = acos(z); 
 				cosStuff = (cos(thetaR)/sin(thetaR))*sqrt(1. - 2 *cosOmega);
 				phiMax   =  180.0*( OmegaR - acos(cosStuff))/pi
 			angleJump = fudge* delta/r
 			phi = (phi + angleJump)%(phiMax)
 			anglesNew = [phi,180.0*acos(z)/pi,0.];
 			nNew = [ sin(acos(z))*cos(phi*piOver) ,  sin(acos(z))*sin(phi*piOver) , z]
-			diffangleVec = [acos(nNew[0]*nVec[k][0] +   nNew[1]*nVec[k][1] +    nNew[2]*nVec[k][2] ) for k in xrange(Count)]
+			diffangleVec = [acos(nNew[0]*nVec[k][0] +   nNew[1]*nVec[k][1] +    nNew[2]*nVec[k][2] ) for k in xrange(Count)] 
 			diffMin = min(diffangleVec)
 			if (diffMin>angleJump*piOver *scrunch):
 				Count +=1
@@ -945,12 +940,12 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 		nLast=  [ 0., 0. , 1.]
 		nVec.append(nLast)
 		if(theta2 == 180.0):   angles.append( [0.0, 180.0, 0.0] )
-
+		
 		angles.reverse()
 		if(phiEqpsi == "Minus"):
 			for i in xrange(len(angles)):  angles[i][2] = (720.0-angles[i][0])%360.0
 		#print(Count,NumPoints)
-
+		
 #		look at the distribution
 #		Count =len(angles); piOver= pi/180.0;
 #		phiVec    =  [ angles[k][0] for k in range(Count)] ;
@@ -996,15 +991,15 @@ def even_angles_cd(delta, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, method
 	if( theta2 == 180.0 ):  angles.append( [0.0, 180.0, 0.0] )
 
 	return angles
-
+	
 def eigen_images_get(stack, eigenstack, mask, num, avg):
 	"""
-		Perform PCA on stack file
+		Perform PCA on stack file 
 		and Get eigen images
 	"""
-
-	from utilities import get_image
-
+	
+	from EMAN2.utilities import get_image
+	
 	a = Analyzers.get('pca_large')
 	e = EMData()
 	if(avg == 1): s = EMData()
@@ -1019,9 +1014,9 @@ def eigen_images_get(stack, eigenstack, mask, num, avg):
 	if(avg == 1): a -= s/nima
 	eigenimg = a.analyze()
 	if(num>= EMUtil.get_image_count(eigenimg)):
-		num=EMUtil.get_image_count(eigenimg)
+		num=EMUtil.get_image_count(eigenimg)	
 	for  i in xrange(num): eigenimg.write_image(eigenstack,i)
-
+		
 def find_inplane_to_match(phiA,thetaA,phiB,thetaB,psiA=0,psiB=0):
 	"""Find the z rotation such that
 	    ZA  RA is as close as possible to RB
@@ -1053,19 +1048,19 @@ def find(vv, cmp_str, n):
 	for jFound in xrange(len(vv)):
 		if (cmp_str=='lt'):
 			if (vv[jFound]<n):
-				jFoundVec.append(jFound);
+				jFoundVec.append(jFound);    
 		if (cmp_str=='le'):
 			if (vv[jFound]<=n):
-				jFoundVec.append(jFound);
+				jFoundVec.append(jFound);    
 		if (cmp_str=='eq'):
 			if (vv[jFound]==n):
-				jFoundVec.append(jFound);
+				jFoundVec.append(jFound);    
 		if (cmp_str=='ge'):
 			if (vv[jFound]>=n):
-				jFoundVec.append(jFound);
+				jFoundVec.append(jFound);    
 		if (cmp_str=='gt'):
 			if (vv[jFound]>n):
-				jFoundVec.append(jFound);
+				jFoundVec.append(jFound);    
 	return jFoundVec;
 
 def gauss_edge(sharp_edge_image, kernel_size = 7, gauss_standard_dev =3):
@@ -1074,7 +1069,7 @@ def gauss_edge(sharp_edge_image, kernel_size = 7, gauss_standard_dev =3):
 		1. The sharp-edge image is convoluted with a gassian kernel
 		2. The convolution normalized
 	"""
-	from utilities import model_gauss
+	from EMAN2.utilities import model_gauss
 	from EMAN2 import rsconvolution
 	nz = sharp_edge_image.get_ndim()
 	if(nz == 3):   kern = model_gauss(gauss_standard_dev, kernel_size , kernel_size, kernel_size)
@@ -1119,7 +1114,7 @@ def get_im(stackname, im = 0):
 
 def get_image_data(img):
 	"""
-		Return a NumPy array containing the image data.
+		Return a NumPy array containing the image data. 
 		Note: The NumPy array and the image data share the same memory,
 		so if the NumPy array is altered then the image is altered
 		as well (and vice versa).
@@ -1155,10 +1150,10 @@ def get_symt(symmetry):
 	return angs
 
 def get_textimage(fname):
-	"""
+	"""	
 		Return an image created from a text file.  The first line of
 		the image should contain "nx ny nz" (separated by whitespace)
-		All subsequent lines contain "ix iy iz val", where ix, iy,
+		All subsequent lines contain "ix iy iz val", where ix, iy, 
 		and iz are the integer x, y, and z coordinates of the point
 		and val is the floating point value of that point.  All points
 		not explicitly listed are set to zero.
@@ -1200,7 +1195,7 @@ def get_input_from_string(str_input):
 def hist_func(args, data):
 	#Util.hist_comp_freq(float PA,float PB,int size_img, int hist_len, float *img_ptr, float *ref_freq_bin, float *mask_ptr, float ref_h_diff, float ref_h_min)
 	return Util.hist_comp_freq(args[0],args[1],data[4],data[5],data[1],data[2],data[3],data[0][0],data[0][1])
-
+    	
 def info(image, mask=None, Comment=""):
 	"""Calculate and print the descriptive statistics of an image.
 
@@ -1232,16 +1227,16 @@ def info(image, mask=None, Comment=""):
 	return mean, sigma, imin, imax, nx, ny, nz
 
 def image_decimate(img, decimation=2, fit_to_fft=1,frequency_low=0, frequency_high=0):
-	from filter import filt_btwl
-	from fundamentals import smallprime, window2d
-	from utilities import get_image
+	from EMAN2.filter import filt_btwl
+	from EMAN2.fundamentals import smallprime, window2d
+	from EMAN2.utilities import get_image
 	"""
 		Window image to FFT-friendly size, apply Butterworth low pass filter,
-		and decimate 2D image
+		and decimate 2D image 
 	"""
 	if type(img)     == str :	img=get_image(img)
 	if decimation    <= 1   :  	ERROR("Improper decimation ratio", "image_decimation", 1)
-	if frequency_low <= 0   :
+	if frequency_low <= 0   :	
 		frequency_low  = .5/decimation- .05
 		if frequency_low <= 0: ERROR("Butterworth passband frequency is too low", "image_decimation", 1)
 		frequency_high = .5/decimation+ .05
@@ -1256,7 +1251,7 @@ def image_decimate(img, decimation=2, fit_to_fft=1,frequency_low=0, frequency_hi
 		e1  = filt_btwl(e, frequency_low, frequency_high)
 		img = Util.decimate(e1, int(decimation), int(decimation), 1)
 	else:
-
+		
 		e1  = filt_btwl(img, frequency_low, frequency_high)
 		img = Util.decimate(e1, int(decimation), int(decimation), 1)
 	return  img
@@ -1318,7 +1313,7 @@ def model_cylinder(radius, nx, ny, nz):
 
 def model_gauss_noise(sigma, nx, ny=1, nz=1):
 	"""
-	Create an image of noise having standard deviation "sigma",
+	Create an image of noise having standard deviation "sigma", 
 	and average 0.
 	"""
 	e = EMData()
@@ -1373,7 +1368,7 @@ def parse_spider_fname(mystr, *fieldvals):
 	def rm_stack_char(mystr):
 		"Helper function to remove a stack character if it exists"
 		stackloc = mystr.find("@")
-		if stackloc != -1:
+		if stackloc != -1: 
 			# there's an '@' somewhere
 			if len(mystr) - 1 == stackloc:
 				# It's at the end of the string
@@ -1439,20 +1434,20 @@ def peak_search(e, npeak = 1, invert = 1, print_screen = 0):
 	if(nlist > 0):
 		outpeaks = []
 		if(print_screen):
-			if  ndim == 1 :
+			if  ndim == 1 : 
 				print		      '%10s%10s%10s%10s%10s'%("Index  "," Peak_value","X   ",		     "Peak/P_max", "X-NX/2")
 				print_list_format(peaks[1:], 4)
 			elif ndim == 2 :
 				print	      '%10s%10s%10s%10s%10s%10s%10s'%("Index  ", "Peak_value","X   ","Y   ",	     "Peak/P_max", "X-NX/2", "Y-NY/2")
 				print_list_format(peaks[1:], 6)
-			elif ndim == 3 :
+			elif ndim == 3 : 
 				print '%10s%10s%10s%10s%10s%10s%10s%10s%10s'%("Index  ", "Peak_value","X   ","Y   ","Z   ", "Peak/P_max", "X-NX/2", "Y-NY/2", "Z-NZ/2")
 				print_list_format(peaks[1:], 8)
 			else:	ERROR("Image dimension extracted in peak_search is wrong", "Util.peak_search", 1)
 		for i in xrange(nlist):
 			k=int((ndim+1)*i*2)
 			if   ndim == 1 :  p=[peaks[k+1], peaks[k+2], peaks[k+3], peaks[k+4]]
-			elif ndim == 2 :  p=[peaks[k+1], peaks[k+2], peaks[k+3], peaks[k+4], peaks[k+5], peaks[k+6]]
+			elif ndim == 2 :  p=[peaks[k+1], peaks[k+2], peaks[k+3], peaks[k+4], peaks[k+5], peaks[k+6]]	
 			elif ndim == 3 :  p=[peaks[k+1], peaks[k+2], peaks[k+3], peaks[k+4], peaks[k+5], peaks[k+6], peaks[k+7], peaks[k+8]]
 			outpeaks.append(p)
 	else:
@@ -1529,7 +1524,7 @@ def print_slice(input, iz=0):
 		line.append("%4i " % iy)
 		for ix in xrange(nx):
 			line.append("%12.5g  " % (image.get_value_at(ix,iy,iz)))
-			if ((ix + 1) % 5 == 0):
+			if ((ix + 1) % 5 == 0): 
 				line.append("\n   ")
 				line.append("      ")
 	    	line.append("\n")
@@ -1604,13 +1599,13 @@ def print_image_slice(input, iz=0):
 		line.append("%4i " % iy)
 		for ix in xrange(nx):
 			line.append("%12.5g  " % (image.get_value_at(ix,iy,iz)))
-			if ((ix + 1) % 5 == 0):
+			if ((ix + 1) % 5 == 0): 
 				line.append("\n   ")
 				line.append("      ")
 	    	line.append("\n")
 	    	if(nx%5 != 0): line.append("\n")
 	print "".join(line)
-
+	
 def print_image_slice_3d(input, num=0,direction="z"):
 	"""Print the data in slice iz of an image to standard out in a format that agrees with v2
 
@@ -1633,7 +1628,7 @@ def print_image_slice_3d(input, num=0,direction="z"):
 			line.append("%4i " % iz)
 			for iy in xrange(ny):
 				line.append("%12.5g  " % (image.get_value_at(ix,iy,iz)))
-				if ((iy + 1) % 5 == 0):
+				if ((iy + 1) % 5 == 0): 
 					line.append("\n   ")
 					line.append("      ")
 	    		line.append("\n")
@@ -1649,7 +1644,7 @@ def print_image_slice_3d(input, num=0,direction="z"):
 			line.append("%4i " % iz)
 			for ix in xrange(nx):
 				line.append("%12.5g  " % (image.get_value_at(ix,iy,iz)))
-				if ((ix + 1) % 5 == 0):
+				if ((ix + 1) % 5 == 0): 
 					line.append("\n   ")
 					line.append("      ")
 	    		line.append("\n")
@@ -1665,17 +1660,17 @@ def print_image_slice_3d(input, num=0,direction="z"):
 			line.append("%4i " % iy)
 			for ix in xrange(nx):
 				line.append("%12.5g  " % (image.get_value_at(ix,iy,iz)))
-				if ((ix + 1) % 5 == 0):
+				if ((ix + 1) % 5 == 0): 
 					line.append("\n   ")
 					line.append("      ")
 	    		line.append("\n")
 	    		if(nx%5 != 0): line.append("\n")
 		print "".join(line)
-
+		
 
 def print_list_format(m, narray = 0):
-	from string 	import split
-	from math 	import sqrt
+	from string import split
+	from math import sqrt
 	import string
 	import types
 	"""
@@ -1790,7 +1785,7 @@ def read_text_row(fnam, format="", skip=";"):
 					for k in xrange(key):
 						k_start = 7       + k*13
 						k_stop  = k_start + 13
-						word.append(strg[k_start : k_stop])
+						word.append(strg[k_start : k_stop])				
 			line=[]
 			for i in xrange(len(word)):
 				try:  line.append(int(word[i]))
@@ -1818,25 +1813,39 @@ def write_text_row(data, file_name):
 		# It is a list of lists
 		for i in xrange(len(data)):
 			for j in xrange(len(data[i])):
-				tpt = data[i][j]
-				qtp = type(tpt)
-				if qtp == types.IntType:			outf.write("  %12d"%tpt)
-				elif qtp == types.FloatType:
-					if( float(int(tpt)) == tpt ):	outf.write("  %12.5e"%tpt)
-					else:							outf.write("  %12.5g"%tpt)
-				else:                   			outf.write("  %s"%tpt)
+				qtp = type(data[i][j])
+				if qtp == type(0):
+					outf.write("  %12d"%data[i][j])
+				elif qtp == type(0.0):
+					# NOTE: 2015/05/27 Toshio Moriya
+					# Since %12.5g does not work as the Python spec,
+					# we manually mimic the spec.  
+					# %12.5g results in int when a float value has only one non-zero digit after decimal point 
+					a = data[i][j]
+					z = (a>0.00001 and a<1.e6) or (a<-0.00001 and a>-1.e4)
+					if z: outf.write("  %12.5f"%a)
+					else: outf.write("  %12.5e"%a)
+				else:
+					outf.write("  %s"%data[i][j])
 			outf.write("\n")
 	else:
 		# Single list
 		for j in xrange(len(data)):
-			tpt = data[j]
-			qtp = type(tpt)
-			if qtp == types.IntType :			outf.write("  %12d\n"%tpt)
-			elif qtp == types.FloatType:
-				if( float(int(tpt)) == tpt ):	outf.write("  %12.5e\n"%tpt)
-				else:							outf.write("  %12.5g\n"%tpt)
-			elif qtp == types.IntType :  		outf.write("  %12.5g\n"%tpt)
-			else:								outf.write("  %s\n"%tpt)
+			qtp = type(data[j])
+			if qtp == type(0):
+				outf.write("  %12d"%data[j])
+			elif qtp == type(0.0):
+				# NOTE: 2015/05/27 Toshio Moriya
+				# Since %12.5g does not work as the Python spec,
+				# we manually mimic the spec.  
+				# %12.5g results in int when a float value has only one non-zero digit after decimal point 
+				a = data[j]
+				z = (a>0.00001 and a<1.e6) or (a<-0.00001 and a>-1.e4)
+				if z: outf.write("  %12.5f\n"%a)
+				else: outf.write("  %12.5e\n"%a)
+			else:
+				outf.write("  %s"%data[j])
+		outf.write("  \n")
 	outf.flush()
 	outf.close()
 
@@ -1846,7 +1855,7 @@ def read_text_file(file_name, ncol = 0):
 		Read data from text file, if ncol = -1, read all columns
 		if ncol >= 0, just read the (ncol)-th column.
 	"""
-
+	
 	from string import split
 	inf = file(file_name, "r")
 	line = inf.readline()
@@ -1884,43 +1893,56 @@ def write_text_file(data, file_name):
 	         First list will be written as a first column, second as a second, and so on...
 		 If only one list is given, the file will contain one column
 	"""
-
+	
 	if data == []:
 		outf = open(file_name, "w")
 		outf.close()
 		return
-
+	
 	import types
 	outf = open(file_name, "w")
 	if (type(data[0]) == types.ListType):
 		# It is a list of lists
 		for i in xrange(len(data[0])):
 			for j in xrange(len(data)):
-				tpt = data[j][i]
-				qtp = type(tpt)
-				if qtp == types.IntType:		outf.write("  %12d"%tpt)
-				elif qtp == types.FloatType:
-					if( float(int(tpt)) == tpt ):	outf.write("  %12.5e"%tpt)
-					else:							outf.write("  %12.5g"%tpt)
-				else:                   		outf.write("  %s"%tpt)
+				qtp = type(data[j][i])
+				if qtp == type(0):
+					outf.write("  %12d"%data[j][i])
+				elif qtp == type(0.0):
+					# NOTE: 2015/05/27 Toshio Moriya
+					# Since %12.5g does not work as the Python spec,
+					# we manually mimic the spec.  
+					# %12.5g results in int when a float value has only one non-zero digit after decimal point 
+					a = data[j][i]
+					z = (a>0.00001 and a<1.e6) or (a<-0.00001 and a>-1.e4)
+					if z: outf.write("  %12.5f"%a)
+					else: outf.write("  %12.5e"%a)
+				else:
+					outf.write("  %s"%data[j][i])
 			outf.write("\n")
 	else:
-		# Single list
+		# Single list 
 		for j in xrange(len(data)):
-			tpt = data[j]
-			qtp = type(tpt)
-			if qtp == types.IntType :			outf.write("  %12d\n"%tpt)
-			elif qtp == types.FloatType:
-				if( float(int(tpt)) == tpt ):	outf.write("  %12.5e\n"%tpt)
-				else:							outf.write("  %12.5g\n"%tpt)
-			elif qtp == types.IntType :			outf.write("  %12.5g\n"%tpt)
-			else:                   			outf.write("  %s\n"%tpt)
+			qtp = type(data[j])
+			if qtp == type(0):
+				outf.write("  %12d\n"%data[j])
+			elif qtp == type(0.0):
+				# NOTE: 2015/05/27 Toshio Moriya
+				# Since %12.5g does not work as the Python spec,
+				# we manually mimic the spec.  
+				# %12.5g results in int when a float value has only one non-zero digit after decimal point 
+				a = data[j]
+				z = (a>0.00001 and a<1.e6) or (a<-0.00001 and a>-1.e4)
+				if z: outf.write("  %12.5f\n"%a)
+				else: outf.write("  %12.5e\n"%a)
+			else:
+				outf.write("  %s\n"%data[j])
 	outf.close()
 
 def reconstitute_mask(image_mask_applied_file, new_mask_file, save_file_on_disk = True, saved_file_name = "image_in_reconstituted_mask.hdf"):
 	import types
 	"""
-		Substitute masked area value with image average
+		Substitute masked area value with image average 
 	"""
 	if type(image_mask_applied_file) == types.StringType:
 		nima = EMUtil.get_image_count(image_mask_applied_file)
@@ -1932,10 +1954,10 @@ def reconstitute_mask(image_mask_applied_file, new_mask_file, save_file_on_disk 
 				image_mask_applied.append(e)
 		else:
 			image_mask_applied = get_im(image_mask_applied_file)
-	elif  type(image_mask_applied_file) == types.ListType:
+	elif  type(image_mask_applied_file) == types.ListType:   
 		nima =  len( image_mask_applied )
 		image_mask_applied = image_mask_applied_file
-	if type(new_mask_file) == types.StringType:
+	if type(new_mask_file) == types.StringType:     
 		new_mask = get_im( new_mask_file )
         elif type(new_mask_file) == types.IntType or type( new_mask_file ) == types.floatType:
 		if nima > 1:
@@ -1955,7 +1977,7 @@ def reconstitute_mask(image_mask_applied_file, new_mask_file, save_file_on_disk 
 			image_in_reconstituted_mask.append (tmp_image)
 			if (save_file_on_disk ):  image_in_reconstituted_mask[i].write_image(saved_file_name, i)
 		if(not save_file_on_disk):  return  image_in_reconstituted_mask
-	else :
+	else :  
 		if(save_file_on_disk ):
 			image_in_reconstituted_mask = Util.reconstitute_image_mask(image_mask_applied, new_mask)
 			image_in_reconstituted_mask.write_image(saved_file_name)
@@ -2000,8 +2022,9 @@ def rotate_shift_params(paramsin, transf):
 	return cpar
 
 
+'''
 #  01/06/2016 - This is my recoding of old FORTRAN code with the hope that python's double precission
-#                 will fix the problem of rotation of a 0,0,0 direction.  It does not as one neeeds psi
+#                 will fix the problem of roation of a 0,0,0 direction.  It does not as one neeed psi
 #                 in this case as well.  So, the only choice is to use small theta instead of exact 0,0,0 direction
 def rotate_params(params, transf):
 	matinv = rotmatrix( -transf[2], -transf[1], -transf[0] )
@@ -2056,7 +2079,7 @@ def recmat(mat):
 	# limit precision
 	for i in xrange(3):
 		for j in xrange(3):
-			mat[i][j] = inmat[i][j]
+			mat[i][j] = inmat[i][j]	
 			#if(abs(inmat[i][j])<1.0e-8):  mat[i][j] = 0.0
 			#else: mat[i][j] = inmat[i][j]
 	for i in xrange(3):
@@ -2101,8 +2124,8 @@ def recmat(mat):
 	return  degrees(round(phi,10)%pi2),degrees(round(theta,10)%pi2),degrees(round(psi,10)%pi2)
 	#return  degrees(round(phi,10)%pi2)%360.0,degrees(round(theta,10)%pi2)%360.0,degrees(round(psi,10)%pi2)%360.0
 	#return  degrees(phi)%360.0,degrees(theta)%360.0,degrees(psi)%360.0
-
-def reduce2asymmetric_D(angles_list, symmetry="d2"):
+'''
+def reduce2asymmetric_D(angles_list,symmetry="d2"):
 	sym_number =int(symmetry[1:])
 	sym_angle  =360./sym_number
 	badb      = 360.0/int(symmetry[1:])/4
@@ -2143,22 +2166,27 @@ def reduce2asymmetric_D(angles_list, symmetry="d2"):
 	return alist
 
 def reduce2asymmetric_C(angles_list,symmetry="c1"):
-	sym_angle  = 360.0/int(symmetry[1:])
-	alist      = []
+	sym_number =int(symmetry[1:])
+	sym_angle  =360./sym_number
+	alist      =[]
 	for index in xrange(len(angles_list)):
 		if len(angles_list[index]) == 3:
 			[phi,theta,psi] = angles_list[index]
 		else:
 			[phi,theta,psi,sx,sy] = angles_list[index]
-		phi = phi%sym_angle
-		alist.append([phi,theta,psi])
+		if theta > 90.: # mirror back lower hemisphere to upper one
+			phi   = (phi+540.0)%360.0
+			theta = 180.0-theta
+			psi   = (540.0-psi)%360.0
+		phi=phi%sym_angle
+		alist.append([phi,theta,psi])			
 	return alist
 
 def reduce_to_asymmetric_unit(angles_list,symmetry):
 	from string import atoi
-	sym_type   = symmetry[0:1].lower()
+	sym_type   =symmetry[0:1].lower()
 	if sym_type=="c":
-		flist = reduce2asymmetric_C(angles_list, symmetry=symmetry)
+		flist = reduce2asymmetric_C(angles_list,symmetry=symmetry)
 		return flist
 	elif sym_type=="d":
 		new_angleslist1 = reduce2asymmetric_D(angles_list, symmetry=symmetry)
@@ -2221,18 +2249,18 @@ def estimate_3D_center(data):
 	N = len(ali_params)
 	A = []
 	b = []
-
+	
 	for i in xrange(N):
 		phi_rad   = radians(ali_params[i][0])
 		theta_rad = radians(ali_params[i][1])
 		psi_rad   = radians(ali_params[i][2])
-		A.append([cos(psi_rad)*cos(theta_rad)*cos(phi_rad)-sin(psi_rad)*sin(phi_rad),
+		A.append([cos(psi_rad)*cos(theta_rad)*cos(phi_rad)-sin(psi_rad)*sin(phi_rad), 
 			cos(psi_rad)*cos(theta_rad)*sin(phi_rad)+sin(psi_rad)*cos(phi_rad), -cos(psi_rad)*sin(theta_rad), 1, 0])
-		A.append([-sin(psi_rad)*cos(theta_rad)*cos(phi_rad)-cos(psi_rad)*sin(phi_rad),
-			-sin(psi_rad)*cos(theta_rad)*sin(phi_rad)+cos(psi_rad)*cos(phi_rad), sin(psi_rad)*sin(theta_rad), 0, 1])
+		A.append([-sin(psi_rad)*cos(theta_rad)*cos(phi_rad)-cos(psi_rad)*sin(phi_rad), 
+			-sin(psi_rad)*cos(theta_rad)*sin(phi_rad)+cos(psi_rad)*cos(phi_rad), sin(psi_rad)*sin(theta_rad), 0, 1])	
 		b.append([ali_params[i][3]])
 		b.append([ali_params[i][4]])
-
+	
 	A_matrix = matrix(A)
 	b_matrix = matrix(b)
 
@@ -2247,7 +2275,7 @@ def estimate_3D_center_MPI(data, nima, myid, number_of_proc, main_node, mpi_comm
 	from numpy import linalg
 	from mpi import MPI_COMM_WORLD
 	from mpi import mpi_recv, mpi_send, MPI_FLOAT
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
@@ -2277,18 +2305,18 @@ def estimate_3D_center_MPI(data, nima, myid, number_of_proc, main_node, mpi_comm
 
 		A = []
 		b = []
-
+	
 		for i in xrange(N):
 			phi_rad   = radians(ali_params[i][0])
 			theta_rad = radians(ali_params[i][1])
 			psi_rad   = radians(ali_params[i][2])
-			A.append([cos(psi_rad)*cos(theta_rad)*cos(phi_rad)-sin(psi_rad)*sin(phi_rad),
+			A.append([cos(psi_rad)*cos(theta_rad)*cos(phi_rad)-sin(psi_rad)*sin(phi_rad), 
 				cos(psi_rad)*cos(theta_rad)*sin(phi_rad)+sin(psi_rad)*cos(phi_rad), -cos(psi_rad)*sin(theta_rad), 1, 0])
-			A.append([-sin(psi_rad)*cos(theta_rad)*cos(phi_rad)-cos(psi_rad)*sin(phi_rad),
-				-sin(psi_rad)*cos(theta_rad)*sin(phi_rad)+cos(psi_rad)*cos(phi_rad), sin(psi_rad)*sin(theta_rad), 0, 1])
+			A.append([-sin(psi_rad)*cos(theta_rad)*cos(phi_rad)-cos(psi_rad)*sin(phi_rad), 
+				-sin(psi_rad)*cos(theta_rad)*sin(phi_rad)+cos(psi_rad)*cos(phi_rad), sin(psi_rad)*sin(theta_rad), 0, 1])	
 			b.append([ali_params[i][3]])
 			b.append([ali_params[i][4]])
-
+		
 		A_matrix = matrix(A)
 		b_matrix = matrix(b)
 
@@ -2299,8 +2327,8 @@ def estimate_3D_center_MPI(data, nima, myid, number_of_proc, main_node, mpi_comm
 		image_start_proc, image_end_proc = MPI_start_end(nima, number_of_proc, myid)
 		n_params = (image_end_proc - image_start_proc)*5
 		mpi_send(ali_params_series, n_params, MPI_FLOAT, main_node, myid, mpi_comm)
-
-		return 0.0, 0.0, 0.0, 0.0, 0.0
+		
+		return 0.0, 0.0, 0.0, 0.0, 0.0	
 
 
 def rotate_3D_shift(data, shift3d):
@@ -2322,20 +2350,20 @@ def sym_vol(image, symmetry="c1"):
 def set_arb_params(img, params, par_str):
 
 	"""
-		filling arbitary headers
+		filling arbitary headers 
 	"""
 	for i in xrange(len(par_str)): img.set_attr_dict({par_str[i]:params[i]})
 
 def get_arb_params(img, par_str):
 
 	"""
-		reading arbitary headers
+		reading arbitary headers 
 	"""
 	params=[]
 	for i in xrange(len(par_str)): params.append(img.get_attr(par_str[i]))
 	return params
 
-###------------------------------------------------------------------------------------------
+###------------------------------------------------------------------------------------------	
 
 def start_time():
 	import time
@@ -2374,7 +2402,7 @@ def running_time_txt(start_time):
 def reduce_array_to_root(data, myid, main_node = 0, comm = -1):
 	from numpy import array, shape, reshape
 	from mpi import MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD, mpi_reduce, mpi_barrier
-
+	
 	if comm == -1:  comm = MPI_COMM_WORLD
 	n = shape(data)
 	ntot = 1
@@ -2395,8 +2423,8 @@ def reduce_array_to_root(data, myid, main_node = 0, comm = -1):
 
 def reduce_EMData_to_root(data, myid, main_node = 0, comm = -1):
 	from numpy import shape, reshape
-	from mpi   import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD, mpi_barrier
-
+	from mpi import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD, mpi_barrier
+	
 	if comm == -1 or comm == None:  comm = MPI_COMM_WORLD
 
 	array = get_image_data(data)
@@ -2420,7 +2448,7 @@ def bcast_compacted_EMData_all_to_all(list_of_em_objects, myid, comm=-1):
 	"""
 	The assumption in <<bcast_compacted_EMData_all_to_all>> is that each processor
 	calculates part of the list of elements and then each processor sends
-	its results to the other ones.
+	its results to the other ones. I
 
 	Therefore, each processor has access to the header. If we assume that the
 	attributes of interest from the header are the same for all elements then
@@ -2428,7 +2456,7 @@ def bcast_compacted_EMData_all_to_all(list_of_em_objects, myid, comm=-1):
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
@@ -2450,11 +2478,11 @@ def bcast_compacted_EMData_all_to_all(list_of_em_objects, myid, comm=-1):
 
 	if myid == first_myid_process_that_has_em_elements:
 		# used for copying the header and other info
-
+		
 		reference_em_object = list_of_em_objects[ref_start]
 		data = EMNumPy.em2numpy(reference_em_object)
 		size_of_one_refring_assumed_common_to_all = data.size
-
+		
 		nx = reference_em_object.get_xsize()
 		ny = reference_em_object.get_ysize()
 		nz = reference_em_object.get_zsize()
@@ -2462,22 +2490,28 @@ def bcast_compacted_EMData_all_to_all(list_of_em_objects, myid, comm=-1):
 		em_dict = reference_em_object.get_attr_dict()
 		dict_to_send = {"size_of_one_refring_assumed_common_to_all":size_of_one_refring_assumed_common_to_all, \
 						"em_dict":em_dict, "nx":nx, "ny":ny, "nz":nz}
-	else:
-		dict_to_send = None
+		
+		try:
+			str_to_send = str(dict_to_send)
+		except:
+			raise ValueError("Could not convert em attribute dictionary to string s that bcast_compacted_EMData_all_to_all can be used.")
+		
+	else: str_to_send = ""
 
-	dict_received = wrap_mpi_bcast(dict_to_send, first_myid_process_that_has_em_elements, comm)
-
+	str_to_send = send_string_to_all(str_to_send, first_myid_process_that_has_em_elements)
+	
+	dict_received = eval(str_to_send)
 	em_dict = dict_received["em_dict"]
 	nx = dict_received["nx"]
 	ny = dict_received["ny"]
 	nz = dict_received["nz"]
 	size_of_one_refring_assumed_common_to_all = dict_received["size_of_one_refring_assumed_common_to_all"]
-
+	
 	if size_of_one_refring_assumed_common_to_all*(ref_end-ref_start) > (2**31-1):
 		print "Sending refrings: size of data to broadcast is greater than 2GB"
 
 	for sender_id in range(ncpu):
-		sender_ref_start, sender_ref_end = MPI_start_end(num_ref, ncpu, sender_id)
+		sender_ref_start, sender_ref_end = MPI_start_end(num_ref, ncpu, sender_id)		
 
 		if sender_id == myid:
 			if ref_start == ref_end:
@@ -2525,7 +2559,7 @@ def bcast_compacted_EMData_all_to_all___original(list_of_em_objects, myid, comm=
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
@@ -2537,7 +2571,7 @@ def bcast_compacted_EMData_all_to_all___original(list_of_em_objects, myid, comm=
 	ncpu = mpi_comm_size(comm)	# Total number of processes, passed by --np option.
 
 	ref_start, ref_end = MPI_start_end(num_ref, ncpu, myid)
-
+	
 	# used for copying the header
 	reference_em_object = list_of_em_objects[ref_start]
 	nx = reference_em_object.get_xsize()
@@ -2554,10 +2588,10 @@ def bcast_compacted_EMData_all_to_all___original(list_of_em_objects, myid, comm=
 	is_complex = reference_em_object.get_attr_default("is_complex",1)
 	is_fftpad = reference_em_object.get_attr_default("is_fftpad",1)
 	is_fftodd = reference_em_object.get_attr_default("is_fftodd", nz%2)
-
+	
 	data = EMNumPy.em2numpy(list_of_em_objects[ref_start])
 	size_of_one_refring_assumed_common_to_all = data.size
-
+	
 	# n = shape(data)
 	# size_of_one_refring_assumed_common_to_all = 1
 	# for i in n: size_of_one_refring_assumed_common_to_all *= i
@@ -2591,7 +2625,7 @@ def bcast_compacted_EMData_all_to_all___original(list_of_em_objects, myid, comm=
 					image_data = reshape(image_data, (nz, ny, nx))
 				elif ny != 1:
 					image_data = reshape(image_data, (ny, nx))
-
+					
 				em_object = EMNumPy.numpy2em(image_data)
 
 				# em_object.set_complex(is_complex)
@@ -2614,7 +2648,7 @@ def bcast_compacted_EMData_all_to_all___original(list_of_em_objects, myid, comm=
 def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_all_em_objects_distributed_across_processes, list_of_em_objects_for_myid_process, myid, comm=-1):
 
 	"""
-
+	
 	The assumption in <<gather_compacted_EMData_to_root>> is that each processor
 	calculates part of the list of elements and then each processor sends
 	its results to the root
@@ -2625,7 +2659,7 @@ def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_al
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
@@ -2638,11 +2672,11 @@ def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_al
 	ref_start, ref_end = MPI_start_end(number_of_all_em_objects_distributed_across_processes, ncpu, myid)
 	ref_end -= ref_start
 	ref_start = 0
-
+	
 	# used for copying the header
 	reference_em_object = list_of_em_objects_for_myid_process[ref_start]
 	try:
-
+		
 		str_to_send = str(reference_em_object.get_attr_dict())
 
 		# print "\nFFFFFFFFFFFFFF\n\n", reference_em_object.get_attr_dict(), "\n\n\n"
@@ -2670,10 +2704,10 @@ def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_al
 	# is_complex = reference_em_object.get_attr_default("is_complex",1)
 	# is_fftpad = reference_em_object.get_attr_default("is_fftpad",1)
 	# is_fftodd = reference_em_object.get_attr_default("is_fftodd", nz%2)
-
+	
 	data = EMNumPy.em2numpy(list_of_em_objects_for_myid_process[ref_start])
 	size_of_one_refring_assumed_common_to_all = data.size
-
+	
 	# n = shape(data)
 	# size_of_one_refring_assumed_common_to_all = 1
 	# for i in n: size_of_one_refring_assumed_common_to_all *= i
@@ -2690,26 +2724,26 @@ def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_al
 				data = concatenate([data, EMNumPy.em2numpy(list_of_em_objects_for_myid_process[i])])
 				# str_to_send += str(list_of_em_objects_for_myid_process[i].get_attr_dict())
 				em_dict_to_send_list.append(list_of_em_objects_for_myid_process[i].get_attr_dict())
-
+				
 		else:
 			data = array([], dtype = 'float32')
 
 		sender_ref_start, sender_ref_end = MPI_start_end(number_of_all_em_objects_distributed_across_processes, ncpu, sender_id)
 
 		sender_size_of_refrings = (sender_ref_end - sender_ref_start)*size_of_one_refring_assumed_common_to_all
-
-		from mpi import mpi_recv, mpi_send, mpi_barrier
+		
+		from mpi import mpi_recv, mpi_send, MPI_TAG_UB, mpi_barrier
 		if myid == 0:
 			# print "root, receiving from ", sender_id, "  sender_size_of_refrings = ", sender_size_of_refrings
 			str_to_receive = wrap_mpi_recv(sender_id)
 			em_dict_list = eval(str_to_receive)
 			# print "em_dict_list", em_dict_list
-			data = mpi_recv(sender_size_of_refrings, MPI_FLOAT, sender_id, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			data = mpi_recv(sender_size_of_refrings,MPI_FLOAT, sender_id, MPI_TAG_UB, MPI_COMM_WORLD)
 		elif sender_id == myid:
 			wrap_mpi_send(str(em_dict_to_send_list), 0)
 			# print "sender_id = ", sender_id, "sender_size_of_refrings = ", sender_size_of_refrings
-			mpi_send(data, sender_size_of_refrings, MPI_FLOAT, 0, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-
+			mpi_send(data, sender_size_of_refrings, MPI_FLOAT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
+		
 		mpi_barrier(MPI_COMM_WORLD)
 
 		# if myid != sender_id:
@@ -2724,7 +2758,7 @@ def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_al
 					image_data = reshape(image_data, (nz, ny, nx))
 				elif ny != 1:
 					image_data = reshape(image_data, (ny, nx))
-
+					
 				em_object = EMNumPy.numpy2em(image_data)
 				em_object.set_attr_dict(em_dict_list[i - sender_ref_start])
 
@@ -2743,13 +2777,13 @@ def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_al
 
 				# list_of_em_objects[i] = em_object
 				list_of_em_objects_for_myid_process.append(em_object)
-
+				
 		mpi_barrier(MPI_COMM_WORLD)
 
 def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_processes, list_of_em_objects_for_myid_process, myid, comm=-1):
 
 	"""
-
+	
 	The assumption in <<gather_compacted_EMData_to_root>> is that each processor
 	calculates part of the list of elements and then each processor sends
 	its results to the root
@@ -2760,12 +2794,11 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
 	from numpy import reshape
-	from mpi import mpi_recv, mpi_send, mpi_barrier
 
 	if comm == -1 or comm == None: comm = MPI_COMM_WORLD
 
@@ -2774,8 +2807,7 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 	ref_start, ref_end = MPI_start_end(number_of_all_em_objects_distributed_across_processes, ncpu, myid)
 	ref_end -= ref_start
 	ref_start = 0
-	tag_for_send_receive = 123456
-
+	
 	# used for copying the header
 	reference_em_object = list_of_em_objects_for_myid_process[ref_start]
 	nx = reference_em_object.get_xsize()
@@ -2792,10 +2824,10 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 	is_complex = reference_em_object.get_attr_default("is_complex",1)
 	is_fftpad = reference_em_object.get_attr_default("is_fftpad",1)
 	is_fftodd = reference_em_object.get_attr_default("is_fftodd", nz%2)
-
+	
 	data = EMNumPy.em2numpy(list_of_em_objects_for_myid_process[ref_start])
 	size_of_one_refring_assumed_common_to_all = data.size
-
+	
 	# n = shape(data)
 	# size_of_one_refring_assumed_common_to_all = 1
 	# for i in n: size_of_one_refring_assumed_common_to_all *= i
@@ -2814,14 +2846,15 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 		sender_ref_start, sender_ref_end = MPI_start_end(number_of_all_em_objects_distributed_across_processes, ncpu, sender_id)
 
 		sender_size_of_refrings = (sender_ref_end - sender_ref_start)*size_of_one_refring_assumed_common_to_all
-
+		
+		from mpi import mpi_recv, mpi_send, MPI_TAG_UB, mpi_barrier
 		if myid == 0:
 			# print "root, receiving from ", sender_id, "  sender_size_of_refrings = ", sender_size_of_refrings
-			data = mpi_recv(sender_size_of_refrings,MPI_FLOAT, sender_id, tag_for_send_receive, MPI_COMM_WORLD)
+			data = mpi_recv(sender_size_of_refrings,MPI_FLOAT, sender_id, MPI_TAG_UB, MPI_COMM_WORLD)
 		elif sender_id == myid:
 			# print "sender_id = ", sender_id, "sender_size_of_refrings = ", sender_size_of_refrings
-			mpi_send(data, sender_size_of_refrings, MPI_FLOAT, 0, tag_for_send_receive, MPI_COMM_WORLD)
-
+			mpi_send(data, sender_size_of_refrings, MPI_FLOAT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
+		
 		mpi_barrier(MPI_COMM_WORLD)
 
 		# if myid != sender_id:
@@ -2836,7 +2869,7 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 					image_data = reshape(image_data, (nz, ny, nx))
 				elif ny != 1:
 					image_data = reshape(image_data, (ny, nx))
-
+					
 				em_object = EMNumPy.numpy2em(image_data)
 
 				# em_object.set_complex(is_complex)
@@ -2854,14 +2887,14 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 
 				# list_of_em_objects[i] = em_object
 				list_of_em_objects_for_myid_process.append(em_object)
-
+				
 		mpi_barrier(MPI_COMM_WORLD)
 
 
 def bcast_EMData_to_all(tavg, myid, source_node = 0, comm = -1):
 	from EMAN2 import EMNumPy
 	from numpy import array, shape, reshape
-	from mpi   import mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
+	from mpi import mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
 
 	if comm == -1 or comm == None: comm = MPI_COMM_WORLD
 	tavg_data = EMNumPy.em2numpy(tavg)
@@ -2878,23 +2911,23 @@ def bcast_EMData_to_all(img, myid, main_node = 0, comm = -1):
 
 	# Comment by Zhengfan Yang on 01/05/10
 	#
-	# Notice:
+	# Notice: 
 	# (1) one should use this new version of broadcasting EMData in the following way:
 	# 	img = bcast_EMData_to_all(img, myid, main_node, comm)
 	# instead of
 	# 	bcast_EMData_to_all(img, myid, main_node, comm)
 	# The latter is inconsistent with mpi_bcast() and difficult to implement efficiently
 	#
-	# (2) To be consistent with send_EMData() and recv_EMData(), we assume that the node
-	# other than the broadcasting node know nothing about the EMData(). Therefore, one
-	# need to broadcast the size of EMData() and two attributes: is_complex and is_ri.
+	# (2) To be consistent with send_EMData() and recv_EMData(), we assume that the node 
+	# other than the broadcasting node know nothing about the EMData(). Therefore, one 
+	# need to broadcast the size of EMData() and two attributes: is_complex and is_ri. 
 	# For all other attributes, you are on your own.
 
 	from numpy import reshape
 	from mpi import mpi_bcast, MPI_INT, MPI_FLOAT, MPI_COMM_WORLD
 
 	if comm == -1: comm = MPI_COMM_WORLD
-
+	
 	img_head = []
 	if myid == main_node:
 		img_head.append(img.get_xsize())
@@ -2929,7 +2962,7 @@ def reduce_EMData_to_root(img, myid, main_node = 0, comm = -1):
 
 	# Comment by Zhengfan Yang on 01/05/10
 	#
-	# Notice:
+	# Notice: 
 	# (1) one should use this new version of reducing EMData in the following way:
 	# 	img = reduce_EMData_to_root(img, myid, main_node, comm)
 	# instead of
@@ -2937,17 +2970,17 @@ def reduce_EMData_to_root(img, myid, main_node = 0, comm = -1):
 	# The latter is inconsistent with mpi_bcast() and difficult to implement efficiently
 
 	from numpy import reshape
-	from mpi   import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD
-
+	from mpi import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD
+	
 	if comm == -1: comm = MPI_COMM_WORLD
-
+	
 	nx = img.get_xsize()
 	ny = img.get_ysize()
 	nz = img.get_zsize()
 	is_complex = img.is_complex()
 	is_ri = img.is_ri()
 	ntot = nx*ny*nz
-
+	
 	img_data = EMNumPy.em2numpy(img)
 	img_data = mpi_reduce(img_data, ntot, MPI_FLOAT, MPI_SUM, main_node, comm)
 
@@ -2969,7 +3002,7 @@ def reduce_EMData_to_root(img, myid, main_node = 0, comm = -1):
 
 def send_EMData(img, dst, tag, comm=-1):
 	from mpi import mpi_send, MPI_INT, MPI_FLOAT, MPI_COMM_WORLD
-
+	
 	if comm == -1: comm = MPI_COMM_WORLD
 	img_head = []
 	img_head.append(img.get_xsize())
@@ -3011,7 +3044,7 @@ def recv_EMData(src, tag, comm=-1):
 	from numpy import reshape
 	from EMAN2 import EMNumPy
 
-
+	
 	if comm==-1: comm = MPI_COMM_WORLD
 	head_tag = 2*tag
 	img_head = mpi_recv(11, MPI_INT, src, head_tag, comm)
@@ -3024,7 +3057,7 @@ def recv_EMData(src, tag, comm=-1):
 
 	data_tag = 2*tag+1
 	ntot = nx*ny*nz
-
+	
 	img_data = mpi_recv(ntot, MPI_FLOAT, src, data_tag, comm)
 	if nz != 1:
 		img_data = reshape(img_data, (nz, ny, nx))
@@ -3038,7 +3071,7 @@ def recv_EMData(src, tag, comm=-1):
 	img.set_ri(is_ri)
 	img.set_attr_dict({"changecount":int(img_head[5]),  "is_complex_x":int(img_head[6]),  "is_complex_ri":int(img_head[7]),  "apix_x":int(img_head[8])/10000.0,  "apix_y":int(img_head[9])/10000.0,  "apix_z":int(img_head[10])/10000.0})
 	return img
-
+		
 	'''
 	#construct a EMData by taking the ownership of numpy array, no memory copying  --Grant Tang
 	#recv_data_numeric = mpi_recv(ntot, MPI_FLOAT, src, data_tag, comm)
@@ -3056,9 +3089,9 @@ def recv_EMData(src, tag, comm=-1):
 
 	data1d = reshape( get_image_data(img), (ntot,) )
 	tmp_data = mpi_recv(ntot, MPI_FLOAT, src, data_tag, comm)
-        data1d[0:ntot] = tmp_data[0:ntot]
-
-
+        data1d[0:ntot] = tmp_data[0:ntot] 
+        
+        
 	count = 100000
 	ntime = (ntot-1)/count + 1
 
@@ -3070,7 +3103,7 @@ def recv_EMData(src, tag, comm=-1):
 		block_size  = block_end - block_begin
 		tmp_data = mpi_recv(block_size, MPI_FLOAT, src, data_tag*ntime+i, comm)
 		data1d[block_begin:block_end] = tmp_data[0:block_size]
-
+        
 	return img
 	'''
 
@@ -3079,8 +3112,8 @@ def gather_EMData(data, number_of_proc, myid, main_node):
 	Gather the a list of EMData on all nodes to the main node, we assume the list has the same length on each node.
 											It is a dangerous assumption, it will have to be changed  07/10/2015
 	"""
-	from mpi import MPI_COMM_WORLD, MPI_INT
-	from mpi import mpi_send, mpi_recv
+	from mpi import MPI_COMM_WORLD, MPI_INT, MPI_TAG_UB
+	from mpi import mpi_send, mpi_recv	
 
 	l = len(data)
 	gathered_data = []
@@ -3093,8 +3126,8 @@ def gather_EMData(data, number_of_proc, myid, main_node):
 			else:
 				for k in xrange(l):
 					im = recv_EMData(i, i*l+k)
-					mem_len = mpi_recv(1, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-					members = mpi_recv(int(mem_len[0]), MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					mem_len = mpi_recv(1, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
+					members = mpi_recv(int(mem_len[0]), MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 					members = map(int, members)
 					im.set_attr('members', members)
 					gathered_data.append(im)
@@ -3102,12 +3135,12 @@ def gather_EMData(data, number_of_proc, myid, main_node):
 		for k in xrange(l):
 			send_EMData(data[k], main_node, myid*l+k)
 			mem = data[k].get_attr('members')
-			mpi_send(len(mem), 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-			mpi_send(mem, len(mem), MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			mpi_send(len(mem), 1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
+			mpi_send(mem, len(mem), MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 	return gathered_data
 
 def send_string_to_all(str_to_send, source_node = 0):
-	from mpi import MPI_COMM_WORLD, MPI_INT, MPI_CHAR, mpi_bcast, mpi_comm_rank
+	from mpi import MPI_COMM_WORLD, MPI_INT, MPI_CHAR, mpi_bcast, mpi_comm_rank 
 
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
 	str_to_send_len  = len(str_to_send)*int(myid == source_node)
@@ -3122,7 +3155,7 @@ def bcast_number_to_all(number_to_send, source_node = 0):
 	"""
 	from mpi import mpi_bcast, MPI_INT, MPI_COMM_WORLD, MPI_FLOAT
 	import types
-	if    type(number_to_send) is types.IntType:
+	if    type(number_to_send) is types.IntType: 
 		TMP = mpi_bcast(number_to_send, 1, MPI_INT,   source_node, MPI_COMM_WORLD)
 		return int(TMP[0])
 	elif  type(number_to_send) is types.FloatType:
@@ -3130,10 +3163,10 @@ def bcast_number_to_all(number_to_send, source_node = 0):
 		return float(TMP[0])
 	else:
 		print  " ERROR in bcast_number_to_all"
-
+	
 def bcast_list_to_all(list_to_send, myid, source_node = 0):
 	from mpi import mpi_bcast, MPI_COMM_WORLD, MPI_FLOAT, MPI_INT
-	import   types
+	import types
 	if(myid == source_node):
 		n = len(list_to_send)
 		# we will also assume all elements on the list are of the same type
@@ -3158,9 +3191,9 @@ def bcast_list_to_all(list_to_send, myid, source_node = 0):
 
 def recv_attr_dict(main_node, stack, data, list_params, image_start, image_end, number_of_proc, comm = -1):
 	import types
-	from  utilities import  get_arb_params, set_arb_params
-	from  mpi 	import mpi_recv
-	from  mpi 	import MPI_FLOAT, MPI_INT, MPI_COMM_WORLD
+	from EMAN2.utilities import get_arb_params, set_arb_params
+	from mpi import mpi_recv
+	from mpi import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
 
 	#   hdf version!
 	# This is done on the main node, so for images from the main node, simply write headers
@@ -3173,10 +3206,10 @@ def recv_attr_dict(main_node, stack, data, list_params, image_start, image_end, 
 	ink = []
 	len_list = 0
 	for il in xrange(len(list_params)):
-		if type(value[il]) is types.IntType:
+		if type(value[il]) is types.IntType:     
 			ink.append(1)
 			len_list += 1
-		elif type(value[il]) is types.FloatType:
+		elif type(value[il]) is types.FloatType:  
 			ink.append(0)
 			len_list += 1
 		elif type(value[il]) is TransType:
@@ -3186,8 +3219,8 @@ def recv_attr_dict(main_node, stack, data, list_params, image_start, image_end, 
 	headers = []
 	for n in xrange(number_of_proc):
 		if n != main_node:
-			dis = mpi_recv(2, MPI_INT, n, SPARX_MPI_TAG_UNIVERSAL, comm)
-			value = mpi_recv(len_list*(dis[1]-dis[0]), MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, comm)
+			dis = mpi_recv(2, MPI_INT, n, MPI_TAG_UB, comm)
+			value = mpi_recv(len_list*(dis[1]-dis[0]), MPI_FLOAT, n, MPI_TAG_UB, comm)
 			ldis.append([dis[0], dis[1]])
 			headers.append(value)
 			del  dis
@@ -3232,33 +3265,33 @@ def recv_attr_dict(main_node, stack, data, list_params, image_start, image_end, 
 
 def send_attr_dict(main_node, data, list_params, image_start, image_end, comm = -1):
 	import types
-	from utilities import get_arb_params
-	from mpi 	   import mpi_send
-	from mpi 	   import MPI_FLOAT, MPI_INT, MPI_COMM_WORLD
+	from EMAN2.utilities import get_arb_params
+	from mpi import mpi_send
+	from mpi import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
 
 	#  This function is called from a node other than the main node
 
 	if comm == -1: comm = MPI_COMM_WORLD
 	TransType = type(Transform())
-	mpi_send([image_start, image_end], 2, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, comm)
+	mpi_send([image_start, image_end], 2, MPI_INT, main_node, MPI_TAG_UB, comm)
 	nvalue = []
 	for im in xrange(image_start, image_end):
 		value = get_arb_params(data[im-image_start], list_params)
 		for il in xrange(len(value)):
 			if    type(value[il]) is types.IntType:  nvalue.append(float(value[il]))
 			elif  type(value[il]) is types.FloatType: nvalue.append(value[il])
-			elif  type(value[il]) is TransType:
+			elif  type(value[il]) is TransType: 
 				m = value[il].get_matrix()
 				assert (len(m)==12)
 				for f in m: nvalue.append(f)
-	mpi_send(nvalue, len(nvalue), MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, comm)
+	mpi_send(nvalue, len(nvalue), MPI_FLOAT, main_node, MPI_TAG_UB, comm)
 
 def recv_attr_dict_bdb(main_node, stack, data, list_params, image_start, image_end, number_of_proc, comm = -1):
 	import types
-	from  utilities import  get_arb_params, set_arb_params
-	from  mpi 	import mpi_recv
-	from  mpi 	import MPI_FLOAT, MPI_INT, MPI_COMM_WORLD
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import get_arb_params, set_arb_params
+	from mpi import mpi_recv
+	from mpi import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
+	from EMAN2.EMAN2db import db_open_dict
 	#  bdb version!
 	# This is done on the main node, so for images from the main node, simply write headers
 
@@ -3286,10 +3319,10 @@ def recv_attr_dict_bdb(main_node, stack, data, list_params, image_start, image_e
 	headers = []
 	for n in xrange(number_of_proc):
 		if n != main_node:
-			dis = mpi_recv(2, MPI_INT, n, SPARX_MPI_TAG_UNIVERSAL, comm)
+			dis = mpi_recv(2, MPI_INT, n, MPI_TAG_UB, comm)
 			img_begin = int(dis[0])
 			img_end = int(dis[1])
-			header = mpi_recv(len_list*(img_end-img_begin), MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, comm)
+			header = mpi_recv(len_list*(img_end-img_begin), MPI_FLOAT, n, MPI_TAG_UB, comm)
 			for im in xrange(img_begin, img_end):
 				par_begin = (im-img_begin)*len_list
 				nvalue = []
@@ -3325,7 +3358,7 @@ def recv_attr_dict_bdb(main_node, stack, data, list_params, image_start, image_e
 
 def check_attr(ima, num, params, default_value, action="Warning"):
 	from sys import exit
-	attr_list = ima.get_attr_dict()
+	attr_list = ima.get_attr_dict()	
 	if attr_list.has_key(params) == False:
 		if action=="Warning":
 			print "WARNING: In image %i, cannot find attribute \'%s\' in the header, set it to the default value" %(num, params), default_value
@@ -3375,7 +3408,7 @@ def print_msg(msg):
 		global_def.LOGFILE_HANDLE = open(global_def.LOGFILE,"w")
 		global_def.IS_LOGFILE_OPEN = True
 	if (global_def.BATCH):
-		global_def.LOGFILE_HANDLE.write(msg)
+		global_def.LOGFILE_HANDLE.write(msg)		
 	else:
 		sys.stdout.write(msg)
 		global_def.LOGFILE_HANDLE.write(msg)
@@ -3443,8 +3476,8 @@ def write_headers(filename, data, lima):
 	    i.e., header from data[k] will be written into file number lima[k]
 	  WARNING: this function will open and close DB library!
 	"""
-	from utilities import file_type
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import file_type
+	from EMAN2.EMAN2db import db_open_dict
 
 	ftp = file_type(filename)
 	if ftp == "bdb":
@@ -3469,8 +3502,8 @@ def write_header(filename, data, lima):
 	    i.e., header from data will be written into file number lima
 	  WARNING: this function assums DB library is opened and will NOT close it!
 	"""
-	from utilities import file_type
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import file_type
+	from EMAN2.EMAN2db import db_open_dict
 
 	ftp = file_type(filename)
 	if ftp == "bdb":
@@ -3545,7 +3578,7 @@ def get_ctf(ima):
         [defocus, cs, voltage, apix, bfactor, ampcont, astigmatism amplitude, astigmatism angle]
 	"""
 	from EMAN2 import EMAN2Ctf
-	ctf_params = ima.get_attr("ctf")
+	ctf_params = ima.get_attr("ctf")	
 	return ctf_params.defocus, ctf_params.cs, ctf_params.voltage, ctf_params.apix, ctf_params.bfactor, ctf_params.ampcont, ctf_params.dfdiff, ctf_params.dfang
 
 def generate_ctf(p):
@@ -3563,10 +3596,10 @@ def generate_ctf(p):
 	pixel_size   = p[3]
 	bfactor      = p[4]
 	amp_contrast = p[5]
-
+	
 	if defocus > 100:  # which means it is very likely in Angstrom, therefore we are using the old convention
 		defocus *= 1e-4
-
+	
 	if amp_contrast < 1.0:
 		from math import sqrt
 		amp_contrast = amp_contrast*100/sqrt(2*amp_contrast**2-2*amp_contrast+1)
@@ -3585,7 +3618,7 @@ def set_ctf(ima, p):
 	  order of parameters:
         [defocus, cs, voltage, apix, bfactor, ampcont, astigmatism amplitude, astigmatism angle]
 	"""
-	from utilities import generate_ctf
+	from EMAN2.utilities import generate_ctf
 	ctf = generate_ctf( p )
 	ima.set_attr( "ctf", ctf )
 
@@ -3593,7 +3626,7 @@ def delete_bdb(name):
 	"""
 	  Delete bdb stack
 	"""
-	from EMAN2db import db_open_dict, db_remove_dict
+	from EMAN2.EMAN2db import db_open_dict, db_remove_dict
 	a = db_open_dict(name)
 	db_remove_dict(name)
 
@@ -3633,7 +3666,7 @@ def getang(n):
 	return degrees(atan2(n[1],n[0]))%360.0, degrees(acos(n[2]))%360.0
 
 def getang3(p1,p2):
-	from utilities import getfvec
+	from EMAN2.utilities import getfvec
 	from math import acos, degrees
 	n1 = getfvec(p1[0],p1[1])
 	n2 = getfvec(p2[0],p2[1])
@@ -3653,10 +3686,9 @@ def getvec( phi, tht ):
 
 	qt = radians(tht)
 	qp = radians(phi)
-	qs = sin(qt)
 
-	x = qs*cos(qp)
-	y = qs*sin(qp)
+	x = sin(qt)*cos(qp) 
+	y = sin(qt)*sin(qp)
 	z = cos(qt)
 
 	return (x,y,z)
@@ -3665,20 +3697,14 @@ def getfvec( phi, tht ):
 	from math import radians,cos,sin
 	qt = radians(tht)
 	qp = radians(phi)
-	qs = sin(qt)
-	x = qs*cos(qp)
-	y = qs*sin(qp)
+	x = sin(qt)*cos(qp) 
+	y = sin(qt)*sin(qp)
 	z = cos(qt)
 
 	return (x,y,z)
 
-def nearest_fang( vecs, phi, tht ) :
-	from utilities import getfvec
-	vec = getfvec( phi, tht )
-	return  Util.nearest_fang(vecs, vec[0],vec[1],vec[2])[0]
-
 def nearest_ang( vecs, phi, tht ) :
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	vec = getvec( phi, tht )
 	return  Util.nearest_ang(vecs, vec[0],vec[1],vec[2])
 	"""
@@ -3722,7 +3748,7 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 	# In both cases mirrored should be treated the same way as straight as they carry the same structural information
 	lookup = range(len(projangles))
 	if( sym == "c1"):
-		from utilities import getvec
+		from EMAN2.utilities import getvec
 		refnormal = [None]*(len(projangles)*3)
 		for i in xrange(len(projangles)):
 			ref = getvec(projangles[i][0], projangles[i][1])
@@ -3742,7 +3768,7 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 			del lookup[k]
 
 	elif( sym[:1] == "d" ):
-		from utilities import get_symt, getvec
+		from EMAN2.utilities import get_symt, getvec
 		from EMAN2 import Vec2f, Transform
 		t = get_symt(sym)
 		phir = 360.0/int(sym[1:])
@@ -3755,7 +3781,8 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 		refvec = getfvec(q["phi"], q["theta"])
 		#print  "refvec   ",q["phi"], q["theta"]
 
-		tempan = projangles[:]
+		tempan =  [None]*len(projangles)
+		for i in xrange(len(projangles)): tempan[i] = projangles[i]
 		del tempan[whichone], lookup[whichone]
 		assignments = [-1]*howmany
 
@@ -3780,15 +3807,18 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 			del tempan[best_j], lookup[best_j]
 
 	elif( sym[:1] == "c" ):
-		from utilities import get_symt, getvec
+		from EMAN2.utilities import get_symt, getvec
 		from EMAN2 import Vec2f, Transform
 		t = get_symt(sym)
 		phir = 360.0/int(sym[1:])
+		for i in xrange(len(t)):  t[i] = t[i].inverse()
+		refvec = getfvec(projangles[whichone][0], projangles[whichone][1])
+		#print  "refvec   ",q["phi"], q["theta"]
 
-		tempan =  projangles[:]
+		tempan =  [None]*len(projangles)
+		for i in xrange(len(projangles)): tempan[i] = projangles[i]
 		del tempan[whichone], lookup[whichone]
 		assignments = [-1]*howmany
-		refvec = getvec(projangles[whichone][0], projangles[whichone][1])
 
 		for i in xrange(howmany):
 			best = -1
@@ -3816,81 +3846,6 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 
 
 	return assignments
-
-
-def nearest_full_k_projangles(anormals, refang, howmany = 1, sym="c1"):
-	# We assume refang can be on the list of normals
-	from utilities import getfvec
-	lookup = range(len(anormals))
-	#refnormal = normals[:]
-	assignments = [-1]*howmany
-
-	if( sym == "c1"):
-		refnormal = []
-		for i,q in enumerate(anormals):
-			refnormal += getfvec(q[0],q[1])
-		ref = getfvec(refang[0],refang[1])
-		for i in xrange(howmany):
-			tmp = Util.nearest_fang(refnormal, ref[0],ref[1],ref[2])
-			k = tmp[0]
-			assignments[i] = lookup[k]
-			for l in xrange(3): del refnormal[3*k+2-l]
-			del lookup[k]
-
-	elif( sym[:1] == "c" ):
-		from utilities import get_symt, getfvec
-		from EMAN2 import Vec2f, Transform
-		phin = int(sym[1:])
-
-		refnormal = []
-		for i,q in enumerate(anormals):
-			refnormal += getfvec(q[0]*phin,q[1])
-		ref = getfvec(refang[0]*phin,refang[1])
-		for i in xrange(howmany):
-			tmp = Util.nearest_fang(refnormal, ref[0],ref[1],ref[2])
-			k = tmp[0]
-			assignments[i] = lookup[k]
-			for l in xrange(3): del refnormal[3*k+2-l]
-			del lookup[k]
-
-	elif( sym[:1] == "d" ):
-		from utilities import get_symt, getfvec
-		from EMAN2 import Vec2f, Transform
-		t = get_symt(sym)
-		nt = len(t)
-		a = Transform({"type":"spider","phi":refang[0], "theta":refang[1]})
-		refvec = [None]*nt
-		for i in xrange(nt):
-			qt = a*(t[i].inverse())
-			qt = qt.get_params("spider")
-			refvec[i] = getfvec(qt["phi"], qt["theta"])
-			print i,qt["phi"], qt["theta"],["psi"],refvec[i]
-
-		refnormal = []
-		for i,q in enumerate(anormals):
-			refnormal += getfvec(q[0],q[1])
-
-		for i in xrange(howmany):
-			best_i = -1
-			best_v = -10000000
-			for l in xrange(nt):
-				tmp = Util.nearest_fang(refnormal, refvec[l][0],refvec[l][1],refvec[l][2])
-				if(tmp[1] > best_v):
-					best_i = tmp[0]
-					best_v = tmp[1]
-					print i,l,best_i,best_v
-
-			assignments[i] = lookup[best_i]
-			for l in xrange(3): del refnormal[3*best_i+2-l]
-			del lookup[best_i]
-
-
-	else:
-		ERROR("  ERROR:  symmetry not supported  "+sym,"nearest_full_k_projangles",1)
-		assignments = []
-
-	return assignments
-
 
 def nearestk_to_refdir(refnormal, refdir, howmany = 1):
 	lookup = range(len(refnormal))
@@ -3921,7 +3876,7 @@ def assign_projangles(projangles, refangles, return_asg = False):
 
 	if len(refangles) > 10000:
 		if len(refangles) > 100000:
-			coarse_refangles = even_angles(1.5)   # 9453 angles
+			coarse_refangles = even_angles(1.5)   # 9453 angles 
 		else:
 			coarse_refangles = even_angles(5.0)   # 849 angles
 		coarse_asg = assign_projangles(projangles, coarse_refangles, True)
@@ -3983,109 +3938,39 @@ def assign_projangles_f(projangles, refangles, return_asg = False):
 	return assignments
 
 
-def cone_ang( projangles, phi, tht, ant, symmetry = 'c1'):
-	from utilities import getvec
+def cone_ang( projangles, phi, tht, ant ):
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
+	vec = getvec( phi, tht )
 
 	cone = cos(radians(ant))
 	la = []
-	if( symmetry == 'c1' ):
-		vec = getfvec( phi, tht )
-		for i in xrange( len(projangles) ):
-			vecs = getvec( projangles[i][0], projangles[i][1] )
-			s = vecs[0]*vec[0] + vecs[1]*vec[1] + vecs[2]*vec[2]
-			if s >= cone:
-				la.append(projangles[i])
-	elif( symmetry[:1] == "c" ):
-		nsym = int(symmetry[1:])
-		qt = 360.0/nsym
-		dvec = 	[0.0]*nsym
-		for nsm in xrange(nsym):
-			dvec[nsm] = getvec(phi+nsm*qt, tht)
-		for i in xrange( len(projangles) ):
-			vecs = getfvec( projangles[i][0], projangles[i][1] )
-			qt = -2.0
-			for nsm in xrange(nsym):
-				vc = dvec[nsm][0]*vecs[0] + dvec[nsm][1]*vecs[1] + dvec[nsm][2]*vecs[2]
-				if(vc > qt):  qt = vc
-			if(qt >= cone):
-				la.append(projangles[i])
-	elif( symmetry[:1] == "d" ):
-		nsym = int(symmetry[1:])
-		qt = 360.0/nsym
-		dvec = 	[0.0]*2*nsym
-		for nsm in xrange(nsym):
-			dvec[2*nsm] = getvec(phi+nsm*qt, tht)
-			dvec[2*nsm+1] = getvec(-(phi+nsm*qt), 180.0-tht)
-		for i in xrange( len(projangles) ):
-			vecs = getfvec( projangles[i][0], projangles[i][1] )
-			qt = -2.0
-			qk = -1
-			for nsm in xrange(2*nsym):
-				vc = dvec[nsm][0]*vecs[0] + dvec[nsm][1]*vecs[1] + dvec[nsm][2]*vecs[2]
-				if(vc > qt):
-					qt = vc
-					qk = nsm
-			if(qt >= cone):
-				if(qk<nsym):  la.append(projangles[i])
-				else:         la.append([projangles[i][0],projangles[i][1],(projangles[i][2]+180.0)%360.0])
-	
-	else:  print  "Symmetry not supported ",symmetry
+	for i in xrange( len(projangles) ):
+		vecs = getvec( projangles[i][0], projangles[i][1] )
+		s = abs(vecs[0]*vec[0] + vecs[1]*vec[1] + vecs[2]*vec[2])
+		if s >= cone:
+			la.append(projangles[i])
+
 	return la
 
-def cone_ang_f( projangles, phi, tht, ant, symmetry = 'c1'):
-	from utilities import getvec
+def cone_ang_f( projangles, phi, tht, ant ):
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
+	# vec = getfvec( phi, tht )
+	vec = getfvec( phi, tht )
 
 	cone = cos(radians(ant))
 	la = []
-	if( symmetry == 'c1' ):
-		vec = getfvec( phi, tht )
-		for i in xrange( len(projangles) ):
-			vecs = getfvec( projangles[i][0], projangles[i][1] )
-			s = vecs[0]*vec[0] + vecs[1]*vec[1] + vecs[2]*vec[2]
-			if s >= cone:
-				la.append(projangles[i])
-	elif( symmetry[:1] == "c" ):
-		nsym = int(symmetry[1:])
-		qt = 360.0/nsym
-		dvec = 	[0.0]*nsym
-		for nsm in xrange(nsym):
-			dvec[nsm] = getfvec(phi+nsm*qt, tht)
-		for i in xrange( len(projangles) ):
-			vecs = getfvec( projangles[i][0], projangles[i][1] )
-			qt = -2.0
-			for nsm in xrange(nsym):
-				vc = dvec[nsm][0]*vecs[0] + dvec[nsm][1]*vecs[1] + dvec[nsm][2]*vecs[2]
-				if(vc > qt):  qt = vc
-			if(qt >= cone):
-				la.append(projangles[i])
-	elif( symmetry[:1] == "d" ):
-		nsym = int(symmetry[1:])
-		qt = 360.0/nsym
-		dvec = 	[0.0]*2*nsym
-		for nsm in xrange(nsym):
-			dvec[2*nsm] = getfvec(phi+nsm*qt, tht)
-			dvec[2*nsm+1] = getfvec(-(phi+nsm*qt), 180.0-tht)
-		for i in xrange( len(projangles) ):
-			vecs = getfvec( projangles[i][0], projangles[i][1] )
-			qt = -2.0
-			qk = -1
-			for nsm in xrange(2*nsym):
-				vc = dvec[nsm][0]*vecs[0] + dvec[nsm][1]*vecs[1] + dvec[nsm][2]*vecs[2]
-				if(vc > qt):
-					qt = vc
-					qk = nsm
-			if(qt >= cone):
-				if(qk<nsym):  la.append(projangles[i])
-				else:         la.append([projangles[i][0],projangles[i][1],(projangles[i][2]+180.0)%360.0])
-	
-	else:  print  "Symmetry not supported ",symmetry
-
+	for i in xrange( len(projangles) ):
+		# vecs = getfvec( projangles[i][0], projangles[i][1] )
+		vecs = getfvec( projangles[i][0], projangles[i][1] )
+		s = vecs[0]*vec[0] + vecs[1]*vec[1] + vecs[2]*vec[2]
+		if s >= cone:
+			la.append(projangles[i])
 	return la
 
 def cone_ang_f_with_index( projangles, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	# vec = getvec( phi, tht )
 	vec = getfvec( phi, tht )
@@ -4094,6 +3979,7 @@ def cone_ang_f_with_index( projangles, phi, tht, ant ):
 	la = []
 	index = []
 	for i in xrange( len(projangles) ):
+		# vecs = getvec( projangles[i][0], projangles[i][1] )
 		vecs = getfvec( projangles[i][0], projangles[i][1] )
 		s = vecs[0]*vec[0] + vecs[1]*vec[1] + vecs[2]*vec[2]
 		if s >= cone:
@@ -4103,7 +3989,7 @@ def cone_ang_f_with_index( projangles, phi, tht, ant ):
 	return la, index
 
 def cone_ang_with_index( projangles, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	# vec = getvec( phi, tht )
 	vec = getfvec( phi, tht )
@@ -4119,11 +4005,11 @@ def cone_ang_with_index( projangles, phi, tht, ant ):
 		if abs(s) >= cone:
 			la.append(projangles[i] + [i])
 			index.append(i)
-
+	
 	return la, index
 
 def cone_vectors( normvectors, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	vec = getvec( phi, tht )
 
@@ -4137,11 +4023,11 @@ def cone_vectors( normvectors, phi, tht, ant ):
 	return la
 
 def disable_bdb_cache():
-	import EMAN2db
+	import EMAN2.EMAN2db as EMAN2db
 	EMAN2db.BDB_CACHE_DISABLE = True
 
 def enable_bdb_cache():
-	import EMAN2db
+	import EMAN2.EMAN2db as EMAN2db
 	EMAN2db.BDB_CACHE_DISABLE = False
 
 def rotation_between_anglesets(agls1, agls2):
@@ -4155,7 +4041,7 @@ def rotation_between_anglesets(agls1, agls2):
 	  Note: all angles have to be in spider convention.
 	  For details see: Appendix in Penczek, P., Marko, M., Buttle, K. and Frank, J.:  Double-tilt electron tomography.  Ultramicroscopy 60:393-410, 1995.
 	"""
-	from math  import sin, cos, pi, sqrt, atan2, acos, atan
+	from math import sin, cos, pi, sqrt, atan2, acos, atan
 	from numpy import array, linalg, matrix
 	import types
 
@@ -4209,8 +4095,8 @@ def rotation_between_anglesets(agls1, agls2):
 			c += 1
 
         # create matrix N
-	N = array([[Suv[0]+Suv[4]+Suv[8], Suv[5]-Suv[7],        Suv[6]-Suv[2],                 Suv[1]-Suv[3]],
-		   [Suv[5]-Suv[7],        Suv[0]-Suv[4]-Suv[8], Suv[1]+Suv[3],                 Suv[6]+Suv[2]],
+	N = array([[Suv[0]+Suv[4]+Suv[8], Suv[5]-Suv[7],        Suv[6]-Suv[2],                 Suv[1]-Suv[3]], 
+		   [Suv[5]-Suv[7],        Suv[0]-Suv[4]-Suv[8], Suv[1]+Suv[3],                 Suv[6]+Suv[2]], 
 		   [Suv[6]-Suv[2],        Suv[1]+Suv[3],        -Suv[0]+Suv[4]-Suv[8],         Suv[5]+Suv[7]],
 		   [Suv[1]-Suv[3],        Suv[6]+Suv[2],        Suv[5]+Suv[7],         -Suv[0]-Suv[4]+Suv[8]]])
 
@@ -4218,11 +4104,11 @@ def rotation_between_anglesets(agls1, agls2):
 	val, vec = linalg.eig(N)
 	q0, qx, qy, qz = vec[:, val.argmax()]
 
-        # create quaternion Rot matrix
+        # create quaternion Rot matrix 
 	r = [q0*q0-qx*qx+qy*qy-qz*qz,         2*(qy*qx+q0*qz),          2*(qy*qz-q0*qx),          0.0,
 	     2*(qx*qy-q0*qz),                 q0*q0+qx*qx-qy*qy-qz*qz,  2*(qx*qz+q0*qy),          0.0,
 	     2*(qz*qy+q0*qx),                 2*(qz*qx-q0*qy),          q0*q0-qx*qx-qy*qy+qz*qz,  0.0]
-
+	
 	R = Transform(r)
 	dictR = R.get_rotation('SPIDER')
 
@@ -4259,7 +4145,7 @@ def angles_between_anglesets(angleset1, angleset2, indexes=None):
 	  The function works as follow:
 	  1. use the rotation_between_anglesets function to find the transformation between the anglesets
 	  2. apply the transformation to the first angleset (to fit it into the second angleset)
-	  3. calculate angles between corresponding projections directions from the anglesets
+	  3. calculate angles between corresponding projections directions from the anglesets 
 	  INPUT: each of the parameters should be a list of pairs [phi, theta] (additional parameters (pdi, shifts) don't influence on the results)
 	  OUTPUT: list of floats - angles in degrees (the n-th element of the list equals the angle between n-th projections directions from the anglesets)
 	  The third parameter (indexes) is optional and may be set to list of indexes. In that case only elements from given list are taken into account.
@@ -4303,7 +4189,7 @@ def xyz_to_phi_theta(xyz):
 	theta = acos(xyz[2])
 	phi   = atan2(xyz[1], xyz[0])
 	return [ degrees(phi), degrees(theta), 0.0]
-
+	
 # input: list of triplets (phi, theta, psi)
 # output: average triplet: (phi, theta, psi)
 def average_angles(angles):
@@ -4385,7 +4271,7 @@ def group_proj_by_phitheta_slow(proj_ang, symmetry = "c1", img_per_grp = 100, ve
 		theta *= angle_to_rad
 		phi *= angle_to_rad
 
-		x = sin(theta)*cos(phi)
+		x = sin(theta)*cos(phi) 
 		y = sin(theta)*sin(phi)
 		z = cos(theta)
 
@@ -4394,15 +4280,16 @@ def group_proj_by_phitheta_slow(proj_ang, symmetry = "c1", img_per_grp = 100, ve
 	def ang_diff(v1, v2):
 		# The first return value is the angle between two vectors
 		# The second return value is whether we need to mirror one of them (0 - no need, 1 - need)
-		from math import acos, pi, degrees
+		from math import acos, pi
 
 		v = v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]
-		v = max(min(v,1.0),-1.0)
-		if v >= 0: return degrees(acos(v)), 0
-		else:      return degrees(acos(-v)), 1
+		if v > 1: v = 1
+		if v < -1: v = -1
+		if v >= 0: return acos(v)*180/pi, 0
+		else:  return acos(-v)*180/pi, 1
 
 	t0 = time()
-	proj_list = []
+	proj_list = []   
 	angles_list = []
 	N = len(proj_ang)
 	if len(proj_ang[0]) == 3:       # determine whether it has shifts provided, make the program more robust
@@ -4418,9 +4305,9 @@ def group_proj_by_phitheta_slow(proj_ang, symmetry = "c1", img_per_grp = 100, ve
 			vec = gv(proj_ang[i][0], proj_ang[i][1])     # pre-calculate the vector for each projection angles
 			proj_ang[i].append(vec)
 
-	ref_ang_list1, nref1 = get_ref_ang_list(20.0, sym = symmetry)
-	ref_ang_list2, nref2 = get_ref_ang_list(10.0, sym = symmetry)
-	ref_ang_list3, nref3 = get_ref_ang_list(5.0, sym = symmetry)
+	ref_ang_list1, nref1 = get_ref_ang_list(20.0, sym = symmetry)   
+	ref_ang_list2, nref2 = get_ref_ang_list(10.0, sym = symmetry)   
+	ref_ang_list3, nref3 = get_ref_ang_list(5.0, sym = symmetry)    
 	ref_ang_list4, nref4 = get_ref_ang_list(2.5, sym = symmetry)
 
 	c = 100
@@ -4432,7 +4319,7 @@ def group_proj_by_phitheta_slow(proj_ang, symmetry = "c1", img_per_grp = 100, ve
 	for grp in xrange(N/img_per_grp):
 		print grp,
 		N_remain = N-grp*img_per_grp
-		# The idea here is that if each group has more than 100 images in average,
+		# The idea here is that if each group has more than 100 images in average, 
 		# we consider it crowded enough to just consider the most crowded group.
 		if N_remain >= nref4*L:
 			ref_ang_list = ref_ang_list4
@@ -4481,7 +4368,7 @@ def group_proj_by_phitheta_slow(proj_ang, symmetry = "c1", img_per_grp = 100, ve
 			assignments = [[] for i in xrange(nref)]
 			for i in xrange(N_remain):
 				assignments[asg[i]].append(i)
-			# find the largest group and record the group size and group number
+			# find the largest group and record the group size and group number 
 			max_group_size = 0
 			max_group = -1
 			for i in xrange(nref):
@@ -4514,7 +4401,7 @@ def group_proj_by_phitheta_slow(proj_ang, symmetry = "c1", img_per_grp = 100, ve
 					diff_table[j][i] = q
 			diff_table_index = dict()
 			for i in xrange(Nn): diff_table_index[index[i]] = i
-			print Nn, True,
+			print Nn, True, 
 		else:
 			print Nn, False,
 
@@ -4575,7 +4462,7 @@ def group_proj_by_phitheta(proj_ang, symmetry = "c1", img_per_grp = 100, verbose
 		theta *= angle_to_rad
 		phi *= angle_to_rad
 
-		x = sin(theta)*cos(phi)
+		x = sin(theta)*cos(phi) 
 		y = sin(theta)*sin(phi)
 		z = cos(theta)
 
@@ -4592,7 +4479,7 @@ def group_proj_by_phitheta(proj_ang, symmetry = "c1", img_per_grp = 100, verbose
 		if v >= 0: return acos(v)*180/pi, 0
 		else:  return acos(-v)*180/pi, 1
 
-
+	
 	def get_ref_ang_list(delta, sym):
 		ref_ang = even_angles(delta, symmetry=sym)
 		ref_ang_list = [0.0]*(len(ref_ang)*2)
@@ -4600,16 +4487,16 @@ def group_proj_by_phitheta(proj_ang, symmetry = "c1", img_per_grp = 100, verbose
 			ref_ang_list[2*i] = ref_ang[i][0]
 			ref_ang_list[2*i+1] = ref_ang[i][1]
 		return ref_ang_list, len(ref_ang)
-
+	
 	N = len(proj_ang)
 	proj_ang_list = [0]*(N*2)
 	for i in xrange(N):
 		proj_ang_list[i*2] = proj_ang[i][0]
 		proj_ang_list[i*2+1] = proj_ang[i][1]
-
-	ref_ang_list1, nref1 = get_ref_ang_list(20.0, sym = symmetry)
-	ref_ang_list2, nref2 = get_ref_ang_list(10.0, sym = symmetry)
-	ref_ang_list3, nref3 = get_ref_ang_list(5.0, sym = symmetry)
+	
+	ref_ang_list1, nref1 = get_ref_ang_list(20.0, sym = symmetry)   
+	ref_ang_list2, nref2 = get_ref_ang_list(10.0, sym = symmetry)   
+	ref_ang_list3, nref3 = get_ref_ang_list(5.0, sym = symmetry)    
 	ref_ang_list4, nref4 = get_ref_ang_list(2.5, sym = symmetry)
 
 	ref_ang_list = []
@@ -4622,13 +4509,13 @@ def group_proj_by_phitheta(proj_ang, symmetry = "c1", img_per_grp = 100, verbose
 	ref_ang_list.append(nref3)
 	ref_ang_list.append(nref4)
 	proj_list = Util.group_proj_by_phitheta(proj_ang_list, ref_ang_list, img_per_grp)
-
+	
 	proj_list2 = proj_list[:]
 	for i in xrange(len(proj_list2)): proj_list2[i] = abs(proj_list2[i])
 	proj_list2.sort()
 	assert N == len(proj_list2)
 	for i in xrange(N): assert i == proj_list2[i]
-
+	
 	Ng = N/img_per_grp
 	proj_list_new = [[] for i in xrange(Ng)]
 	mirror_list = [[] for i in xrange(Ng)]
@@ -4663,7 +4550,7 @@ def group_proj_by_phitheta(proj_ang, symmetry = "c1", img_per_grp = 100, verbose
 
 def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 	from math import exp, pi
-	from sets import Set
+	from EMAN2.sets import Set
 	from time import time
 	from random import randint
 
@@ -4673,7 +4560,7 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 		theta = radians(theta)
 		phi   = radians(phi)
 
-		x = sin(theta)*cos(phi)
+		x = sin(theta)*cos(phi) 
 		y = sin(theta)*sin(phi)
 		z = cos(theta)
 
@@ -4689,7 +4576,7 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 		if v < -1: v = -1
 		if v >= 0: return degrees(acos(v)), 0
 		else:  return degrees(acos(-v)), 1
-
+	
 	def get_ref_ang_list(delta, sym):
 		ref_ang = even_angles(delta, symmetry=sym)
 		ref_ang_list = [0.0]*(len(ref_ang)*2)
@@ -4697,7 +4584,7 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 			ref_ang_list[2*i] = ref_ang[i][0]
 			ref_ang_list[2*i+1] = ref_ang[i][1]
 		return ref_ang_list, len(ref_ang)
-
+	
 	def binary_search(a, x):
 		N = len(a)
 		begin = 0
@@ -4708,9 +4595,9 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 			if a[mid] < x: begin = mid+1
 			else: end = mid-1
 		return -1
-
+	
 	def binary_search_l(a, x):
-		# This function returns an index i such that i is the smallest number
+		# This function returns an index i such that i is the smallest number 
 		# such that when t >= i, a[t] >= x
 		N = len(a)
 		t = binary_search(a, x)
@@ -4728,7 +4615,7 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 				if x < a[mid]: end = mid-1
 				else: begin = mid+1
 			return mid+1
-
+	
 	def binary_search_r(a, x):
 		# This function returns an index i such that i is the largest number
 		# such that when t <= i, a[t] <= x
@@ -4748,7 +4635,7 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 				if x < a[mid]: end = mid-1
 				else: begin = mid+1
 			return mid
-
+	
 	N = len(proj_ang)
 	if len(List) == 0: List = range(N)
 	if N < img_per_grp:
@@ -4776,7 +4663,7 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 	for i in xrange(N):
 		theta_list_l[i] = theta_list[i][0]
 		phi_list_l[i] = phi_list[i][0]
-
+	
 	g = [[360.0, 0, 0] for i in xrange(N)]
 	proj_list = []
 	mirror_list = []
@@ -4817,14 +4704,14 @@ def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 					max_phi_mir = phi_mir + dphi
 					if min_phi_mir < 0.0: min_phi_mir += 360.0
 					if max_phi_mir > 360.0: max_phi_mir -= 360.0
-
+				
 			phi_left_bound    = binary_search_l(phi_list_l, min_phi)
 			phi_right_bound   = binary_search_r(phi_list_l, max_phi)
 			theta_left_bound  = binary_search_l(theta_list_l, min_theta)
 			theta_right_bound = binary_search_r(theta_list_l, max_theta)
 			if theta+delta > 90.0:
 				phi_mir_left_bound = binary_search_l(phi_list_l, min_phi_mir)
-				phi_mir_right_bound = binary_search_r(phi_list_l, max_phi_mir)
+				phi_mir_right_bound = binary_search_r(phi_list_l, max_phi_mir)							
 			#print delta
 			#print min_phi, max_phi, min_theta, max_theta
 			#print phi_left_bound, phi_right_bound, theta_left_bound, theta_right_bound
@@ -4927,7 +4814,7 @@ def chunks_distribution(chunks, procs):
 	# sort chunks in descending order
 	chunks.sort(reverse=True)
 
-	# create heap and list with solution
+	# create heap and list with solution    
 	results = []
 	heap = []
 	for p in xrange(procs):
@@ -4953,7 +4840,7 @@ Usage:
 it = iterImagesList(list_of_images)  <-or->  it = iterImagesStack(stack_with_images)
 while it.goToNext():
 	do_something(it.image())
-
+	
 """
 # ================ Iterator for list of images
 class iterImagesList:
@@ -5035,10 +4922,10 @@ def pack_message(data):
 		if len(d2x)>256 : return "Z"+compress(d2x,1)
 		else : return "O"+d2x
 
-
+	
 def unpack_message(msg):
 	"""Unpack a data payload prepared by pack_message"""
-
+	
 	if msg[0]=="C" : return decompress((msg[1:]).tostring())
 	elif msg[0]=="S" : return (msg[1:]).tostring()
 	elif msg[0]=="Z" : return loads(decompress((msg[1:]).tostring()))
@@ -5066,7 +4953,7 @@ def wrap_mpi_send(data, destination, communicator = None):
 
 	if communicator == None:
 		communicator = MPI_COMM_WORLD
-
+		
 	msg = pack_message(data)
 	tag = update_tag(communicator, destination)
 	#from mpi import mpi_comm_rank
@@ -5079,7 +4966,7 @@ def wrap_mpi_recv(source, communicator = None):
 
 	if communicator == None:
 		communicator = MPI_COMM_WORLD
-
+	
 	tag = update_tag(communicator, source)
 	#from mpi import mpi_comm_rank
 	#print communicator, mpi_comm_rank(communicator), "recv from", source, tag
@@ -5091,7 +4978,7 @@ def wrap_mpi_recv(source, communicator = None):
 
 def wrap_mpi_bcast(data, root, communicator = None):
 	from mpi import mpi_bcast, MPI_COMM_WORLD, mpi_comm_rank, MPI_CHAR
-
+	
 	if communicator == None:
 		communicator = MPI_COMM_WORLD
 
@@ -5104,9 +4991,9 @@ def wrap_mpi_bcast(data, root, communicator = None):
 		msg = None
 		n = None
 
-	n = mpi_bcast(n, 4, MPI_CHAR, root, communicator)  # int MPI_Bcast ( void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm )
+	n = mpi_bcast(n, 4, MPI_CHAR, root, communicator)  # int MPI_Bcast ( void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm ) 
 	n=unpack("I",n)[0]
-	msg = mpi_bcast(msg, n, MPI_CHAR, root, communicator)  # int MPI_Bcast ( void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm )
+	msg = mpi_bcast(msg, n, MPI_CHAR, root, communicator)  # int MPI_Bcast ( void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm ) 
 	return unpack_message(msg)
 
 
@@ -5137,45 +5024,6 @@ def wrap_mpi_gatherv(data, root, communicator = None):
 
 	return out_array
 
-def wrap_mpi_split_shared_memory(mpi_comm):
-	import socket
-	import os
-	from mpi import mpi_comm_rank, mpi_comm_size, mpi_comm_split_shared, mpi_comm_split
-	
-	hostname = socket.gethostname()
-
-	my_rank = mpi_comm_rank(mpi_comm)
-	mpi_size = mpi_comm_size(mpi_comm)
-	
-	# local_rank = int(os.environ["OMPI_COMM_WORLD_LOCAL_RANK"])
-	# local_size = int(os.environ["OMPI_COMM_WORLD_LOCAL_SIZE"])
-	
-	
-	host_names = [hostname]
-	host_names = wrap_mpi_gatherv(host_names, 0, mpi_comm)
-	host_names = wrap_mpi_bcast(host_names, 0, mpi_comm)
-	
-	local_size = host_names.count(hostname)
-	local_rank = my_rank % local_size 
-	
-	no_of_processes_per_group = local_size
-	no_of_groups = mpi_size/local_size
-
-	if my_rank == 0:
-		host_names = sorted(set(host_names))
-	host_names = wrap_mpi_bcast(host_names, 0, mpi_comm)
-	host_dict = {host_names[i]: i for i in range(len(host_names))}
-	
-	color = host_dict[hostname]
-	key = local_rank
-
-	# shared_comm = mpi_comm_split_shared(mpi_comm, 0, key)
-	shared_comm = mpi_comm_split(mpi_comm, color, key)
-	
-	return shared_comm, color, key, no_of_processes_per_group, no_of_groups
-	
-
-
 def wrap_mpi_split(comm, no_of_groups):
 	"""
 
@@ -5184,7 +5032,7 @@ def wrap_mpi_split(comm, no_of_groups):
 	Consecutive global process ids have consecutive subgroup process ids.
 
 	"""
-	from mpi import mpi_comm_size, mpi_comm_rank, mpi_comm_split, mpi_comm_split_shared
+	from mpi import mpi_comm_size, mpi_comm_rank, mpi_comm_split
 	nproc = mpi_comm_size(comm)
 	myid = mpi_comm_rank(comm)
 
@@ -5193,7 +5041,6 @@ def wrap_mpi_split(comm, no_of_groups):
 	key = myid % no_of_proc_per_group
 
 	return mpi_comm_split(comm, color, key)
-	
 
 def get_dist(c1, c2):
 	from math import sqrt
@@ -5207,7 +5054,7 @@ def eliminate_moons(my_volume, moon_elimination_params):
 	moon_elimination_params[1] - resolution in px/A
 	"""
 
-	from morphology import binarize
+	from EMAN2.morphology import binarize
 	histogram_threshold  =  my_volume.find_3d_threshold(moon_elimination_params[0], moon_elimination_params[1])*1.1
 	# clean11 88x88,  4.84 px/A 750 kDa
 
@@ -5222,29 +5069,28 @@ def eliminate_moons(my_volume, moon_elimination_params):
 		volume_difference.get_value_at(volume_difference.calc_min_index()) == 0:
 		return my_volume
 	else:
-		from utilities import gauss_edge
+		from EMAN2.utilities import gauss_edge
 		return gauss_edge(my_volume_binarized_with_no_moons) * my_volume
 
 		# from utilities   import model_blank
 		# # mask = model_blank(my_volume_binarized_with_no_moons.get_xsize(), my_volume_binarized_with_no_moons.get_ysize(), my_volume_binarized_with_no_moons.get_zsize())
 		# # mask.to_one()
 	# this is only in master
-
+	
 def combinations_of_n_taken_by_k(n, k):
 	from fractions import Fraction
 	return int(reduce(lambda x, y: x * y, (Fraction(n-i, i+1) for i in range(k)), 1))
-
-def cmdexecute(cmd, printing_on_success = True):
-	from   time import localtime, strftime
+	
+def cmdexecute(cmd):
+	from time import localtime, strftime
 	import subprocess
 	outcome = subprocess.call(cmd, shell=True)
 	line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
-	if(outcome != 0):
-		print  line,"ERROR!!   Command failed:  ", cmd, " return code of failed command: ", outcome
+	if(outcome == 1):
+		print  line,"ERROR!!   Command failed:  ", cmd
 		from sys import exit
 		exit()
-	elif printing_on_success:
-		print line,"Executed successfully: ",cmd
+	else:  print line,"Executed successfully: ",cmd
 
 def string_found_in_file(myregex, filename):
 	import re
@@ -5285,63 +5131,46 @@ def print_with_time_info(msg):
 	line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>" + msg
 	print line
 
-def if_error_then_all_processes_exit_program(error_status):
-	import sys, os
-	from utilities import print_msg
+def if_error_all_processes_quit_program(error_status):
+	from traceback import extract_stack
+	import sys, copy
+	from mpi import mpi_bcast, mpi_finalize, MPI_INT, MPI_COMM_WORLD
 
-	if "OMPI_COMM_WORLD_SIZE" not in os.environ:
-		def mpi_comm_rank(n): return 0
-		def mpi_bcast(*largs):
-			return [largs[0]]
-		def mpi_finalize():
-			return None
-		MPI_INT, MPI_COMM_WORLD = 0, 0
-	else:
-		from mpi import mpi_comm_rank, mpi_bcast, mpi_finalize, MPI_INT, MPI_COMM_WORLD
-
-	myid = mpi_comm_rank(MPI_COMM_WORLD)
-	if error_status != None and error_status != 0:
-		error_status_info = error_status
-		error_status = 1
-	else:
-		error_status = 0
-
+	# print "error_status1:", error_status
 	error_status = mpi_bcast(error_status, 1, MPI_INT, 0, MPI_COMM_WORLD)
 	error_status = int(error_status[0])
 
 	if error_status > 0:
-		if myid == 0:
-			if type(error_status_info) == type((1,1)):
-				if len(error_status_info) == 2:
-					frameinfo = error_status_info[1]
-					print_msg("***********************************\n")
-					print_msg("** Error: %s\n"%error_status_info[0])
-					print_msg("***********************************\n")
-					print_msg("** Location: %s\n"%(frameinfo.filename + ":" + str(frameinfo.lineno)))
-					print_msg("***********************************\n")
-		sys.stdout.flush()
+		# if report_message:
+		# 	from utilities import program_state_stack
+		# 	from inspect import currentframe, getframeinfo
+		# 	program_state_stack(locals(), getframeinfo(currentframe()), last_call="___%s"%report_message)
+	
+		# if mpi_comm_rank(MPI_COMM_WORLD) == 0:
+		# 	print "Stack INFO -0-:", extract_stack()[-3:]
+		# if mpi_comm_rank(MPI_COMM_WORLD) == 1:
+		# 	print "Stack INFO -1-:", extract_stack()[-3:]
+		#
+		# print "qqqqqqq:", error_status
 		mpi_finalize()
-		sys.exit(1)
+		sys.stdout.flush()		
+		sys.exit()
 
 def get_shrink_data_huang(Tracker, nxinit, partids, partstack, myid, main_node, nproc, preshift = False):
 	# The function will read from stack a subset of images specified in partids
 	#   and assign to them parameters from partstack with optional CTF application and shifting of the data.
 	# So, the lengths of partids and partstack are the same.
 	#  The read data is properly distributed among MPI threads.
-	# 10142015 --- preshift is set to True when doing 3-D sorting.
-	# chunk_id are set when data is read in
+	# 10142015 --- preshift is set to True when doing 3-D sorting. 
+	from EMAN2.fundamentals import resample, fshift
+	from EMAN2.filter import filt_ctf
+	from EMAN2.applications import MPI_start_end
 
-	from fundamentals import resample, fshift
-	from filter import filt_ctf
-	from applications import MPI_start_end
-
-	'''
 	if( myid == main_node ):
 		print "  "
 		line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
 		print  line, "Reading data  onx: %3d, nx: %3d, CTF: %s, applyctf: %s, preshift: %s."%(Tracker["constants"]["nnxo"], nxinit, Tracker["constants"]["CTF"], Tracker["applyctf"], preshift)
 		print  "                       stack:      %s\n                       partids:     %s\n                       partstack: %s\n"%(Tracker["constants"]["stack"], partids, partstack)
-	'''
 	if( myid == main_node ): lpartids = read_text_file(partids)
 	else:  lpartids = 0
 	lpartids = wrap_mpi_bcast(lpartids, main_node)
@@ -5413,7 +5242,7 @@ def get_shrink_data_huang(Tracker, nxinit, partids, partstack, myid, main_node, 
 	#oldshifts = wrap_mpi_gatherv(oldshifts, main_node, MPI_COMM_WORLD)
 	return data, oldshifts
 
-'''
+
 def get_shrink_data(Tracker, nxinit, partids, partstack, bckgdata = None, myid = 0, main_node = 0, nproc = 1, \
 					original_data = None, return_real = False, preshift = False, apply_mask = True, large_memory = True):
 	"""
@@ -5421,7 +5250,7 @@ def get_shrink_data(Tracker, nxinit, partids, partstack, bckgdata = None, myid =
 	   and assign to them parameters from partstack with optional CTF application and shifting of the data.
 	So, the lengths of partids and partstack are the same.
 	  The read data is properly distributed among MPI threads.
-
+	
 	Flow of data:
 	1. Read images, if there is enough memory, keep them as original_data.
 	2. Read current params
@@ -5430,15 +5259,15 @@ def get_shrink_data(Tracker, nxinit, partids, partstack, bckgdata = None, myid =
 	5.  Do noise substitution and cosine mask.  (Optional?)
 	6.  Shrink data.
 	7.  Apply CTF.
-
+	
 	"""
 	#from fundamentals import resample
-	from utilities    import get_im, model_gauss_noise, set_params_proj, get_params_proj
-	from fundamentals import fdecimate, fshift, fft
-	from filter       import filt_ctf, filt_table
-	from applications import MPI_start_end
-	from math         import sqrt
-
+	from EMAN2.utilities import get_im, model_gauss_noise, set_params_proj, get_params_proj
+	from EMAN2.fundamentals import fdecimate, fshift, fft
+	from EMAN2.filter import filt_ctf, filt_table
+	from EMAN2.applications import MPI_start_end
+	from math import sqrt
+	
 
 	if( myid == main_node ):
 		print "  "
@@ -5538,7 +5367,7 @@ def get_shrink_data(Tracker, nxinit, partids, partstack, bckgdata = None, myid =
 				st = Util.infomask(bckg, mask2D, False)
 				bckg -= st[0]
 				bckg /= st[1]
-				from morphology import cosinemask
+				from EMAN2.morphology import cosinemask
 				data[im] = cosinemask(data[im],radius = Tracker["constants"]["radius"], bckg = bckg)
 		else:
 			#  if no bckgnoise, do simple masking instead
@@ -5570,14 +5399,15 @@ def get_shrink_data(Tracker, nxinit, partids, partstack, bckgdata = None, myid =
 	assert( nxinit == data[0].get_ysize() )  #  Just to make sure.
 	#oldshifts = wrap_mpi_gatherv(oldshifts, main_node, MPI_COMM_WORLD)
 	return data, oldshifts, original_data
-'''
+
+
 def getindexdata(stack, partids, partstack, myid, nproc):
 	# The function will read from stack a subset of images specified in partids
 	#   and assign to them parameters from partstack
 	# So, the lengths of partids and partstack are the same.
 	#  The read data is properly distributed among MPI threads.
-
-	from applications import MPI_start_end
+	
+	from EMAN2.applications import MPI_start_end
 
 	lpartids = read_text_file(partids)
 	ndata = len(lpartids)
@@ -5601,14 +5431,14 @@ def getindexdata(stack, partids, partstack, myid, nproc):
 	return data
 
 
-def store_value_of_simple_vars_in_json_file(filename, local_vars, exclude_list_of_vars = [], write_or_append = "w",
+def store_value_of_simple_vars_in_json_file(filename, local_vars, exclude_list_of_vars = [], write_or_append = "w", 
 	vars_that_will_show_only_size = []):
-
+	
 	import json, types, collections
-
+	 
 	allowed_types = [types.NoneType, types.BooleanType, types.IntType, types.LongType, types.FloatType, types.ComplexType,
 					 types.UnicodeType, types.StringType]
-
+	
 	local_vars_keys = local_vars.keys()
 
 	my_vars = dict()
@@ -5625,18 +5455,18 @@ def store_value_of_simple_vars_in_json_file(filename, local_vars, exclude_list_o
 					else:
 						my_vars[key] = local_vars[key]
 		elif type(local_vars[key]) == types.DictType:
-			if len({type(local_vars[key][i]) for i in local_vars[key]} - set(allowed_types)) == 0:
+			if len({type(local_vars[key][i]) for i in local_vars[key]} - set(allowed_types)) == 0:	
 					my_vars[key] = local_vars[key]
 
 	ordered_my_vars = collections.OrderedDict(sorted(my_vars.items()))
-
+	
 	with open(filename, write_or_append) as fp:
 		json.dump(ordered_my_vars, fp, indent = 2)
 	fp.close()
 
 
 def print_program_start_information():
-
+	
 	from mpi import MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size, mpi_barrier
 	import os
 	from socket import gethostname
@@ -5646,7 +5476,7 @@ def print_program_start_information():
 
 	if(myid == 0):
 		print "Location: " + os.getcwd()
-
+		
 	print "MPI Rank: %03d/%03d "%(myid, mpi_size) + "Hostname: " + gethostname() +  " proc_id: " + str(os.getpid())
 
 
@@ -5670,36 +5500,36 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 	When used it needs: from inspect import currentframe, getframeinfo
 	Also: from utilities import program_state_stack
 
-	This function is used for restarting time consuming data processing programs/steps from the last saved point.
+	This function is used for restarting time consuming data processing programs/steps from the last saved point. 
 
 	This static variable must be defined before the first call:
 	program_state_stack.PROGRAM_STATE_VARIABLES = {"isac_generation", "i", "j"}
 	It contains local variables at any level of the stack that define uniquely the state(flow/logic) of the program.
-
-	It is assumed that the processed data is saved at each step and it is independent from the variables that uniquely define
+	
+	It is assumed that the processed data is saved at each step and it is independent from the variables that uniquely define 
 	the state(flow/logic) of the program. All the variables that are used in more than one step must be calculated before
 	the "if program_state_stack(locals(), getframeinfo(currentframe())):" call. It is assumed that they are not time consuming.
-	Passing processed data from one step to the next is done only through files.
-
+	Passing processed data from one step to the next is done only through files. 
+	
 	First call needs to contain "file_name_of_saved_state".
-	Then, the next calls are "if program_state_stack(locals(), getframeinfo(currentframe())):" to demarcate the blocks of
+	Then, the next calls are "if program_state_stack(locals(), getframeinfo(currentframe())):" to demarcate the blocks of 
 	processing steps that take a long time (hours/days).
-
+	
 	Example of initialization:
 	program_state_stack.PROGRAM_STATE_VARIABLES = {"isac_generation", "i", "j"}
 	program_state_stack(locals(), getframeinfo(currentframe()), "my_state.json")
-
+	
 	Then regular usage in the program:
-
+	
 	if program_state_stack(locals(), getframeinfo(currentframe())):
 	# if 1:
 		pass
-
+	
 	"""
 
 	from traceback import extract_stack
 	from mpi import mpi_comm_rank, mpi_bcast, MPI_COMM_WORLD, MPI_INT
-	from utilities import if_error_then_all_processes_exit_program
+	from EMAN2.utilities import if_error_all_processes_quit_program
 	import os
 
 	def get_current_stack_info():
@@ -5708,10 +5538,10 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 	START_EXECUTING_FALSE = 0
 	START_EXECUTING_TRUE = 1
 	START_EXECUTING_ONLY_ONE_TIME_THEN_REVERT = 2
-
+	
 	# error_status = 1
-	# if_error_then_all_processes_exit_program(error_status)
-
+	# if_error_all_processes_quit_program(error_status)
+	
 	current_state = dict()
 	for var in program_state_stack.PROGRAM_STATE_VARIABLES & set(full_current_state) :
 		current_state[var] =  full_current_state[var]
@@ -5723,9 +5553,9 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 	else:
 		location_in_program = frameinfo.filename + "___" + str(frameinfo.lineno) + "_" + last_call
 		# location_in_program = frameinfo.filename + "___" + last_call
-
+		
 	current_state["location_in_program"] = location_in_program
-
+	
 	current_stack = get_current_stack_info()
 
 	error_status = 0
@@ -5744,11 +5574,7 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 			program_state_stack.track_state = [dict() for i in xrange(len(program_state_stack.track_stack))]
 			program_state_stack.track_state[-1] = current_state
 
-			file_name_of_saved_state_contains_information = False
 			if (os.path.exists(file_name_of_saved_state)):
-				statinfo = os.stat(file_name_of_saved_state)
-				file_name_of_saved_state_contains_information = statinfo.st_size > 0
-			if file_name_of_saved_state_contains_information:
 				program_state_stack.saved_stack, \
 				program_state_stack.saved_state = restore_program_stack_and_state(file_name_of_saved_state)
 				program_state_stack.start_executing = START_EXECUTING_FALSE
@@ -5765,8 +5591,8 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 
 			if program_state_stack.start_executing == START_EXECUTING_ONLY_ONE_TIME_THEN_REVERT:
 				program_state_stack.start_executing = START_EXECUTING_FALSE
-
-			# correct track_state to reflect track_stack
+			
+			# correct track_state to reflect track_stack 
 			for i in xrange(len(current_stack)):
 				if i < len(program_state_stack.track_state):
 					if program_state_stack.track_stack[i] != current_stack[i]:
@@ -5775,16 +5601,16 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 					# print "i:", i, len(program_state_stack.track_state), len(current_stack), current_stack
 					program_state_stack.track_state.append(dict())
 			program_state_stack.track_state[i] = current_state
-
+			
 			# correct track_stack to reflect current_stack
 			program_state_stack.track_stack = current_stack
-
+			
 			# if program_state_stack.counter == 68:
 			# 	print range(len(current_stack), len(program_state_stack.track_state))
-
-			# delete additional elements in track_state so that size of track_state is the same as current_stack
+				
+			# delete additional elements in track_state so that size of track_state is the same as current_stack  				
 			program_state_stack.track_state[len(current_stack):len(program_state_stack.track_state)] = []
-
+			
 			if program_state_stack.start_executing == START_EXECUTING_TRUE or last_call != "" or force_starting_execution:
 				store_program_state(program_state_stack.file_name_of_saved_state, program_state_stack.track_state, current_stack)
 				program_state_stack.start_executing = START_EXECUTING_TRUE
@@ -5798,21 +5624,21 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 							break
 						else:
 							program_state_stack.start_executing = START_EXECUTING_ONLY_ONE_TIME_THEN_REVERT
-							# print "////////////////////////////"
+							# print "////////////////////////////" 
 							# print "Entering function: ", location_in_program
 							# print "////////////////////////////"
 							break
 					else:
 						program_state_stack.start_executing = START_EXECUTING_TRUE
-						# print "////////////////////////////"
+						# print "////////////////////////////" 
 						# print "Start executing: ", location_in_program
 						# print "////////////////////////////"
 		break
 	else:
 		program_state_stack.start_executing = START_EXECUTING_FALSE
-
-	if_error_then_all_processes_exit_program(error_status)
-
+		
+	if_error_all_processes_quit_program(error_status)	
+		
 	program_state_stack.start_executing = mpi_bcast(program_state_stack.start_executing, 1, MPI_INT, 0, MPI_COMM_WORLD)
 	program_state_stack.start_executing = int(program_state_stack.start_executing[0])
 
@@ -5825,55 +5651,31 @@ def qw(s):
 	s = s.replace("\t"," ")
 	return tuple(s.split())
 
-def list_prod(list_whose_elements_are_going_to_be_multiplied):
-	import operator
-	return reduce(operator.mul, list_whose_elements_are_going_to_be_multiplied)
-
-def calculate_space_size(x_half_size, y_half_size, psi_half_size):
-	return [2 * x_half_size + 1, 2 * y_half_size + 1, 2 * psi_half_size + 1]
-
-
-def convert_json_fromunicode(data):
-	import  collections
-	if isinstance(data, basestring):
-		return str(data)
-	elif isinstance(data, collections.Mapping):
-		return dict(map(convert_json_fromunicode, data.iteritems()))
-	elif isinstance(data, collections.Iterable):
-		return type(data)(map(convert_json_fromunicode, data))
-	else:
-		return data
 
 
 def debug_mpi_barrier(comm):
 	from mpi import mpi_barrier, mpi_comm_rank, mpi_bcast
 	from traceback import extract_stack
-	import sys
 
-
-	# if mpi_comm_rank(comm) in range(4):
-	print "Stack info::0::", extract_stack()[-3:]
-
-	sys.stdout.flush()
-	sys.stderr.flush()
+	if mpi_comm_rank(comm) == 0:
+		print "Stack info::0::", extract_stack()[-3:]
+	if mpi_comm_rank(comm) == 1:
+		print "Stack info::1::", extract_stack()[-3:]
 	return mpi_barrier(comm)
+
+
 
 
 def debug_mpi_bcast(newv, s, t, m, comm):
 	from mpi import mpi_comm_rank, mpi_bcast
-	from traceback import extract_stack
-	import sys
+	from traceback import extract_stack	
+	
 
-
-	rrr = mpi_bcast(newv, s, t, m, comm)
-	# if mpi_comm_rank(comm) in range(4):
-	print "Stack info::0::", extract_stack()[-3:], "****************", newv, "####", rrr
-
-	sys.stdout.flush()
-	sys.stderr.flush()
-
-	# return mpi_bcast(newv, s, t, m, comm)
-	return rrr
+	if mpi_comm_rank(comm) == 0:
+		print "Stack info::0::", extract_stack()[-3:]
+	if mpi_comm_rank(comm) == 1:
+		print "Stack info::1::", extract_stack()[-3:]
+	return mpi_bcast(newv, s, t, m, comm)
 
 def print_from_process(process_rank, message):
 	from mpi import MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size, mpi_barrier
@@ -5887,7 +5689,7 @@ def print_from_process(process_rank, message):
 		print "MPI Rank: %03d/%03d "%(myid, mpi_size) + "Hostname: " + gethostname() +  " proc_id: " + str(os.getpid()) +\
 			"message:::", message
 	sys.stdout.flush()
-
+	
 def mpi_exit():
 	from mpi import mpi_finalize
 	import sys
@@ -5895,1286 +5697,3 @@ def mpi_exit():
 	mpi_finalize()
 	sys.stdout.flush()
 	sys.exit()
-
-### from sort3d
-
-def get_attr_stack(data_stack,attr_string):
-	attr_value_list = []
-	for idat in xrange(len(data_stack)):
-		attr_value = data_stack[idat].get_attr(attr_string)
-		attr_value_list.append(attr_value)
-	return attr_value_list
-
-def get_sorting_attr_stack(data_stack):
-	from utilities import get_params_proj
-	attr_value_list = []
-	for idat in xrange(len(data_stack)):
-		group                 = data_stack[idat].get_attr("group")
-		phi,theta,psi,s2x,s2y = get_params_proj(data_stack[idat],xform = "xform.projection")
-		attr_value_list.append([group, phi, theta, psi, s2x, s2y])
-	return attr_value_list
-
-def get_sorting_params(Tracker,data):
-	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_row,wrap_mpi_bcast,even_angles
-	from applications import MPI_start_end
-	myid      = Tracker["constants"]["myid"]
-	main_node = Tracker["constants"]["main_node"]
-	nproc     = Tracker["constants"]["nproc"]
-	ndata     = Tracker["total_stack"]
-	mpi_comm  = MPI_COMM_WORLD
-	if myid == main_node:
-		total_attr_value_list = []
-		for n in xrange(ndata):
-			total_attr_value_list.append([])
-	else:
-		total_attr_value_list = 0
-	for inode in xrange(nproc):
-		attr_value_list = get_attr_stack(data,"group")
-		attr_value_list = wrap_mpi_bcast(attr_value_list,inode)
-		if myid == main_node:
-			image_start,image_end = MPI_start_end(ndata,nproc,inode)
-			total_attr_value_list = fill_in_mpi_list(total_attr_value_list,attr_value_list,image_start,image_end)
-		mpi_barrier(MPI_COMM_WORLD)
-	total_attr_value_list = wrap_mpi_bcast(total_attr_value_list,main_node)
-	return total_attr_value_list
-
-def get_sorting_params_refine(Tracker,data,ndata):
-	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_row,wrap_mpi_bcast,even_angles
-	from applications import MPI_start_end
-	myid       = Tracker["constants"]["myid"]
-	main_node  = Tracker["constants"]["main_node"]
-	nproc      = Tracker["constants"]["nproc"]
-	#ndata     = Tracker["total_stack"]
-	mpi_comm   = MPI_COMM_WORLD
-	if myid == main_node:
-		total_attr_value_list = []
-		for n in xrange(ndata):
-			total_attr_value_list.append([])
-	else:
-		total_attr_value_list = 0
-	for inode in xrange(nproc):
-		attr_value_list = get_sorting_attr_stack(data)
-		attr_value_list = wrap_mpi_bcast(attr_value_list,inode)
-		if myid == main_node:
-			image_start,image_end = MPI_start_end(ndata,nproc,inode)
-			total_attr_value_list = fill_in_mpi_list(total_attr_value_list, attr_value_list, image_start,image_end)
-		mpi_barrier(MPI_COMM_WORLD)
-	total_attr_value_list = wrap_mpi_bcast(total_attr_value_list, main_node)
-	return total_attr_value_list
-
-def parsing_sorting_params(sorting_params_list):
-	group_list        = []
-	ali3d_params_list = []
-	for element in sorting_params_list:
-		group_list.append(element[0])
-		ali3d_params_list.append(element[1:])
-	return group_list, ali3d_params_list
-
-def fill_in_mpi_list(mpi_list,data_list,index_start,index_end):
-	for index in xrange(index_start, index_end):
-		mpi_list[index] = data_list[index-index_start]
-	return mpi_list
-
-def get_groups_from_partition(partition, initial_ID_list, number_of_groups):
-	# sort out Kmref results to individual groups that has initial IDs
-	# make a dictionary
-	dict = {}
-	for iptl in xrange(len(initial_ID_list)):
-		dict[iptl] = initial_ID_list[iptl]
-	res = []
-	for igrp in xrange(number_of_groups):
-		class_one = []
-		for ipt in xrange(len(partition)):
-			if partition[ipt] == igrp:
-				orginal_id = dict[ipt]
-				class_one.append(orginal_id)
-		res.append(class_one)
-	return res
-
-def remove_small_groups(class_list,minimum_number_of_objects_in_a_group):
-	new_class  = []
-	final_list = []
-	for one_class in class_list:
-		if len(one_class)>=minimum_number_of_objects_in_a_group:
-			new_class.append(one_class)
-			for element in one_class:
-				final_list.append(element)
-	final_list.sort()
-	return final_list, new_class
-
-#### Used in the main programm
-
-def sample_down_1D_curve(nxinit, nnxo, pspcurv_nnxo_file):
-	shrinkage=float(nnxo)/float(nxinit)
-	curv_orgn = read_text_file(pspcurv_nnxo_file)
-	new_curv=int(1.5*len(curv_orgn))*[0.0]
-	for index in xrange(len(curv_orgn)):
-		new_index = int(index/shrinkage)
-		fraction  = index/shrinkage-new_index
-		if fraction <=0:
-			new_curv[new_index] +=curv_orgn[index]
-		else:
-			new_curv[new_index]  +=(1.-fraction)*curv_orgn[index]
-			new_curv[new_index+1] += fraction*curv_orgn[index]
-	return new_curv
-
-def get_initial_ID(part_list, full_ID_dict):
-	part_initial_id_list = []
-	#new_dict = {}
-	for iptl in xrange(len(part_list)):
-		part_initial_id_list.append(full_ID_dict[part_list[iptl]])
-		#new_dict[iptl] = id
-	return part_initial_id_list#, new_dict
-
-def remove_small_groups(class_list,minimum_number_of_objects_in_a_group):
-	new_class  = []
-	final_list = []
-	for one_class in class_list:
-		if len(one_class)>=minimum_number_of_objects_in_a_group:
-			new_class.append(one_class)
-			for element in one_class:
-				final_list.append(element)
-	final_list.sort()
-	return final_list, new_class
-
-def print_upper_triangular_matrix(data_table_dict,N_indep,log_main):
-		msg =""
-		for i in xrange(N_indep):
-			msg +="%7d"%i
-		log_main.add(msg)
-		for i in xrange(N_indep):
-			msg ="%5d "%i
-			for j in xrange(N_indep):
-				if i<j:
-					msg +="%5.2f "%data_table_dict[(i,j)]
-				else:
-					msg +="      "
-			log_main.add(msg)
-
-def print_a_line_with_timestamp(string_to_be_printed ):
-	line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
- 	print(line,string_to_be_printed)
-	return string_to_be_printed
-
-def convertasi(asig,K):
-	from numpy import array
-	p = []
-	for k in xrange(K):
-		l = []
-		for i in xrange(len(asig)):
-			if( asig[i ]== k ): l.append(i)
-		l = array(l,"int32")
-		l.sort()
-		p.append(l)
-	return p
-
-def prepare_ptp(data_list, K):
-	num_of_pt = len(data_list)
-	ptp=[]
-	for ipt in xrange(num_of_pt):
-		ptp.append([])
-	for ipt in xrange(num_of_pt):
-		nc = len(data_list[ipt])
-		asig  =[-1]*nc
-		for i in xrange(nc):
-			asig[i] = data_list[ipt][i]
-		ptp[ipt] = convertasi(asig, K)
-	return ptp
-
-def print_dict(dict,theme):
-		line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
-		print(line+theme)
-		spaces = "                           "
-		for key, value in sorted( dict.items() ):
-			if(key != "constants"):
-				print("                    => "+key+spaces[len(key):]+":  "+str(value))
-
-def get_resolution_mrk01(vol, radi, nnxo, fscoutputdir, mask_option):
-        # this function is single processor
-        #  Get updated FSC curves, user can also provide a mask using radi variable
-	import types
-	from statistics import fsc
-	from utilities import model_circle, get_im
-	from filter import fit_tanh1
-	import os
-	if(type(radi) == int):
-		if(mask_option is None):  mask = model_circle(radi,nnxo,nnxo,nnxo)
-		else:                     mask = get_im(mask_option)
-	else:  mask = radi
-	nfsc = fsc(vol[0]*mask,vol[1]*mask, 1.0,os.path.join(fscoutputdir,"fsc.txt") )
-	currentres = -1.0
-	ns = len(nfsc[1])
-	#  This is actual resolution, as computed by 2*f/(1+f)
-	for i in xrange(1,ns-1):
-		if ( nfsc[1][i] < 0.333333333333333333333333):
-			currentres = nfsc[0][i-1]
-			break
-		#if(currentres < 0.0):
-			#print("  Something wrong with the resolution, cannot continue")
-		currentres = nfsc[0][i-1]
-
-        """ this commented previously
-		lowpass = 0.5
-		ns = len(nfsc[1])
-        #  This is resolution used to filter half-volumes
-        for i in xrange(1,ns-1):
-                if ( nfsc[1][i] < 0.5 ):
-                        lowpass = nfsc[0][i-1]
-                        break
-        """
-	lowpass, falloff = fit_tanh1(nfsc, 0.01)
-	return  round(lowpass,4), round(falloff,4), round(currentres,2)
-
-def partition_to_groups(alist, K):
-	res =[]
-	for igroup in xrange(K):
-		this_group =[]
-		for imeb in xrange(len(alist)):
-			if( alist[imeb] == igroup ):   this_group.append(imeb)
-		this_group.sort()
-		res.append(this_group)
-	return res
-
-def partition_independent_runs(run_list, K):
-	indep_runs_groups = {}
-	for indep in xrange(len(run_list)):
-		indep_runs_groups[indep] = partition_to_groups(run_list[indep], K)
-	return indep_runs_groups
-
-def get_outliers(total_number,plist):
-	tlist={}
-	for i in xrange(total_number):tlist[i]=i
-	for a in plist:   del tlist[a]
-	out =[]
-	for a in tlist:   out.append(a)
-	return out
-
-def merge_groups(stable_members_list):
-	alist=[]
-	for i in xrange(len(stable_members_list)):
-		for j in xrange(len(stable_members_list[i])):alist.append(stable_members_list[i][j])
-	return alist
-
-def save_alist(Tracker,name_of_the_text_file,alist):
-	from utilities import write_text_file
-	import os
-	log       =Tracker["constants"]["log_main"]
-	myid      =Tracker["constants"]["myid"]
-	main_node =Tracker["constants"]["main_node"]
-	dir_to_save_list =Tracker["this_dir"]
-	if myid==main_node:
-		file_name=os.path.join(dir_to_save_list,name_of_the_text_file)
-		write_text_file(alist, file_name)
-
-def margin_of_error(P, size_of_this_sampling):
-	# margin of an error, or radius of an error for a percentage
-	from math import sqrt
-	return sqrt(P*(1.-P)/size_of_this_sampling)
-
-def get_margin_of_error(this_group_of_data,Tracker):
-	ratio = margin_of_error(Tracker["P_chunk0"],len(this_group_of_data))
-	rate1, rate2, size_of_this_sampling = count_chunk_members(Tracker["chunk_dict"],this_group_of_data)
-	return abs(rate1-Tracker["P_chunk0"]),ratio,abs(rate2-Tracker["P_chunk1"]),ratio
-
-def do_two_way_comparison(Tracker):
-	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_file,write_text_file
-	from statistics import k_means_match_clusters_asg_new
-	import os
-	######
-	myid              = Tracker["constants"]["myid"]
-	main_node         = Tracker["constants"]["main_node"]
-	log_main          = Tracker["constants"]["log_main"]
-	total_stack       = Tracker["this_total_stack"]
-	workdir           = Tracker["this_dir"]
-	number_of_groups  = Tracker["number_of_groups"]
-	######
-	if myid ==main_node:
-		msg="-------Two_way comparisons analysis of %3d independent runs of equal Kmeans-------"%Tracker["constants"]["indep_runs"]
-		log_main.add(msg)
-	total_partition = []
-	if( Tracker["constants"]["indep_runs"]<2 ):
-		if myid ==main_node:
-			log_main.add(" Error! One single run cannot make two-way comparison")
-		from mpi import mpi_finalize
-		from sys import exit
-		mpi_finalize()
-		exit()
-	else:
-		for iter_indep in xrange(Tracker["constants"]["indep_runs"]):  total_partition.append(Tracker["partition_dict"][iter_indep])
-		### Two-way comparision is carried out on all nodes
-		ptp = prepare_ptp(total_partition, number_of_groups)
-		indep_runs_to_groups = partition_independent_runs(total_partition, number_of_groups)
-		###### Check margin of error
-		if myid ==main_node:
-			log_main.add("--------------------------margin of error--------------------------------------------")
-		for indep in xrange(len(indep_runs_to_groups)):
-			for index_of_class in xrange(len(indep_runs_to_groups[indep])):
-				one_group_in_old_ID = get_initial_ID(indep_runs_to_groups[indep][index_of_class], Tracker["full_ID_dict"])
-				rate1, rate2, size_of_this_group = count_chunk_members(Tracker["chunk_dict"], one_group_in_old_ID)
-				error = margin_of_error(Tracker["P_chunk0"], size_of_this_group)
-				if myid ==main_node:
-					log_main.add(" margin of error for chunk0 is %f   %f    %d"%((Tracker["P_chunk0"]-error),(Tracker["P_chunk0"]+error),size_of_this_group))
-					log_main.add(" actual percentage is %f"%rate1)
-		if myid ==main_node:
-			log_main.add("------------------------------------------------------------------------------")
-		total_pop=0
-		two_ways_stable_member_list = {}
-		avg_two_ways                = 0.0
-		avg_two_ways_square         = 0.0
-		scores                      = {}
-		for iptp in xrange(len(ptp)):
-			for jptp in xrange(len(ptp)):
-				newindeces, list_stable, nb_tot_objs = k_means_match_clusters_asg_new(ptp[iptp], ptp[jptp])
-				tt = 0.0
-				if myid ==main_node and iptp<jptp:
-					aline="Two-way comparison between independent run %3d and %3d"%(iptp,jptp)
-					log_main.add(aline)
-				for m in xrange(len(list_stable)):
-					tt +=len(list_stable[m])
-				if( (myid == main_node) and (iptp<jptp) ):
-					unaccounted = total_stack-tt
-					ratio_unaccounted  = 100.-tt/total_stack*100.
-					ratio_accounted    = tt/total_stack*100
-				rate = tt/total_stack*100.0
-				scores[(iptp,jptp)]    = rate
-				if iptp<jptp :
-					avg_two_ways 	    += rate
-					avg_two_ways_square += rate**2
-					total_pop += 1
-					new_list=[]
-					for any in list_stable:
-						any.tolist()
-						new_list.append(any)
-					two_ways_stable_member_list[(iptp,jptp)] = new_list[:]
-					del new_list
-		if myid ==main_node:
-			log_main.add("two_way comparison is done!")
-		#### Score each independent run by pairwise summation
-		summed_scores = []
-		two_way_dict  = {}
-		for ipp in xrange(len(ptp)):
-			avg_scores =0.0
-			for jpp in xrange(len(ptp)):
-				if ipp!=jpp:
-					avg_scores += scores[(ipp,jpp)]
-			avg_rate =avg_scores/(len(ptp)-1)
-			summed_scores.append(avg_rate)
-			two_way_dict[avg_rate] =ipp
-		#### Select two independent runs that have the first two highest scores
-		run1, run2,rate1,rate2 = select_two_runs(summed_scores,two_way_dict)
-		Tracker["two_way_stable_member"]      = two_ways_stable_member_list[(run1,run2)]
-		Tracker["pop_size_of_stable_members"] = 1
-		if myid == main_node:
-			log_main.add("Get outliers of the selected comparison")
-		####  Save both accounted ones and unaccounted ones
-		if myid == main_node:
-			log_main.add("Save outliers")
-		stable_class_list = []
-		small_group_list  = []
-		if myid ==main_node:
-			log_main.add("------------------margin of error--------------------------------------------")
-		for istable in xrange(len(Tracker["two_way_stable_member"])):
-			new_one_class                    = get_initial_ID(Tracker["two_way_stable_member"][istable], Tracker["full_ID_dict"])
-			rate1, rate2, size_of_this_group = count_chunk_members(Tracker["chunk_dict"], new_one_class)
-			error=margin_of_error(Tracker["P_chunk0"],size_of_this_group)
-			if myid ==main_node:
-				log_main.add(" margin of error for chunk0 is %f    %f    %d"%((Tracker["P_chunk0"]-error),(Tracker["P_chunk0"]+error),size_of_this_group))
-				log_main.add(" actual percentage is %f"%rate1)
-			if( len(new_one_class)>= Tracker["constants"]["smallest_group"] ):  stable_class_list.append(new_one_class)
-			else:                                                               small_group_list.append(new_one_class)
-		if myid ==main_node:
-			log_main.add("----------------------------------------------------------------------------")
-		accounted_list = merge_groups(stable_class_list)
-		Tracker["this_accounted_list"]   =  accounted_list
-		Tracker["two_way_stable_member"] =  stable_class_list
-		mpi_barrier(MPI_COMM_WORLD)
-		save_alist(Tracker,"Accounted.txt", accounted_list)
-		update_full_dict(accounted_list,Tracker)# Update full_ID_dict for Kmeans
-		mpi_barrier(MPI_COMM_WORLD)
-		Tracker["this_unaccounted_dir"]     = workdir
-		Tracker["this_unaccounted_text"]    = os.path.join(workdir,"Unaccounted.txt")
-		Tracker["this_accounted_text"]      = os.path.join(workdir,"Accounted.txt")
-		Tracker["ali3d_of_outliers"]        = os.path.join(workdir,"ali3d_params_of_outliers.txt")
-		Tracker["ali3d_of_accounted"]       = os.path.join(workdir,"ali3d_params_of_accounted.txt")
-		if myid==main_node:
-			log_main.add(" Selected indepedent runs      %5d and  %5d"%(run1,run2))
-			log_main.add(" Their pair-wise averaged rates are %5.2f  and %5.2f "%(rate1,rate2))
-		from math import sqrt
-		avg_two_ways        = avg_two_ways/total_pop
-		two_ways_std        = sqrt(avg_two_ways_square/total_pop-avg_two_ways**2)
-		net_rate            = avg_two_ways-1./number_of_groups*100.
-		Tracker["net_rate"] = net_rate
-		if myid == main_node:
-			msg="average of two-way comparison  %5.3f"%avg_two_ways
-			log_main.add(msg)
-			msg="net rate of two-way comparison  %5.3f"%net_rate
-			log_main.add(msg)
-			msg="std of two-way comparison %5.3f"%two_ways_std
-			log_main.add(msg)
-			msg ="Score table of two_way comparison when Kgroup =  %5d"%number_of_groups
-			log_main.add(msg)
-			print_upper_triangular_matrix(scores,Tracker["constants"]["indep_runs"],log_main)
-		del two_ways_stable_member_list
-		Tracker["score_of_this_comparison"]=(avg_two_ways,two_ways_std,net_rate)
-		mpi_barrier(MPI_COMM_WORLD)
-
-def select_two_runs(summed_scores,two_way_dict):
-	summed_scores.sort()
-	rate1 = summed_scores[-1]
-	rate2 = None
-	for index in xrange(2,len(summed_scores)+1):
-		rate2 =summed_scores[-index]
-		if rate2 !=rate1:
-			break
-	if rate2 != None:
-		if rate1 != rate2:
-			tmp_run1= two_way_dict[rate1]
-			tmp_run2= two_way_dict[rate2]
-			run1 = min(tmp_run1,tmp_run2)
-			run2 = max(tmp_run1,tmp_run2)
-		else:
-			run1 = 0
-			run2 = 1
-			rate2=rate1
-	else:
-		run1 =0
-		run2 =1
-		rate2 = rate1
-	return run1, run2, rate1, rate2
-
-def get_ali3d_params(ali3d_old_text_file,shuffled_list):
-	from utilities import read_text_row
-	ali3d_old = read_text_row(ali3d_old_text_file)
-	ali3d_new = []
-	for iptl in xrange(len(shuffled_list)):
-		ali3d_new.append(ali3d_old[shuffled_list[iptl]])
-	return ali3d_new
-
-def counting_projections(delta, ali3d_params, image_start):
-	from utilities import even_angles,angle_between_projections_directions
-	sampled_directions = {}
-	angles=even_angles(delta,0,180)
-	for a in angles:
-		[phi0, theta0, psi0]=a
-		sampled_directions[(phi0,theta0)]=[]
-	from math import sqrt
-	for i in xrange(len(ali3d_params)):
-		[phi, theta, psi, s2x, s2y] = ali3d_params[i]
-		dis_min    = 9999.
-		this_phi   = 9999.
-		this_theta = 9999.
-		this_psi   = 9999.
-		prj1       =[phi,theta]
-		for j in xrange(len(angles)):
-			[phi0, theta0, psi0] = angles[j]
-			prj2 =[phi0,theta0]
-			dis = angle_between_projections_directions(prj1, prj2)
-			if dis<dis_min:
-				dis_min    =dis
-				this_phi   =phi0
-				this_theta =theta0
-				this_psi   =psi0
-		alist = sampled_directions[(this_phi,this_theta)]
-		alist.append(i+image_start)
-		sampled_directions[(this_phi,this_theta)]=alist
-	return sampled_directions
-
-def unload_dict(dict_angles):
-	dlist =[]
-	for a in dict_angles:
-		tmp=[a[0],a[1]]
-		tmp_list=dict_angles[a]
-		for b in tmp_list:
-			tmp.append(b)
-		dlist.append(tmp)
-	return dlist
-
-def load_dict(dict_angle_main_node, unloaded_dict_angles):
-	for ang_proj in unloaded_dict_angles:
-		if len(ang_proj)>2:
-			for item in xrange(2,len(ang_proj)):
-				dict_angle_main_node[(ang_proj[0],ang_proj[1])].append(item)
-	return dict_angle_main_node
-
-def get_stat_proj(Tracker,delta,this_ali3d):
-	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_row,wrap_mpi_bcast,even_angles
-	from applications import MPI_start_end
-	myid      = Tracker["constants"]["myid"]
-	main_node = Tracker["constants"]["main_node"]
-	nproc     = Tracker["constants"]["nproc"]
-	mpi_comm  = MPI_COMM_WORLD
-	if myid ==main_node:
-		ali3d_params=read_text_row(this_ali3d)
-		lpartids    = range(len(ali3d_params))
-	else:
-		lpartids      = 0
-		ali3d_params  = 0
-	lpartids = wrap_mpi_bcast(lpartids, main_node)
-	ali3d_params = wrap_mpi_bcast(ali3d_params, main_node)
-	ndata=len(ali3d_params)
-	image_start, image_end = MPI_start_end(ndata, nproc, myid)
-	ali3d_params=ali3d_params[image_start:image_end]
-	sampled=counting_projections(delta,ali3d_params,image_start)
-	for inode in xrange(nproc):
-		if myid ==inode:
-			dlist=unload_dict(sampled)
-		else:
-			dlist =0
-		dlist=wrap_mpi_bcast(dlist,inode)
-		if myid ==main_node and inode != main_node:
-			sampled=load_dict(sampled,dlist)
-		mpi_barrier(MPI_COMM_WORLD)
-	return sampled
-
-def create_random_list(Tracker):
-	import copy
-	import random
-	from utilities import wrap_mpi_bcast
-
-	myid        = Tracker["constants"]["myid"]
-	main_node   = Tracker["constants"]["main_node"]
-	total_stack = Tracker["total_stack"]
-
-	if Tracker["constants"]["seed"] ==- 1: random.seed()
-	else:                                  random.seed(Tracker["constants"]["seed"])
-
-	indep_list  = []
-	for irandom in xrange(Tracker["constants"]["indep_runs"]):
-		ll = copy.copy(Tracker["this_data_list"])
-		random.shuffle(ll)
-		ll = wrap_mpi_bcast(ll, main_node)
-		indep_list.append(ll)
-	Tracker["this_indep_list"] = indep_list
-
-def get_number_of_groups(total_particles,number_of_images_per_group, round_off=.2):
-	number_of_groups=float(total_particles)/number_of_images_per_group
-	if number_of_groups - int(number_of_groups)<round_off:
-		number_of_groups = int(number_of_groups)
-	else:
-		number_of_groups = int(number_of_groups)+1
-	return number_of_groups
-
-def recons_mref(Tracker):
-	from mpi import mpi_barrier, MPI_COMM_WORLD
-	import os
-	from time import sleep
-	from reconstruction import recons3d_4nn_ctf_MPI
-	from utilities import get_shrink_data_huang
-	myid             = Tracker["constants"]["myid"]
-	main_node        = Tracker["constants"]["main_node"]
-	nproc            = Tracker["constants"]["nproc"]
-	number_of_groups = Tracker["number_of_groups"]
-	particle_list    = Tracker["this_particle_list"]
-	nxinit           = Tracker["nxinit"]
-	partstack        = Tracker["constants"]["partstack"]
-	total_data       = len(particle_list)
-	ref_list = []
-	number_of_ref_class = []
-	for igrp in xrange(number_of_groups):
-		a_group_list = particle_list[(total_data*igrp)//number_of_groups:(total_data*(igrp+1))//number_of_groups]
-		a_group_list.sort()
-		Tracker["this_data_list"] = a_group_list
-		from utilities import write_text_file
-		particle_list_file = os.path.join(Tracker["this_dir"], "iclass%d.txt"%igrp)
-		if myid ==main_node:
-			write_text_file(Tracker["this_data_list"],particle_list_file)
-		mpi_barrier(MPI_COMM_WORLD)
-		data, old_shifts =  get_shrink_data_huang(Tracker,nxinit,particle_list_file,partstack,myid,main_node,nproc,preshift=True)
-		#vol=reconstruct_3D(Tracker,data)
-		mpi_barrier(MPI_COMM_WORLD)
-		vol = recons3d_4nn_ctf_MPI(myid=myid,prjlist=data,symmetry=Tracker["constants"]["sym"],finfo=None)
-		if myid ==main_node:
-			print "reconstructed %3d"%igrp
-		ref_list.append(vol)
-		number_of_ref_class.append(len(Tracker["this_data_list"]))
-	Tracker["number_of_ref_class"] = number_of_ref_class
-	return ref_list
-
-def apply_low_pass_filter(refvol,Tracker):
-	from filter import filt_tanl
-	for iref in xrange(len(refvol)):
-		refvol[iref]=filt_tanl(refvol[iref],Tracker["low_pass_filter"],.1)
-	return refvol
-
-def get_groups_from_partition(partition, initial_ID_list, number_of_groups):
-	# sort out Kmref results to individual groups that has initial IDs
-	# make a dictionary
-	dict = {}
-	for iptl in xrange(len(initial_ID_list)):
-		dict[iptl] = initial_ID_list[iptl]
-	res = []
-	for igrp in xrange(number_of_groups):
-		class_one = []
-		for ipt in xrange(len(partition)):
-			if partition[ipt] == igrp:
-				orginal_id = dict[ipt]
-				class_one.append(orginal_id)
-		res.append(class_one)
-	return res
-
-def get_number_of_groups(total_particles,number_of_images_per_group):
-	# soft partition groups
-	number_of_groups=float(total_particles)/number_of_images_per_group
-	if number_of_groups - int(number_of_groups)<.4:
-		number_of_groups = int(number_of_groups)
-	else:
-		number_of_groups = int(number_of_groups)+1
-	return number_of_groups
-
-def get_complementary_elements(total_list,sub_data_list):
-	if len(total_list)<len(sub_data_list):
-		print "Wrong input list!"
-		return []
-	else:
-		sub_data_dict     = {}
-		complementary     = []
-		for index in xrange(len(sub_data_list)):sub_data_dict[sub_data_list[index]]=index
-		for any in total_list:
-			if sub_data_dict.has_key(any) is False:complementary.append(any)
-		return complementary
-
-def get_complementary_elements_total(total_stack, data_list):
-	data_dict    ={}
-	complementary     = []
-	for index in xrange(len(data_list)):data_dict[data_list[index]]=index
-	for index in xrange(total_stack):
-		if data_dict.has_key(index) is False:complementary.append(index)
-	return complementary
-
-def update_full_dict(leftover_list, Tracker):
-	full_dict = {}
-	for iptl in xrange(len(leftover_list)):
-		full_dict[iptl]     = leftover_list[iptl]
-	Tracker["full_ID_dict"] = full_dict
-
-def count_chunk_members(chunk_dict, one_class):
-	N_chunk0 = 0
-	N_chunk1 = 0
-	for a in one_class:
-		if chunk_dict[a] == 0: N_chunk0 += 1
-		else:                  N_chunk1 += 1
-	n = len(one_class)
-	if n <=1:  return 0.0, 0.0, n
-	else: return  float(N_chunk0)/n, float(N_chunk1)/n, n
-
-def get_two_chunks_from_stack(Tracker):
-	total_chunk = EMUtil.get_all_attributes(Tracker["orgstack"],"chunk_id")
-	chunk_one = []
-	chunk_two = []
-	for index_of_total_chunk in xrange(len(total_chunk)):
-		if total_chunk[index_of_total_chunk]==0:chunk_one.append(index_of_total_chunk)
-		else:chunk_two.append(index_of_total_chunk)
-	return chunk_one, chunk_two
-
-def adjust_fsc_down(fsc,n1,n2):
-	# fsc curve:  frequencies   cc values  number of the sampling points
-	# n1 total data n2 subset
-	from utilities import read_text_file
-	import types
-	if type(fsc) == types.StringType:fsc=read_text_file(fsc,-1)
-	N_bins =  len(fsc[0])
-	adjusted_fsc = N_bins*[None]
-	for index_of_cc in xrange(N_bins):
-		adjusted_fsc[index_of_cc] = (float(n2)/float(n1))*fsc[1][index_of_cc]/(1.-(1.-float(n2)/float(n1))*fsc[1][index_of_cc])
-	calibrated_fsc=[fsc[0], adjusted_fsc, fsc[2]]
-	return calibrated_fsc
-
-def set_filter_parameters_from_adjusted_fsc(n1,n2,Tracker):
-	fsc_cutoff   = 1.0/3.0
-	adjusted_fsc = adjust_fsc_down(Tracker["global_fsc"],n1,n2)
-	currentres   = -1.0
-	ns           = len(adjusted_fsc)
-	for i in xrange(1,ns-1):
-		if adjusted_fsc[1][i] < fsc_cutoff:
-			currentres = adjusted_fsc[0][i-1]
-			break
-	lowpass, falloff    = fit_tanh1(adjusted_fsc, 0.01)
-	lowpass             = round(lowpass,4)
-	falloff             = min(.1,falloff)
-	falloff             = round(falloff,4)
-	currentres          = round(currentres,2)
-	Tracker["lowpass"]  = lowpass
-	Tracker["falloff"]  = falloff
-##### from RSORT
-
-def get_class_members(sort3d_dir):
-	import os
-	from utilities import read_text_file
-	maximum_generations = 100
-	maximum_groups      = 100
-	class_list = []
-	igen = 0
-	while( igen < maximum_generations ):
-		gendir = os.path.join(sort3d_dir, "generation%03d"%igen)
-		if os.path.exists(gendir):
-			igrp = 0
-			while( igrp < maximum_groups):
-				Class_file = os.path.join(gendir, "Kmref/Class%d.txt"%igrp)
-				if os.path.exists(Class_file):
-					class_one = read_text_file(Class_file)
-					class_list.append(class_one)
-					igrp += 1
-				else:
-					igrp = maximum_groups
-			igen += 1
-		else:
-			igen = maximum_generations
-	return class_list
-
-def remove_small_groups(class_list,minimum_number_of_objects_in_a_group):
-	new_class  = []
-	final_list = []
-	for one_class in class_list:
-		if len(one_class)>=minimum_number_of_objects_in_a_group:
-			new_class.append(one_class)
-			for element in one_class:
-				final_list.append(element)
-	final_list.sort()
-	return final_list, new_class
-
-def get_number_of_groups(total_particles,number_of_images_per_group):
-	#minimum_number_of_members = 1000
-	number_of_groups   =  float(total_particles)/number_of_images_per_group
-	if number_of_groups - int(number_of_groups)<.4:number_of_groups = int(number_of_groups)
-	else:number_of_groups = int(number_of_groups)+1
-	return number_of_groups
-
-def get_stable_members_from_two_runs(SORT3D_rootdirs, ad_hoc_number, log_main):
-	#SORT3D_rootdirs                       =sys.argv[1]
-	# ad_hoc_number would be a number larger than the id simply for handling two_way comparison of non-equal number of groups from two partitions.
-	########
-	from string import split
-	from statistics import k_means_match_clusters_asg_new
-	from numpy import array
-
-	sort3d_rootdir_list = split(SORT3D_rootdirs)
-	dict1              = []
-	maximum_elements   = 0
-	for index_sort3d in xrange(len(sort3d_rootdir_list)):
-		sort3d_dir       = sort3d_rootdir_list[index_sort3d]
-		all_groups       = get_class_members(sort3d_dir)
-		dict1.append(all_groups)
-		if maximum_elements <len(all_groups):
-			maximum_elements = len(all_groups)
-	TC = ad_hoc_number + 1
-	for indep in xrange(len(dict1)):
-		alist = dict1[indep]
-		while len(alist)<maximum_elements:
-			alist.append([TC])
-			TC += 1
-		dict1[indep] = alist
-		TC += 1
-	for a in dict1:   log_main.add(len(a))
-	dict = {}
-	for index_sort3d in xrange(len(sort3d_rootdir_list)):
-		sort3d_dir       = sort3d_rootdir_list[index_sort3d]
-		dict[sort3d_dir] = dict1[index_sort3d]
-	###### Conduct two-way comparison
-	for isort3d in xrange(0,1): #len(sort3d_rootdir_list)):
-		li = dict[sort3d_rootdir_list[isort3d]]
-		new_li = []
-		for ili in xrange(len(li)):
-			li[ili].sort()
-			t= array(li[ili],'int32')
-			new_li.append(t)
-		avg_list = {}
-		total    = {}
-		for ii in xrange(len(li)):
-			avg_list[ii]=0.0
-			total[ii]=0.0
-		for jsort3d in xrange(len(sort3d_rootdir_list)):
-			if isort3d != jsort3d:
-				new_lj = []
-				lj = dict[sort3d_rootdir_list[jsort3d]]
-				for a in lj:
-					log_main.add("the size is  %d"%len(a))
-				for jlj in xrange(len(lj)):
-					lj[jlj].sort()
-					t= array(lj[jlj],'int32')
-					new_lj.append(t)
-				ptp=[new_li,new_lj]
-				newindeces, list_stable, nb_tot_objs = k_means_match_clusters_asg_new(ptp[0],ptp[1])
-				log_main.add("*************************************************************")
-				log_main.add("the results of two P1 runs are: ")
-				for index in xrange(len(newindeces)):
-					log_main.add("  %d of %s matches  %d of %s"%(newindeces[index][0],sort3d_rootdir_list[isort3d],newindeces[index][1],sort3d_rootdir_list[jsort3d]))
-				for index in xrange(len(list_stable)):
-					log_main.add("%d   stable memebers"%len(list_stable[index]))
-				new_stable = []
-				for ilist in xrange(len(list_stable)):
-					if len(list_stable[ilist])!= 0:
-						new_stable.append(list_stable[ilist])
-				for istable in xrange(len(new_stable)):
-					stable = new_stable[istable]
-					if len(stable)>0:
-						group_A =  li[newindeces[istable][0]]
-						group_B =  lj[newindeces[istable][1]]
-						log_main.add(" %d %d %d   "%(len(group_A),len(group_B),len(stable)))
-		return new_stable
-
-def two_way_comparison_single(partition_A, partition_B,Tracker):
-	###############
-	from statistics import k_means_match_clusters_asg_new
-	from utilities import count_chunk_members, margin_of_error
-	from numpy import array
-	#two_way_comparison_single
-	total_stack = Tracker["constants"]["total_stack"]
-	log_main    = Tracker["constants"]["log_main"]
-	myid        = Tracker["constants"]["myid"]
-	main_node   = Tracker["constants"]["main_node"]
-	numpy32_A   = []
-	numpy32_B   = []
-	total_A     = 0
-	total_B     = 0
-	###--------------------------------------
-
-	if myid == main_node:
-		log_main.add(" the first run has number of particles %d"%len(partition_A))
-		log_main.add(" the second run has number of particles %d"%len(partition_B))
-	for A in partition_A:
-		total_A +=len(A)
-	for B in partition_B:
-		total_B +=len(B)
-	nc_zero = 1
-	if len(partition_A) < len(partition_B):
-		while len(partition_A) <len(partition_B):
-			partition_A.append([nc_zero+total_stack])
-			nc_zero +=1
-	elif len(partition_A) > len(partition_B):
-		while len(partition_B) <len(partition_A):
-			partition_B.append([nc_zero+total_stack])
-			nc_zero +=1
-	number_of_class = len(partition_A)
-	for index_of_class in xrange(number_of_class):
-		A = partition_A[index_of_class]
-		A.sort()
-		A= array(A,'int32')
-		numpy32_A.append(A)
-		B= partition_B[index_of_class]
-		B.sort()
-		B = array(B,'int32')
-		numpy32_B.append(B)
-		if myid ==main_node:
-			log_main.add("group %d  %d   %d"%(index_of_class,len(A), len(B)))
-	ptp    = [[],[]]
-	ptp[0] = numpy32_A
-	ptp[1] = numpy32_B
-	newindexes, list_stable, nb_tot_objs = k_means_match_clusters_asg_new(ptp[0],ptp[1])
-	if myid == main_node:
-		log_main.add(" reproducible percentage of the first partition %f"%(nb_tot_objs/float(total_A)*100.))
-		log_main.add(" reproducible percentage of the second partition %f"%(nb_tot_objs/float(total_B)*100.))
-		for index in xrange(len(newindexes)):
-			log_main.add("%d of A match %d of B "%(newindexes[index][0],newindexes[index][1]))
-		for index in xrange(len(list_stable)):
-			log_main.add("%d number of reproduced objects are found in group %d"%(len(list_stable[index]),index))
-		log_main.add(" %d number of objects are reproduced "%nb_tot_objs)
-		log_main.add(" margin of error")
-	large_stable = []
-	for index_of_stable in xrange(len(list_stable)):
-		rate1,rate2,size_of_this_group = count_chunk_members(Tracker["chunk_dict"], list_stable[index_of_stable])
-		if size_of_this_group>=Tracker["constants"]["smallest_group"]:
-			error                          = margin_of_error(Tracker["P_chunk0"],size_of_this_group)
-			if myid == main_node:
-				log_main.add(" chunk0  lower bound %f  upper bound  %f  for sample size  %d     group id %d"%((Tracker["P_chunk0"]- error),(Tracker["P_chunk0"]+error),size_of_this_group, index_of_stable))
-				log_main.add(" actual percentage is %f"%rate1)
-			large_stable.append(list_stable[index_of_stable])
-		else:
-			if myid==main_node:
-				log_main.add("%d  group is too small"%index_of_stable)
-	return large_stable
-
-def get_leftover_from_stable(stable_list, N_total, smallest_group):
-	tmp_dict = {}
-	for i in xrange(N_total):
-		tmp_dict[i] = i
-	new_stable      =[]
-	for alist in stable_list:
-		if len(alist) > smallest_group:
-			for index_of_list in xrange(len(alist)):
-				del tmp_dict[alist[index_of_list]]
-			new_stable.append(alist)
-	leftover_list = []
-	for one_element in tmp_dict:
-		leftover_list.append(one_element)
-	return leftover_list, new_stable
-
-def Kmeans_exhaustive_run(ref_vol_list,Tracker):
-	from applications import ali3d_mref_Kmeans_MPI
-	from utilities import write_text_file
-	from reconstruction import rec3D_two_chunks_MPI
-	from morphology import get_shrink_3dmask
-	from utilities import wrap_mpi_bcast
-	import os
-	from mpi import MPI_COMM_WORLD, mpi_barrier
-	# npad 2 ---------------------------------------
-	npad                  = 2
-	myid                  = Tracker["constants"]["myid"]
-	main_node             = Tracker["constants"]["main_node"]
-	log_main              = Tracker["constants"]["log_main"]
-	nproc                 = Tracker["constants"]["nproc"]
-	final_list_text_file  = Tracker["this_data_list_file"] ## id text file for get_shrink_data_huang
-	snr                   = 1.
-	Tracker["total_stack"]= len(Tracker["this_data_list"])
-	if myid == main_node:
-		log_main.add("start exhaustive Kmeans")
-		log_main.add("total data is %d"%len(Tracker["this_data_list"]))
-		log_main.add("final list file is "+final_list_text_file)
-	workdir = Tracker["this_dir"]
-	####----------------------------------------------
-	empty_group = 1
-	kmref       = 0
-	while empty_group ==1 and kmref<=5:## In case pctn of Kmeans jumps between 100% to 0%, stop the program
-		if myid ==main_node: log_main.add(" %d     Kmref run"%kmref)
-		outdir =os.path.join(workdir, "Kmref%d"%kmref)
-		empty_group, res_classes, data_list = ali3d_mref_Kmeans_MPI(ref_vol_list, outdir, final_list_text_file, Tracker)
-		kmref +=1
-		if empty_group ==1:
-			if myid ==main_node:
-				log_main.add("empty gorup appears, next round of Kmeans requires rebuilding reference volumes!")
-				log_main.add(" the number of classes for next round before cleaning is %d"%len(res_classes))
-			final_list   = []
-			new_class    = []
-			for a in res_classes:
-				if len(a)>=Tracker["constants"]["smallest_group"]:
-					for b in a:
-						final_list.append(b)
-					new_class.append(a)
-			final_list.sort()
-			### reset variables of Kmeans run
-			Tracker["total_stack"]    = len(final_list)
-			Tracker["this_data_list"] = final_list
-			final_list_text_file      = os.path.join(workdir, "final_list%d.txt"%kmref)
-			if myid == main_node:
-				log_main.add("number of classes for next round is %d"%len(new_class))
-				write_text_file(final_list, final_list_text_file)
-				number_of_ref_class = []
-				for igrp in xrange(len(new_class)):
-					write_text_file(new_class[igrp],os.path.join(workdir,"final_class%d.txt"%igrp))
-					number_of_ref_class.append(len(new_class[igrp]))
-			else:
-				number_of_ref_class = 0
-			number_of_ref_class = wrap_mpi_bcast(number_of_ref_class,main_node)
-			mpi_barrier(MPI_COMM_WORLD)
-			ref_vol_list = []
-			if  Tracker["constants"]["mask3D"]: mask3D = get_shrink_3dmask(Tracker["constants"]["nxinit"],Tracker["constants"]["mask3D"])
-			else: mask3D = None
-			Tracker["number_of_ref_class"] = number_of_ref_class
-			for igrp in xrange(len(new_class)):
-				data,old_shifts = get_shrink_data_huang(Tracker,Tracker["nxinit"],os.path.join(workdir,"final_class%d.txt"%igrp),Tracker["constants"]["partstack"],myid,main_node,nproc,preshift = True)
-				#volref = recons3d_4nn_ctf_MPI(myid=myid, prjlist = data, symmetry=Tracker["constants"]["sym"], finfo=None)
-				#volref = filt_tanl(volref, Tracker["low_pass_filter"],.1)
-				volref, fsc_kmref = rec3D_two_chunks_MPI(data,snr,Tracker["constants"]["sym"],mask3D,\
-			 os.path.join(outdir, "resolution_%02d_Kmref%04d"%(igrp,kmref)), myid, main_node, index=-1, npad=npad, finfo = None)
-			 	if myid !=main_node:
-			 		volref = model_blank(Tracker["nxinit"], Tracker["nxinit"], Tracker["nxinit"])
-			 	bcast_EMData_to_all(volref, myid, main_node, MPI_COMM_WORLD)
-				ref_vol_list.append(volref)
-				mpi_barrier(MPI_COMM_WORLD)
-		else:
-			new_class    = []
-			for a in res_classes:
-				if len(a)>=Tracker["constants"]["smallest_group"]:new_class.append(a)
-	if myid == main_node:
-		log_main.add("Exhaustive Kmeans finishes")
-		log_main.add(" %d groups are selected out"%len(new_class))
-	return new_class
-
-def print_a_line_with_timestamp(string_to_be_printed ):
-	line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
- 	print(line,string_to_be_printed)
-	return string_to_be_printed
-
-def split_a_group(workdir,list_of_a_group,Tracker):
-	### Using EQ-Kmeans and Kmeans to split a group
-	from utilities import wrap_mpi_bcast
-	from random import shuffle
-	from mpi import MPI_COMM_WORLD, mpi_barrier
-	from utilities import get_shrink_data_huang
-	from reconstructions import recons3d_4nn_ctf_MPI
-	from filter import filt_tanl
-	from applications import mref_ali3d_EQ_Kmeans
-	################
-	myid        = Tracker["constants"]["myid"]
-	main_node   = Tracker["constants"]["main_node"]
-	nproc       = Tracker["constants"]["nproc"]
-	total_stack = len(list_of_a_group)
-	################
-	import copy
-	data_list [:] = list_of_a_group[:]
-	update_full_dict(data_list,Tracker)
-	this_particle_text_file = os.path.join(workdir,"full_class.txt")
-	if myid ==main_node: write_text_file(data_list,"full_class.txt")
-	# Compute the resolution of leftover
-	if myid == main_node:
-		shuffle(data_list)
-		l1=data_list[0:total_stack//2]
-		l2=data_list[total_stack//2:]
-		l1.sort()
-		l2.sort()
-	else:
-		l1 = 0
-		l2 = 0
-	l1 = wrap_mpi_bcast(l1, main_node)
-	l2 = wrap_mpi_bcast(l2, main_node)
-	llist =[l1,l2]
-	if myid ==main_node:
-		for index in xrange(2):
-			partids = os.path.join(workdir,"Class_%d.txt"%index)
-			write_text_file(llist[index],partids)
-	mpi_barrier(MPI_COMM_WORLD)
-	################ create references for EQ-Kmeans
-	ref_list = []
-	for index in xrange(2):
-		partids = os.path.join(workdir,"Class_%d.txt"%index)
-		while not os.path.exists(partids):
-			#print  " my_id",myid
-			sleep(2)
-		mpi_barrier(MPI_COMM_WORLD)
-		data,old_shifts = get_shrink_data_huang(Tracker,Tracker["constants"]["nxinit"],partids,Tracker["constants"]["partstack"],myid,main_node,nproc,preshift = True)
-		vol = recons3d_4nn_ctf_MPI(myid=myid,prjlist = data,symmetry=Tracker["constants"]["sym"],finfo=None)
-		vol = filt_tanl(vol,Tracker["constants"]["low_pass_filter"],.1)
-		ref_list.append(vol)
-	mpi_barrier(MPI_COMM_WORLD)
-	### EQ-Kmeans
-	outdir = os.path.join(workdir,"EQ-Kmeans")
-	mref_ali3d_EQ_Kmeans(ref_list,outdir,this_particle_text_file,Tracker)
-	res_EQ = partition_to_groups(Tracker["this_partition"],K=2)
-	new_class = []
-	for index in xrange(len(res_EQ)):
-		new_ID = get_initial_ID(res_EQ(index), Tracker["full_ID_dict"])
-		new_class.append(new_ID)
-		if myid ==main_node:
-			new_class_file = os.path.join(workdir,"new_class%d.txt"%index)
-			write_text_file(new_ID,new_class_file)
-	mpi_barrier(MPI_COMM_WORLD)
-	############# create references for Kmeans
-	ref_list = []
-	for index in xrange(2):
-		partids = os.path.join(workdir,"new_class%d.txt"%index)
-		while not os.path.exists(partids):
-			#print  " my_id",myid
-			sleep(2)
-		mpi_barrier(MPI_COMM_WORLD)
-		data,old_shifts = get_shrink_data_huang(Tracker,Tracker["constants"]["nxinit"],partids,Tracker["constants"]["partstack"],myid,main_node,nproc,preshift = True)
-		vol = recons3d_4nn_ctf_MPI(myid=myid,prjlist = data,symmetry=Tracker["constants"]["sym"],finfo=None)
-		vol = filt_tanl(vol,Tracker["constants"]["low_pass_filter"],.1)
-		ref_list.append(vol)
-	mpi_barrier(MPI_COMM_WORLD)
-	#### Kmeans
-
-def search_lowpass(fsc):
-	fcutoff =.5
-	for i in xrange(len(fsc[1])):
-		if fsc[1][i]<.5:
-			break
-	if i<len(fsc[1])-1:
-		fcutoff=fsc[0][i-1]
-	else:
-		fcutoff=.5
-	fcutoff=min(.45,fcutoff)
-	return fcutoff
-
-
-def angular_distribution(inputfile, options, output):
-	import numpy
-
-	# Import data
-	listDType = [
-		('Phi', '<f8'),
-		('Theta', '<f8'),
-		('Psi', '<f8'),
-		('tx', '<f8'),
-		('ty', '<f8')
-	]
-	arrData = numpy.genfromtxt(inputfile, dtype=listDType)
-
-	# Load angle Data
-	arrPhi = numpy.round(arrData['Phi'], options.round_digit)
-	arrTheta = numpy.round(arrData['Theta'], options.round_digit)
-	arrPsi = numpy.round(arrData['Psi'], options.round_digit)
-
-	# Set the vectors for transformation and plotting
-	vectorInital = numpy.array([0, 0, 1])
-	vectorCenter = 0.5 * numpy.array([
-		options.box_size,
-		options.box_size,
-		options.box_size
-	])
-
-	# Create list for the different resulting angles
-	idxAlpha = 0
-	idxBeta = 1
-	listCoord = [[], []]
-
-	# Go through the list of angles
-	for linenumber in xrange(len(arrPhi)):
-
-		# Set the angles in radiant
-		anglePhi = arrPhi[linenumber] * numpy.pi / 180
-		angleTheta = arrTheta[linenumber] * numpy.pi / 180
-		anglePsi = arrPsi[linenumber] * numpy.pi / 180
-
-		# Create the transformation matrix
-		matrixZ1 = numpy.matrix([
-			[numpy.cos(anglePhi), numpy.sin(anglePhi), 0],
-			[numpy.sin(-anglePhi), numpy.cos(anglePhi), 0],
-			[0, 0, 1]
-		])
-		matrixY = numpy.matrix([
-			[numpy.cos(angleTheta), 0, numpy.sin(-angleTheta)],
-			[0, 1, 0],
-			[numpy.sin(angleTheta), 0, numpy.cos(angleTheta)]
-		])
-		matrixZ2 = numpy.matrix([
-			[numpy.cos(anglePsi), numpy.sin(anglePsi), 0],
-			[numpy.sin(-anglePsi), numpy.cos(anglePsi), 0],
-			[0, 0, 1]
-		])
-
-		matrixTransform = matrixZ1 * matrixY * matrixZ2
-
-		# Transform the vector
-		transX, transY, transZ = numpy.round(
-			numpy.dot(matrixTransform, vectorInital).A1, 6
-		)
-
-		# Transform to spherical coordinates
-		# e = [sin(alpha)*cos(alpha), sin(alpha)*sin(beta), cos(alpha)]
-		angleAlpha = numpy.arccos(
-			transZ / numpy.sqrt(transX**2 + transY**2 + transZ**2)
-		)
-		angleBeta = numpy.arctan2(transY, transX)
-
-		# We want our range for phi from 0 to 2*pi not -pi to pi
-		if angleBeta < 0:
-			angleBeta += 2 * numpy.pi
-
-		# Append to the coordinate List
-		listCoord[idxAlpha].append(angleAlpha)
-		listCoord[idxBeta].append(angleBeta)
-
-	# Create array for the angles
-	dtype = [
-		('alpha', '<f8'),
-		('beta', '<f8')
-	]
-	arrayAngles = numpy.empty(len(listCoord[idxAlpha]), dtype=dtype)
-	arrayAngles['alpha'] = listCoord[idxAlpha]
-	arrayAngles['beta'] = listCoord[idxBeta]
-
-	# Create length of the vectors. One angstrom is one particle.
-	uniqueArray, allArray = numpy.unique(
-		arrayAngles, return_inverse=True
-	)
-	arrayRadius = numpy.histogram(allArray, bins=len(uniqueArray))[0]
-
-	# Calculate the overall number of particles for the normalisation.
-	# Normalise the radius and calculate
-	# how many times there is the same radius.
-	particleNumber = len(arrayAngles)
-	arrayRadius = arrayRadius / float(particleNumber)
-	uniqueRadius, indicesRadius = numpy.unique(
-		arrayRadius, return_index=True
-	)
-
-	# Set the right colour to the right radius
-	uniqueRadiusNumber = len(uniqueRadius)
-	rangeGreen = numpy.linspace(0, 1, uniqueRadiusNumber)
-	rangeBlue = numpy.linspace(1, 0, uniqueRadiusNumber)
-
-	sortRadius = numpy.sort(uniqueRadius)
-	dictColor = {}
-	for number, radius in enumerate(sortRadius):
-		dictColor.update(
-			{
-				radius:
-				str(rangeGreen[number]) +
-				' ' +
-				str(rangeBlue[number])
-			}
-		)
-
-	# Merge all unique data and the related radius into one array
-	dtype = [
-		('alpha', '<f8'),
-		('beta', '<f8'),
-		('radius', '<f8')
-	]
-	arrayAnglesRadius = numpy.empty(len(uniqueArray['alpha']), dtype=dtype)
-	arrayAnglesRadius['alpha'] = uniqueArray['alpha']
-	arrayAnglesRadius['beta'] = uniqueArray['beta']
-	arrayAnglesRadius['radius'] = arrayRadius
-
-	# Create vectors for chimera
-	with open(output, 'w') as f:
-		for vector in arrayAnglesRadius:
-			arrayVector1 = numpy.empty(3)
-			arrayVector2 = numpy.empty(3)
-			arrayVectorSphere = numpy.empty(3)
-
-			arrayVectorSphere[0] = numpy.sin(vector[0]) * numpy.cos(vector[1])
-			arrayVectorSphere[1] = numpy.sin(vector[0]) * numpy.sin(vector[1])
-			arrayVectorSphere[2] = numpy.cos(vector[0])
-
-			arrayVector1 = vectorCenter
-			arrayVector2 = vectorCenter
-
-			arrayVector1 = arrayVector1 + \
-				options.particle_radius * arrayVectorSphere
-			arrayVector2 = arrayVector2 + \
-				(
-					options.particle_radius / options.pixel_size +
-					0.01 + vector[2] * options.cylinder_length
-				) * \
-				arrayVectorSphere
-			f.write('.color 0 {:s} \n'.format(dictColor[vector[2]]))
-			f.write(
-				'.cylinder {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} {:.3f} \n'.format(
-					arrayVector1[0],
-					arrayVector1[1],
-					arrayVector1[2],
-					arrayVector2[0],
-					arrayVector2[1],
-					arrayVector2[2],
-					options.cylinder_width
-				)
-			)
-
-#####---------------------------------------------------
-# used in new meridien
-def tabessel(nx, nnxo, nbel = 5000):
-	beltab = [0.0]*nbel
-	radius = 1.9
-	alpha = 15
-	#order = 0
-	normk = Util.bessel0(0., radius, alpha)
-	for i in xrange(nbel):
-		rr = i/float(nbel-1)/2.0
-		beltab[i] = Util.bessel0(rr, radius, alpha)/normk
-	return beltab
-
-####
-
-
-def split_chunks_bad(l, n):
-	"""
-	   Splits list l into n chunks with approximately equals sum of values
-	   see  http://stackoverflow.com/questions/6855394/splitting-list-in-chunks-of-balanced-weight
-	"""
-	result = [[] for i in range(n)]
-	sums   = {i:0 for i in range(n)}
-	c = 0
-	for e in l:
-		for i in sums:
-			if c == sums[i]:
-				result[i].append(e)
-				break
-		sums[i] += e
-		c = min(sums.values())
-	for i in xrange(len(result)):
-		result[i].sort()
-	return result

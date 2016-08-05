@@ -5,10 +5,10 @@ from global_def import *
 from mpi import MPI_SUM, mpi_reduce, mpi_init, mpi_finalize, MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size, mpi_barrier, \
 	mpi_comm_split, mpi_bcast, MPI_INT, MPI_CHAR, MPI_FLOAT
 
-from utilities import get_im, string_found_in_file, get_latest_directory_increment_value, store_value_of_simple_vars_in_json_file
-from utilities import cmdexecute, if_error_then_all_processes_exit_program
+from EMAN2.utilities import get_im, string_found_in_file, get_latest_directory_increment_value, store_value_of_simple_vars_in_json_file
+from EMAN2.utilities import cmdexecute, if_error_all_processes_quit_program
 from utilities import read_text_row, read_text_file, write_text_file, write_text_row, getindexdata, print_program_start_information
-from multi_shc import find_common_subset, do_volume, multi_shc
+from EMAN2.multi_shc import find_common_subset, do_volume, multi_shc
 
 import string
 import os, sys
@@ -19,7 +19,7 @@ MAXIMUM_NO_OF_VIPER_RUNS_ANALYZED_TOGETHER = 10
 # NORMALIZED_AREA_THRESHOLD_FOR_OUTLIER_DETECTION = 0.2
 PERCENT_THRESHOLD_X = .8
 PERCENT_THRESHOLD_Y = .2
-ANGLE_ERROR_THRESHOLD = 24.0
+ANGLE_ERROR_THRESHOLD = 24
 TRIPLET_WITH_ANGLE_ERROR_LESS_THAN_THRESHOLD_HAS_BEEN_FOUND = -100
 MUST_END_PROGRAM_THIS_ITERATION = -101
 EMPTY_VIPER_RUN_INDICES_LIST = -102
@@ -32,7 +32,7 @@ DIR_DELIM = os.sep
 def calculate_list_of_independent_viper_run_indices_used_for_outlier_elimination(no_of_viper_runs_analyzed_together, 
 	no_of_viper_runs_analyzed_together_from_user_options, masterdir, rviper_iter, criterion_name):
 
-	from utilities import combinations_of_n_taken_by_k
+	from EMAN2.utilities import combinations_of_n_taken_by_k
 
 	# generate all possible combinations of (no_of_viper_runs_analyzed_together - 1) taken (3 - 1) at a time
 	import itertools
@@ -90,7 +90,7 @@ def calculate_list_of_independent_viper_run_indices_used_for_outlier_elimination
 
 def identify_outliers(myid, main_node, rviper_iter, no_of_viper_runs_analyzed_together, 
 	no_of_viper_runs_analyzed_together_from_user_options, masterdir, bdb_stack_location, outlier_percentile, 
-	criterion_name, outlier_index_threshold_method, angle_threshold):
+	criterion_name, outlier_index_threshold_method):
 	
 	no_of_viper_runs_analyzed_together_must_be_incremented = 0
 	do_calculation = 1
@@ -120,7 +120,6 @@ def identify_outliers(myid, main_node, rviper_iter, no_of_viper_runs_analyzed_to
 		if list_of_independent_viper_run_indices_used_for_outlier_elimination[0] == EMPTY_VIPER_RUN_INDICES_LIST:
 			if no_of_viper_runs_analyzed_together > MAXIMUM_NO_OF_VIPER_RUNS_ANALYZED_TOGETHER:
 				error_status = 1
-				print "RVIPER reached maximum number of VIPER runs analyzed together without finding a core set of stable projections for the current RVIPER iteration (%d)! Finishing."%rviper_iter
 				cmd = "{} {}".format("mkdir ", masterdir + "MAXIMUM_NO_OF_VIPER_RUNS_ANALYZED_TOGETHER__Reached"); cmdexecute(cmd)
 			else:
 				# No set of solutions has been found to make a selection for outlier elimination.
@@ -133,13 +132,13 @@ def identify_outliers(myid, main_node, rviper_iter, no_of_viper_runs_analyzed_to
 			if list_of_independent_viper_run_indices_used_for_outlier_elimination[0] == MUST_END_PROGRAM_THIS_ITERATION:
 				no_of_viper_runs_analyzed_together_must_be_incremented = MUST_END_PROGRAM_THIS_ITERATION
 				found_outliers(list_of_independent_viper_run_indices_used_for_outlier_elimination[1:], outlier_percentile, 
-					rviper_iter, masterdir, bdb_stack_location, "use all images", angle_threshold)
+					rviper_iter, masterdir, bdb_stack_location, "use all images")
 			else:
 				# still need to eliminate DUMMY_INDEX_USED_AS_BUFFER
 				found_outliers(list_of_independent_viper_run_indices_used_for_outlier_elimination[1:], outlier_percentile, 
-					rviper_iter, masterdir, bdb_stack_location, outlier_index_threshold_method, angle_threshold)
+					rviper_iter, masterdir, bdb_stack_location, outlier_index_threshold_method)
 
-	if_error_then_all_processes_exit_program(error_status)
+	if_error_all_processes_quit_program(error_status)
 
 	no_of_viper_runs_analyzed_together_must_be_incremented = mpi_bcast(no_of_viper_runs_analyzed_together_must_be_incremented, 1, MPI_INT, 0, MPI_COMM_WORLD)[0]
 
@@ -314,7 +313,7 @@ def measure_for_outlier_criterion(criterion_name, masterdir, rviper_iter, list_o
 
 
 def found_outliers(list_of_projection_indices, outlier_percentile, rviper_iter, masterdir,  bdb_stack_location,
-	outlier_index_threshold_method, angle_threshold):
+	outlier_index_threshold_method):
 	
 	# sxheader.py bdb:nj  --consecutive  --params=OID
 	import numpy as np
@@ -475,9 +474,9 @@ def calculate_volumes_after_rotation_and_save_them(ali3d_options, rviper_iter, m
 
 	if( mpi_rank == 0):
 		# Align all rotated volumes, calculate their average and save as an overall result
-		from utilities import get_params3D, set_params3D, get_im, model_circle
-		from statistics import ave_var
-		from applications import ali_vol
+		from EMAN2.utilities import get_params3D, set_params3D, get_im, model_circle
+		from EMAN2.statistics import ave_var
+		from EMAN2.applications import ali_vol
 		# vls = [None]*no_of_viper_runs_analyzed_together
 		vls = [None]*len(list_of_independent_viper_run_indices_used_for_outlier_elimination)
 		# for i in xrange(no_of_viper_runs_analyzed_together):
@@ -544,8 +543,8 @@ def get_already_processed_viper_runs(run_get_already_processed_viper_runs):
 
 def main():
 
-	from logger import Logger, BaseLogger_Files
-	import user_functions
+	from EMAN2.logger import Logger, BaseLogger_Files
+	import EMAN2.user_functions as user_functions
 	from optparse import OptionParser, SUPPRESS_HELP
 	from global_def import SPARXVERSION
 	from EMAN2 import EMData
@@ -640,14 +639,6 @@ output_directory: directory name into which the output files will be written.  I
 			print "Please run '" + progname + " -h' for detailed options"
 			return 1
 
-	mpi_barrier(MPI_COMM_WORLD)
-	if(myid == main_node):
-		print "****************************************************************"
-		Util.version()
-		print "****************************************************************"
-		sys.stdout.flush()
-	mpi_barrier(MPI_COMM_WORLD)
-
 	# this is just for benefiting from a user friendly parameter name
 	options.ou = options.radius 
 	my_random_seed = options.my_random_seed
@@ -676,14 +667,8 @@ output_directory: directory name into which the output files will be written.  I
 	# 	ref_vol = get_im(args[2])
 	# else:
 	ref_vol = None
-	
-	# error_status = None
-	# if myid == 0:
-	# 	number_of_images = EMUtil.get_image_count(args[0])
-	# 	if mpi_size > number_of_images:
-	# 		error_status = ('Number of processes supplied by --np in mpirun needs to be less than or equal to %d (total number of images) ' % number_of_images, getframeinfo(currentframe()))
-	# if_error_then_all_processes_exit_program(error_status)
-	
+
+
 	bdb_stack_location = ""
 
 	masterdir = ""
@@ -711,7 +696,7 @@ output_directory: directory name into which the output files will be written.  I
 		'the number of processes divided by the number of quasi-independent runs is a power '
 		'of 2 (e.g. 2, 4, 8 or 16 depending on how many physical cores each node has).', 'sxviper', 1)
 		error_status = 1
-	if_error_then_all_processes_exit_program(error_status)
+	if_error_all_processes_quit_program(error_status)
 
 	#Create folder for all results or check if there is one created already
 	if(myid == main_node):
@@ -736,7 +721,7 @@ output_directory: directory name into which the output files will be written.  I
 				cmd = "{} {} {}".format("e2bdb.py", org_stack_location,"--makevstack=" + bdb_stack_location + "_000")
 				cmdexecute(cmd)
 
-				from applications import header
+				from EMAN2.applications import header
 				try:
 					header(bdb_stack_location + "_000", params='original_image_index', fprint=True)
 					print "Images were already indexed!"
@@ -750,7 +735,7 @@ output_directory: directory name into which the output files will be written.  I
 				cmd = "{} {} {}".format("sxcpy.py  ", args[0], bdb_stack_location + "_000")
 				cmdexecute(cmd)
 
-				from applications import header
+				from EMAN2.applications import header
 				try:
 					header(bdb_stack_location + "_000", params='original_image_index', fprint=True)
 					print "Images were already indexed!"
@@ -797,7 +782,7 @@ output_directory: directory name into which the output files will be written.  I
 			ERROR('Please provide number of rviper runs (--n_rv_runs) greater than number of iterations already performed.', 'sxviper', 1)
 			error_status = 1
 
-	if_error_then_all_processes_exit_program(error_status)
+	if_error_all_processes_quit_program(error_status)
 
 	for rviper_iter in range(iteration_start, number_of_rrr_viper_runs + 1):
 		if(myid == main_node):
@@ -829,7 +814,7 @@ output_directory: directory name into which the output files will be written.  I
 					cmd = "{} {}".format("mkdir -p", masterdir + DIR_DELIM + NAME_OF_MAIN_DIR + ('%03d' + DIR_DELIM)%(rviper_iter)); cmdexecute(cmd)
 					cmd = "{} {}".format("rm -rf", independent_run_dir); cmdexecute(cmd)
 					cmd = "{} {}".format("cp -r", get_already_processed_viper_runs() + " " +  independent_run_dir); cmdexecute(cmd)
-
+				
 				if os.path.exists(independent_run_dir + "log.txt") and (string_found_in_file("Finish VIPER2", independent_run_dir + "log.txt")):
 					this_run_is_NOT_complete = 0
 				else:
@@ -872,14 +857,14 @@ output_directory: directory name into which the output files will be written.  I
 					store_value_of_simple_vars_in_json_file(masterdir + 'program_state_stack.json', locals(), exclude_list_of_vars=["usage"], 
 						vars_that_will_show_only_size = ["subset"])
 					store_value_of_simple_vars_in_json_file(masterdir + 'program_state_stack.json', options.__dict__, write_or_append='a')
-
+				
 				# mpi_barrier(mpi_comm)
 				# from mpi import mpi_finalize
 				# mpi_finalize()
 				# print "mpi finalize"
 				# from sys import exit
 				# exit()
-
+				
 				out_params, out_vol, out_peaks = multi_shc(all_projs, subset, no_of_shc_runs_analyzed_together, options,
 				mpi_comm=mpi_comm, log=log, ref_vol=ref_vol)
 
@@ -888,33 +873,27 @@ output_directory: directory name into which the output files will be written.  I
 			if runs_iter >= (no_of_viper_runs_analyzed_together_from_user_options - 1):
 				increment_for_current_iteration = identify_outliers(myid, main_node, rviper_iter,
 				no_of_viper_runs_analyzed_together, no_of_viper_runs_analyzed_together_from_user_options, masterdir,
-				bdb_stack_location, outlier_percentile, criterion_name, outlier_index_threshold_method, angle_threshold)
-
+				bdb_stack_location, outlier_percentile, criterion_name, outlier_index_threshold_method)
+				
 				if increment_for_current_iteration == MUST_END_PROGRAM_THIS_ITERATION:
 					break
-
+				
 				no_of_viper_runs_analyzed_together += increment_for_current_iteration
 
 		# end of independent viper loop
 
 		calculate_volumes_after_rotation_and_save_them(options, rviper_iter, masterdir, bdb_stack_location, myid,
 		mpi_size, no_of_viper_runs_analyzed_together, no_of_viper_runs_analyzed_together_from_user_options)
-
-		if increment_for_current_iteration == MUST_END_PROGRAM_THIS_ITERATION:
-			if (myid == main_node):
-				print "RVIPER found a core set of stable projections for the current RVIPER iteration (%d), the maximum angle difference between corresponding projections from different VIPER volumes is less than %.2f. Finishing."%(rviper_iter, ANGLE_ERROR_THRESHOLD)
-			break
-	else:
-		if (myid == main_node):
-			print "After running the last iteration (%d), RVIPER did not find a set of projections with the maximum angle difference between corresponding projections from different VIPER volumes less than %.2f Finishing."%(rviper_iter, ANGLE_ERROR_THRESHOLD)
 		
-			
-	# end of RVIPER loop
+		if increment_for_current_iteration == MUST_END_PROGRAM_THIS_ITERATION:
+			break
+
+	# end of R viper loop
 
 	#mpi_finalize()
 	#sys.exit()
 
-	mpi_barrier(MPI_COMM_WORLD)
+	
 	mpi_finalize()
 
 

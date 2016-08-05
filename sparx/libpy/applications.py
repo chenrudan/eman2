@@ -65,7 +65,7 @@ def ali2d(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr="-1"
 		return
 
 	from utilities    import print_begin_msg, print_end_msg, print_msg
-	from utilities    import file_type
+	from EMAN2.utilities import file_type
 	import os
 
 	# Comment by Zhengfan Yang on 09/03/10
@@ -82,7 +82,7 @@ def ali2d(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr="-1"
 	
 
 	if file_type(stack) == "bdb":
-		from EMAN2db import db_open_dict
+		from EMAN2.EMAN2db import db_open_dict
 		dummy = db_open_dict(stack, True)
 	# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 	# active = EMUtil.get_all_attributes(stack, 'active')
@@ -105,7 +105,7 @@ def ali2d(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr="-1"
 		print "xform.align2d params are not set yet!"
 		not_set = True
 	if not_set:
-		from utilities import set_params2D
+		from EMAN2.utilities import set_params2D
 		for index in xrange(len(data)):
 			p=[0.0, 0.0, 0.0, 0, 1]
 			set_params2D(data[index],p,xform = "xform.align2d")
@@ -117,7 +117,7 @@ def ali2d(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr="-1"
 				CUDA, GPUID, True, template, random_method = random_method)
 
 	# write out headers
-	from utilities import write_headers
+	from EMAN2.utilities import write_headers
 	write_headers(stack, data, list_of_particles)
 	print_end_msg("ali2d")
 
@@ -131,13 +131,13 @@ def ali2d_data(data, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 	# This is where ali2d() actually runs, the reason I divided it into two parts is that
 	# this alignment program supports list of EMData not a stack.
 
-	from utilities    import drop_image, get_image, get_input_from_string, get_params2D, set_params2D
-	from statistics   import fsc_mask, sum_oe, hist_list
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from pixel_error  import pixel_error_2D
-	from fundamentals import fshift, fft, rot_avg_table
+	from EMAN2.utilities import drop_image, get_image, get_input_from_string, get_params2D, set_params2D
+	from EMAN2.statistics import fsc_mask, sum_oe, hist_list
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.pixel_error import pixel_error_2D
+	from EMAN2.fundamentals import fshift, fft, rot_avg_table
 	from utilities    import print_begin_msg, print_end_msg, print_msg
-	from utilities    import model_blank, model_circle
+	from EMAN2.utilities import model_blank, model_circle
 	import os
 
 	if from_ali2d == False: print_begin_msg("ali2d_data")
@@ -174,7 +174,7 @@ def ali2d_data(data, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 	if last_ring + max([max(xrng), max(yrng)]) > (nx-1) // 2:
 		ERROR('Shift or radius is too large - particle crosses image boundary', "ali2d", 1)
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 	# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 	# print_msg("Number of active images     : %s\n"%(nima))
@@ -223,7 +223,7 @@ def ali2d_data(data, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
  	mode = "F"
 	if CTF:
 		if data[0].get_attr_default('ctf_applied', 0) > 0:	ERROR("data cannot be ctf-applied", "ali2d", 1)
-		from filter import filt_ctf
+		from EMAN2.filter import filt_ctf
 		flip_phases = True
 		CTF = False
 		#from morphology import ctf_img
@@ -235,9 +235,9 @@ def ali2d_data(data, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 
 	if Fourvar:
 		if CTF:
-			from statistics   import varf2d
+			from EMAN2.statistics import varf2d
 		else:
-			from statistics   import varf
+			from EMAN2.statistics import varf
 
 	if CUDA:
 		all_ali_params = []
@@ -297,7 +297,7 @@ def ali2d_data(data, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 			total_iter += 1
 			print_msg("Iteration #%4d\n"%(total_iter))
 			if( total_iter ==1 and template != None):
-				from utilities import get_im
+				from EMAN2.utilities import get_im
 				tavg = get_im(template)
 				old_ali_params = []
 				for im in xrange(nima):  old_ali_params.extend([0.0,0.0,0.0,0])
@@ -424,21 +424,21 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 			nomirror = False, dst=0.0, center=-1, maxit=0, CTF=False, snr=1.0, \
 			Fourvar=False, Ng=-1, user_func_name="ref_ali2d", CUDA=False, GPUID="", random_method = ""):
 
-	from utilities    import model_circle, model_blank, drop_image, get_image, get_input_from_string
-	from utilities    import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type
-	from utilities    import bcast_number_to_all, bcast_list_to_all
-	from statistics   import fsc_mask, sum_oe, hist_list, varf2d_MPI
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from pixel_error  import pixel_error_2D
-	from numpy        import reshape, shape
-	from fundamentals import fshift, fft, rot_avg_table
-	from utilities    import get_params2D, set_params2D
+	from EMAN2.utilities import model_circle, model_blank, drop_image, get_image, get_input_from_string
+	from EMAN2.utilities import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type
+	from EMAN2.utilities import bcast_number_to_all, bcast_list_to_all
+	from EMAN2.statistics import fsc_mask, sum_oe, hist_list, varf2d_MPI
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.pixel_error import pixel_error_2D
+	from numpy import reshape, shape
+	from EMAN2.fundamentals import fshift, fft, rot_avg_table
+	from EMAN2.utilities import get_params2D, set_params2D
 	from utilities    import print_msg, print_begin_msg, print_end_msg
 	import os
 	import sys
-	from mpi 	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
-	from mpi 	  import MPI_SUM, MPI_FLOAT, MPI_INT
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
@@ -471,7 +471,7 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 
 	if myid == main_node:
 		if ftp == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, 'active')
@@ -515,7 +515,7 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 		ctf_app = bcast_number_to_all(ctf_app, source_node = main_node)
 		if ctf_app > 0:	ERROR("data cannot be ctf-applied", "ali2d_MPI", 1, myid)
 		phase_flip = True
-		from filter import filt_ctf
+		from EMAN2.filter import filt_ctf
 	else:
 		phase_flip = False
 	CTF = False
@@ -556,7 +556,7 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 		else:
 			print_msg("Stop iteration with         : maxit\n")
 
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("User function               : %s\n"%(user_func_name))
@@ -566,7 +566,7 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 			print_msg("GPU IDs                     : %s\n"%(GPUID))
 
 	if maskfile:
-		import  types
+		import types
 		if type(maskfile) is types.StringType:  
 			if myid == main_node:		print_msg("Maskfile                    : %s\n\n"%(maskfile))
 			mask = get_image(maskfile)
@@ -583,8 +583,8 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
  	else: 							mode = "F"
 	data = []
 	if CTF:
-		from filter import filt_ctf
-		from morphology   import ctf_img
+		from EMAN2.filter import filt_ctf
+		from EMAN2.morphology import ctf_img
 		ctf_abs_sum = EMData(nx, nx, 1, False)
 		ctf_2_sum = EMData(nx, nx, 1, False)
 	else:
@@ -833,12 +833,12 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 	mpi_barrier(MPI_COMM_WORLD)
 	par_str = ["xform.align2d", "ID"]
 	if myid == main_node:
-		from utilities import file_type
+		from EMAN2.utilities import file_type
 		if(file_type(stack) == "bdb"):
-			from utilities import recv_attr_dict_bdb
+			from EMAN2.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		else:
-			from utilities import recv_attr_dict
+			from EMAN2.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	else:           send_attr_dict(main_node, data, par_str, image_start, image_end)
 	if myid == main_node: print_end_msg("ali2d_MPI")
@@ -848,32 +848,32 @@ def ali2d_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr=
 def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr="-1", ts="2 1 0.5 0.25", \
 			nomirror = False, dst=0.0, center=-1, maxit=0, CTF=False, snr=1.0, \
 			Fourvar=False, user_func_name="ref_ali2d", random_method = "", log = None, \
-			number_of_proc = 1, myid = 0, main_node = 0, mpi_comm = None, write_headers = False):
+			number_of_proc = 1, myid = 0, main_node = 0, mpi_comm = None, write_headers = False, skip_alignment = False):
 
-	from utilities    import model_circle, model_blank, drop_image, get_image, get_input_from_string
-	from utilities    import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type
-	from utilities    import bcast_number_to_all, bcast_list_to_all
-	from statistics   import fsc_mask, sum_oe, hist_list, varf2d_MPI
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from pixel_error  import pixel_error_2D
-	from numpy        import reshape, shape
-	from fundamentals import fshift, fft, rot_avg_table
-	from utilities    import get_params2D, set_params2D
-	from utilities    import wrap_mpi_gatherv
+	from EMAN2.utilities import model_circle, model_blank, drop_image, get_image, get_input_from_string
+	from EMAN2.utilities import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type
+	from EMAN2.utilities import bcast_number_to_all, bcast_list_to_all
+	from EMAN2.statistics import fsc_mask, sum_oe, hist_list, varf2d_MPI
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.pixel_error import pixel_error_2D
+	from numpy import reshape, shape
+	from EMAN2.fundamentals import fshift, fft, rot_avg_table
+	from EMAN2.utilities import get_params2D, set_params2D
+	from EMAN2.utilities import wrap_mpi_gatherv
 	import os
 	import sys
-	from mpi 	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
-	from mpi 	  import MPI_SUM, MPI_FLOAT, MPI_INT
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
 
-	# ftp = file_type(stack)
+	ftp = file_type(stack)
 
 	if myid == main_node:
 		import global_def
@@ -895,34 +895,22 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 
 	import types
 	if( type(stack) is types.StringType ):
-		if myid == main_node:
-			total_nima = EMUtil.get_image_count(stack)
-		else:
-			total_nima = 0
-		total_nima = bcast_number_to_all(total_nima)
-		list_of_particles = range(total_nima)
+		if myid == main_node:	print "stack:::::::", stack ; total_nima = EMUtil.get_image_count(stack)
+		else:					total_nima = 0
+	total_nima = bcast_number_to_all(total_nima, source_node = main_node)
+	list_of_particles = range(total_nima)
 
-		image_start, image_end = MPI_start_end(total_nima, number_of_proc, myid)
-		list_of_particles = list_of_particles[image_start:image_end]
-		nima = len(list_of_particles)
-		data = EMData.read_images(stack, list_of_particles)
-
-	else:
-		data = stack
-		total_nima = len(data)
-		total_nima = mpi_reduce(total_nima, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-		total_nima = mpi_bcast(total_nima, 1, MPI_INT, main_node, MPI_COMM_WORLD)[0]
-		list_of_particles = range(total_nima)
-		image_start, image_end = MPI_start_end(total_nima, number_of_proc, myid)
-		list_of_particles = list_of_particles[image_start:image_end]
-		nima = len(list_of_particles)
-		assert( nima == len(data))
+	image_start, image_end = MPI_start_end(total_nima, number_of_proc, myid)
+	list_of_particles = list_of_particles[image_start: image_end]
+	nima = len(list_of_particles)
 
 	# read nx and ctf_app (if CTF) and broadcast to all nodes
 	if myid == main_node:
-		nx = data[0].get_xsize()
-		if CTF:	ctf_app = data[0].get_attr_default('ctf_applied', 0)
-		# del ima
+		ima = EMData()
+		ima.read_image(stack, list_of_particles[0], True)
+		nx = ima.get_xsize()
+		if CTF:	ctf_app = ima.get_attr_default('ctf_applied', 0)
+		del ima
 	else:
 		nx = 0
 		if CTF:	ctf_app = 0
@@ -931,7 +919,7 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 		ctf_app = bcast_number_to_all(ctf_app, source_node = main_node)
 		if ctf_app > 0:	ERROR("data cannot be ctf-applied", "ali2d_MPI", 1, myid)
 		phase_flip = True
-		from filter import filt_ctf
+		from EMAN2.filter import filt_ctf
 	else:
 		phase_flip = False
 	CTF = False
@@ -965,14 +953,14 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 		else:
 			log.add("Stop iteration with         : maxit")
 
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		log.add("User function               : %s"%(user_func_name))
 		log.add("Number of processors used   : %d"%(number_of_proc))
 
 	if maskfile:
-		import  types
+		import types
 		if type(maskfile) is types.StringType:  
 			if myid == main_node:		log.add("Maskfile                    : %s"%(maskfile))
 			mask = get_image(maskfile)
@@ -987,14 +975,16 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 	cny  = cnx
 	if  random_method == "SCF":		mode = "H"
 	else: 							mode = "F"
-
+	data = []
 	if CTF:
-		from filter import filt_ctf
-		from morphology   import ctf_img
+		from EMAN2.filter import filt_ctf
+		from EMAN2.morphology import ctf_img
 		ctf_abs_sum = EMData(nx, nx, 1, False)
 		ctf_2_sum = EMData(nx, nx, 1, False)
 	else:
 		ctf_2_sum = None
+
+	data = EMData.read_images(stack, list_of_particles)
 
 	for im in xrange(nima):
 		data[im].set_attr('ID', list_of_particles[im])
@@ -1008,6 +998,14 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 			Util.add_img_abs(ctf_abs_sum, ctfimg)
 		if( random_method == "SHC" ):  data[im].set_attr('previousmax',1.0e-23)
 		if phase_flip:  data[im] = filt_ctf(data[im], data[im].get_attr("ctf"), binary = True)
+
+	if skip_alignment:
+		params = []
+		for im in xrange(nima):  
+			alpha, sx, sy, mirror, scale = get_params2D(data[im])
+			params.append([alpha, sx, sy, mirror])
+		params = wrap_mpi_gatherv(params, main_node, mpi_comm)
+		return params, data
 
 	if CTF:
 		reduce_EMData_to_root(ctf_2_sum, myid, main_node)
@@ -1051,7 +1049,6 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 			ave1, ave2 = sum_oe(data, "a", CTF, EMData())  # pass empty object to prevent calculation of ctf^2
 			reduce_EMData_to_root(ave1, myid, main_node)
 			reduce_EMData_to_root(ave2, myid, main_node)
-			sys.stdout.flush()
 			if myid == main_node:
 				log.add("Iteration #%4d"%(total_iter))
 				msg = "X range = %5.2f   Y range = %5.2f   Step = %5.2f"%(xrng[N_step], yrng[N_step], step[N_step])
@@ -1059,11 +1056,9 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 				if CTF: 
 					tavg_Ng = fft(Util.divn_filter(Util.muln_img(fft(Util.addn_img(ave1, ave2)), adw_img), ctf_2_sum))
 					tavg    = fft(Util.divn_filter(fft(Util.addn_img(ave1, ave2)), ctf_2_sum))
-				else:	 
-					tavg = (ave1+ave2)/total_nima
+				else:	 tavg = (ave1+ave2)/total_nima
 				if outdir:
 					tavg.write_image(os.path.join(outdir, "aqc.hdf"), total_iter-1)
-					
 					if CTF:
 						tavg_Ng.write_image(os.path.join(outdir, "aqc_view.hdf"), total_iter-1)
 					frsc = fsc_mask(ave1, ave2, mask, 1.0, os.path.join(outdir, "resolution%03d"%(total_iter)))
@@ -1185,23 +1180,24 @@ def ali2d_base(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 	if write_headers:
 		par_str = ["xform.align2d", "ID"]
 		if myid == main_node:
-			from utilities import file_type
+			from EMAN2.utilities import file_type
 			if(file_type(stack) == "bdb"):
-				from utilities import recv_attr_dict_bdb
+				from EMAN2.utilities import recv_attr_dict_bdb
 				recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 			else:
-				from utilities import recv_attr_dict
+				from EMAN2.utilities import recv_attr_dict
 				recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		else:           send_attr_dict(main_node, data, par_str, image_start, image_end)
+
 	params = []
 	for im in xrange(nima):  
 		alpha, sx, sy, mirror, scale = get_params2D(data[im])
 		params.append([alpha, sx, sy, mirror])
-	#params = wrap_mpi_gatherv(params, main_node, mpi_comm)
+	params = wrap_mpi_gatherv(params, main_node, mpi_comm)
 
 	if myid == main_node: log.add("Finished ali2d_base")
 
-	return params #, data
+	return params, data
 
 '''
 def ORGali2d_c(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr="-1", ts="2 1 0.5 0.25", center=-1, maxit=0, \
@@ -1210,15 +1206,15 @@ def ORGali2d_c(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 		ali2d_c_MPI(stack, outdir, maskfile, ir, ou, rs, xr, yr, ts, center, maxit, CTF, snr, Fourvar, user_func_name, CUDA, GPU)
 		return
 
-	from utilities    import model_circle, drop_image, get_image, get_input_from_string, get_params2D
-	from statistics   import fsc_mask, sum_oe, hist_list
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from pixel_error  import pixel_error_2D
-	from filter       import filt_ctf, filt_table, filt_tophatb
-	from fundamentals import fshift
+	from EMAN2.utilities import model_circle, drop_image, get_image, get_input_from_string, get_params2D
+	from EMAN2.statistics import fsc_mask, sum_oe, hist_list
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.pixel_error import pixel_error_2D
+	from EMAN2.filter import filt_ctf, filt_table, filt_tophatb
+	from EMAN2.fundamentals import fshift
 	from utilities    import print_begin_msg, print_end_msg, print_msg
-	from fundamentals import fft, rot_avg_table
-	from utilities    import write_text_file, file_type
+	from EMAN2.fundamentals import fft, rot_avg_table
+	from EMAN2.utilities import write_text_file, file_type
 	import os
 		
 	print_begin_msg("ali2d_c")
@@ -1226,7 +1222,7 @@ def ORGali2d_c(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 	if os.path.exists(outdir):   ERROR('Output directory exists, please change the name and restart the program', " ORGali2d_c", 1)
 	os.mkdir(outdir)
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	xrng        = get_input_from_string(xr)
@@ -1247,7 +1243,7 @@ def ORGali2d_c(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 	print_msg("Inner radius                : %i\n"%(first_ring))
 
 	if(file_type(stack) == "bdb"):
-		from EMAN2db import db_open_dict
+		from EMAN2.EMAN2db import db_open_dict
 		dummy = db_open_dict(stack, True)
 	active = EMUtil.get_all_attributes(stack, 'active')
 	list_of_particles = []
@@ -1295,12 +1291,12 @@ def ORGali2d_c(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 	if CTF:
 		ctf_params = ima.get_attr("ctf")
 		if ima.get_attr_default('ctf_applied', 0) > 0:	ERROR("data cannot be ctf-applied", "ORGali2d_c", 1)
-		from morphology   import ctf_img
+		from EMAN2.morphology import ctf_img
 		ctf_2_sum = EMData(nx, nx, 1, False)
 	else:
 		ctf_2_sum = None
 	if  Fourvar:
-		from statistics   import add_ave_varf
+		from EMAN2.statistics import add_ave_varf
 
 	del ima
 	data = EMData.read_images(stack, list_of_particles)
@@ -1419,28 +1415,28 @@ def ORGali2d_c(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr
 			
 	drop_image(tavg, os.path.join(outdir, "aqfinal.hdf"))
 	# write out headers
-	from utilities import write_headers
+	from EMAN2.utilities import write_headers
 	write_headers(stack, data, list_of_particles)
 	print_end_msg("ali2d_c")
 
 def ORGali2d_c_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1", yr="-1", ts="2 1 0.5 0.25", center=-1, maxit=0, CTF=False, snr=1.0, \
 			Fourvar = False, user_func_name="ref_ali2d", CUDA=False, GPU=0):
 
-	from utilities    import model_circle, model_blank, drop_image, get_image, get_input_from_string
-	from utilities    import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type, bcast_number_to_all, bcast_list_to_all
-	from statistics   import fsc_mask, sum_oe, add_ave_varf_MPI, hist_list
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from pixel_error  import pixel_error_2D
-	from filter       import filt_table, filt_ctf, filt_tophatb
-	from numpy        import reshape, shape
-	from fundamentals import fshift, fft, rot_avg_table
-	from utilities    import write_text_file, get_params2D, set_params2D
+	from EMAN2.utilities import model_circle, model_blank, drop_image, get_image, get_input_from_string
+	from EMAN2.utilities import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type, bcast_number_to_all, bcast_list_to_all
+	from EMAN2.statistics import fsc_mask, sum_oe, add_ave_varf_MPI, hist_list
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.pixel_error import pixel_error_2D
+	from EMAN2.filter import filt_table, filt_ctf, filt_tophatb
+	from numpy import reshape, shape
+	from EMAN2.fundamentals import fshift, fft, rot_avg_table
+	from EMAN2.utilities import write_text_file, get_params2D, set_params2D
 	from utilities    import print_msg, print_begin_msg, print_end_msg
 	import os
 	import sys
-	from mpi 	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
-	from mpi 	  import MPI_SUM, MPI_FLOAT, MPI_INT
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
@@ -1471,7 +1467,7 @@ def ORGali2d_c_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1"
 		auto_stop = False
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		print_msg("Input stack                 : %s\n"%(stack))
 		print_msg("Output directory            : %s\n"%(outdir))
@@ -1479,7 +1475,7 @@ def ORGali2d_c_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1"
 	
 	if myid == main_node:
        		if(file_type(stack) == "bdb"):
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		active = EMUtil.get_all_attributes(stack, 'active')
 		list_of_particles = []
@@ -1529,7 +1525,7 @@ def ORGali2d_c_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1"
 
 		
 	if maskfile:
-		import  types
+		import types
 		if type(maskfile) is types.StringType:  
 			if myid == main_node:		print_msg("Maskfile                    : %s\n\n"%(maskfile))
 			mask = get_image(maskfile)
@@ -1547,13 +1543,13 @@ def ORGali2d_c_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1"
 	if CTF:
 		ctf_params = ima.get_attr("ctf")
 		if ima.get_attr_default('ctf_applied', 0) > 0:	ERROR("data cannot be ctf-applied", "ORGali2d_c_MPI", 1,myid)
-		from filter import filt_ctf
-		from morphology   import ctf_img
+		from EMAN2.filter import filt_ctf
+		from EMAN2.morphology import ctf_img
 		ctf_2_sum = EMData(nx, nx, 1, False)
 	else:
 		ctf_2_sum = None
 	if  Fourvar:
-		from statistics   import add_ave_varf
+		from EMAN2.statistics import add_ave_varf
 
 	del ima
 
@@ -1774,12 +1770,12 @@ def ORGali2d_c_MPI(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1"
 	mpi_barrier(MPI_COMM_WORLD)
 	par_str = ["xform.align2d", "ID"]
 	if myid == main_node:
-		from utilities import file_type
+		from EMAN2.utilities import file_type
 		if(file_type(stack) == "bdb"):
-			from utilities import recv_attr_dict_bdb
+			from EMAN2.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		else:
-			from utilities import recv_attr_dict
+			from EMAN2.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	else:           send_attr_dict(main_node, data, par_str, image_start, image_end)
 	if myid == main_node: print_end_msg("ali2d_c_MPI")
@@ -1805,12 +1801,12 @@ def local_ali2d(stack, outdir, maskfile = None, ou = -1, br = 1.75, center = 1, 
 			header: the alignment parameters are stored in the headers of input files as 'alpha', 'sx', 'sy', 'mirror'
 	"""
 # 2D alignment using amoeba and gridding interpolation
-	from alignment    	import kbt
-	from utilities    	import model_circle, amoeba, compose_transform2, drop_image, get_arb_params, get_image, get_params2D, set_params2D
-	from alignment    	import fine_2D_refinement, crit2d
-	from statistics   	import add_oe_series, fsc_mask
-	from filter 		import filt_from_fsc_bwt,filt_table
-	from morphology         import ctf_2, ctf_1d
+	from EMAN2.alignment import kbt
+	from EMAN2.utilities import model_circle, amoeba, compose_transform2, drop_image, get_arb_params, get_image, get_params2D, set_params2D
+	from EMAN2.alignment import fine_2D_refinement, crit2d
+	from EMAN2.statistics import add_oe_series, fsc_mask
+	from EMAN2.filter import filt_from_fsc_bwt,filt_table
+	from EMAN2.morphology import ctf_2, ctf_1d
 	import os
 	import sys
 	import types
@@ -1829,7 +1825,7 @@ def local_ali2d(stack, outdir, maskfile = None, ou = -1, br = 1.75, center = 1, 
 
 	print_begin_msg("local_ali2d")	
 	
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 	
 	print_msg("Input stack                 : %s\n"%(stack))
@@ -1885,7 +1881,7 @@ def local_ali2d(stack, outdir, maskfile = None, ou = -1, br = 1.75, center = 1, 
 			if(data[im].get_attr("ctf_applied") == 0):
 				st = Util.infomask(data[im], mask, False)
 				data[im] -= st[0]
-				from filter import filt_ctf
+				from EMAN2.filter import filt_ctf
 				data[im] = filt_ctf(data[im], ctf_params)
 				data[im].set_attr('ctf_applied', 1)
 		for i in xrange(lctf):
@@ -1896,7 +1892,7 @@ def local_ali2d(stack, outdir, maskfile = None, ou = -1, br = 1.75, center = 1, 
 	av1, av2 = add_oe_series(data)
 	tavg = Util.addn_img(av1, av2)
 	if(CTF):
-		from filter import filt_table
+		from EMAN2.filter import filt_table
 		tavg = filt_table(tavg, ctfb2)
 	else:
 		tavg /= nima
@@ -1946,7 +1942,7 @@ def local_ali2d(stack, outdir, maskfile = None, ou = -1, br = 1.75, center = 1, 
 
 	if(CTF and data_had_ctf == 0):
 		for im in xrange(nima): data[im].set_attr('ctf_applied', 0)
-	from utilities import write_headers
+	from EMAN2.utilities import write_headers
 	write_headers(stack, data, range(nima))
 	print_end_msg("local_ali2d")
 
@@ -1980,14 +1976,14 @@ def mref_ali2d(stack, refim, outdir, maskfile=None, ir=1, ou=-1, rs=1, xrng=0, y
 		mref_ali2d_MPI(stack, refim, outdir, maskfile, ir, ou, rs, xrng, yrng, step, center, maxit, CTF, snr, user_func_name, rand_seed)
 		return
 
-	from utilities      import   model_circle, combine_params2, inverse_transform2, drop_image, get_image
-	from utilities	    import   center_2D, get_im, get_params2D, set_params2D
-	from statistics     import   fsc
-	from alignment      import   Numrinit, ringwe, fine_2D_refinement, search_range
-	from fundamentals   import   rot_shift2D, fshift
-	from morphology     import   ctf_2
-	from filter         import   filt_btwl, filt_params
-	from random         import   seed, randint
+	from EMAN2.utilities import model_circle, combine_params2, inverse_transform2, drop_image, get_image
+	from EMAN2.utilities import center_2D, get_im, get_params2D, set_params2D
+	from EMAN2.statistics import fsc
+	from EMAN2.alignment import Numrinit, ringwe, fine_2D_refinement, search_range
+	from EMAN2.fundamentals import rot_shift2D, fshift
+	from EMAN2.morphology import ctf_2
+	from EMAN2.filter import filt_btwl, filt_params
+	from random import seed, randint
 	import os
 	import sys
 
@@ -2033,7 +2029,7 @@ def mref_ali2d(stack, refim, outdir, maskfile=None, ir=1, ou=-1, rs=1, xrng=0, y
 	print_msg("User function               : %s\n"%(user_func_name))
 	output = sys.stdout
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	if maskfile:
@@ -2107,7 +2103,7 @@ def mref_ali2d(stack, refim, outdir, maskfile=None, ir=1, ou=-1, rs=1, xrng=0, y
 				if data[im].get_attr("ctf_applied") == 0:
 					st = Util.infomask(data[im], mask, False)
 					data[im] -= st[0]
-					from filter import filt_ctf
+					from EMAN2.filter import filt_ctf
 					data[im] = filt_ctf(data[im], ctf_params)
 					data[im].set_attr('ctf_applied', 1)
 			alpha, sx, sy, mirror, scale = get_params2D(data[im])
@@ -2165,7 +2161,7 @@ def mref_ali2d(stack, refim, outdir, maskfile=None, ir=1, ou=-1, rs=1, xrng=0, y
 						# Calculate averages at least ones, meaning even if no within group refinement was requested
 						if CTF:
 							for i in xrange(lctf):  ctm[i] = 1.0 / (ctf2[j][0][i] + 1.0/snr)
-							from filter import filt_table
+							from EMAN2.filter import filt_table
 							av1 = filt_table(refi[j][0], ctm)
 							for i in xrange(lctf):  ctm[i] = 1.0 / (ctf2[j][1][i] + 1.0/snr)
 							av2 = filt_table(refi[j][1], ctm)
@@ -2227,7 +2223,7 @@ def mref_ali2d(stack, refim, outdir, maskfile=None, ir=1, ou=-1, rs=1, xrng=0, y
 	if CTF:
 		if data_had_ctf == 0:
 			for im in xrange(nima): data[im].set_attr('ctf_applied', 0)
-	from utilities import write_headers
+	from EMAN2.utilities import write_headers
 	write_headers(stack, data, range(nima))
 	print_end_msg("mref_ali2d")
 
@@ -2235,24 +2231,24 @@ def mref_ali2d(stack, refim, outdir, maskfile=None, ir=1, ou=-1, rs=1, xrng=0, y
 def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrng=0, yrng=0, step=1, center=1, maxit=10, CTF=False, snr=1.0, user_func_name="ref_ali2d", rand_seed=1000):
 # 2D multi-reference alignment using rotational ccf in polar coordinates and quadratic interpolation
 
-	from utilities      import   model_circle, combine_params2, inverse_transform2, drop_image, get_image, get_im
-	from utilities      import   reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all
-	from utilities      import   send_attr_dict
-	from utilities	    import   center_2D
-	from statistics     import   fsc_mask
-	from alignment      import   Numrinit, ringwe, search_range
-	from fundamentals   import   rot_shift2D, fshift
-	from utilities      import   get_params2D, set_params2D
-	from random         import   seed, randint
-	from morphology     import   ctf_2
-	from filter         import   filt_btwl, filt_params
-	from numpy          import   reshape, shape
+	from EMAN2.utilities import model_circle, combine_params2, inverse_transform2, drop_image, get_image, get_im
+	from EMAN2.utilities import reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import center_2D
+	from EMAN2.statistics import fsc_mask
+	from EMAN2.alignment import Numrinit, ringwe, search_range
+	from EMAN2.fundamentals import rot_shift2D, fshift
+	from EMAN2.utilities import get_params2D, set_params2D
+	from random import seed, randint
+	from EMAN2.morphology import ctf_2
+	from EMAN2.filter import filt_btwl, filt_params
+	from numpy import reshape, shape
 	from utilities      import   print_msg, print_begin_msg, print_end_msg
 	import os
 	import sys
-	from mpi 	  import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_recv, mpi_send
-	from mpi 	  import MPI_SUM, MPI_FLOAT, MPI_INT
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_recv, mpi_send
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_TAG_UB
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
@@ -2307,11 +2303,11 @@ def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrn
 		print_msg("Signal-to-Noise Ratio       : %f\n"%(snr))
 		print_msg("Random seed                 : %i\n\n"%(rand_seed))	
 		print_msg("User function               : %s\n"%(user_func_name))
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	if maskfile:
-		import  types
+		import types
 		if type(maskfile) is types.StringType:  mask = get_image(maskfile)
 		else: mask = maskfile
 	else : mask = model_circle(last_ring, nx, nx)
@@ -2350,7 +2346,7 @@ def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrn
 			if data[im-image_start].get_attr("ctf_applied") == 0:
 				st = Util.infomask(data[im-image_start], mask, False)
 				data[im-image_start] -= st[0]
-				from filter import filt_ctf
+				from EMAN2.filter import filt_ctf
 				data[im-image_start] = filt_ctf(data[im-image_start], ctf_params)
 				data[im-image_start].set_attr('ctf_applied', 1)
 	if myid == main_node:  seed(rand_seed)
@@ -2430,12 +2426,12 @@ def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrn
 			if myid == main_node:
 				for n in xrange(number_of_proc):
 					if n != main_node:
-						ln =  mpi_recv(1, MPI_INT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-						lis = mpi_recv(ln[0], MPI_INT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						ln =  mpi_recv(1, MPI_INT, n, MPI_TAG_UB, MPI_COMM_WORLD)
+						lis = mpi_recv(ln[0], MPI_INT, n, MPI_TAG_UB, MPI_COMM_WORLD)
 						for l in xrange(ln[0]): assign[j].append(int(lis[l]))
 			else:
-				mpi_send(len(assign[j]), 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-				mpi_send(assign[j], len(assign[j]), MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				mpi_send(len(assign[j]), 1,MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
+				mpi_send(assign[j], len(assign[j]), MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 		if myid == main_node:
 			# replace the name of the stack with reference with the current one
@@ -2453,11 +2449,11 @@ def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrn
 				else:
 					if CTF:
 						for i in xrange(lctf):  ctm[i] = 1.0 / (ctf2[j][0][i] + 1.0/snr)
-						from filter import filt_table
+						from EMAN2.filter import filt_table
 						av1 = filt_table( refi[j][0], ctm)
 						for i in xrange(lctf):  ctm[i] = 1.0 / (ctf2[j][1][i] + 1.0/snr)
 						av2 = filt_table( refi[j][1], ctm)
-						from statistics import fsc
+						from EMAN2.statistics import fsc
 						#frsc = fsc_mask(av1, av2, mask, 1.0, os.path.join(outdir,"drm%03d%04d"%(Iter, j)))
 						frsc = fsc(av1, av2, 1.0, os.path.join(outdir,"drm%03d%04d.txt"%(Iter, j)))
 						#Now the total average
@@ -2465,7 +2461,7 @@ def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrn
 						refi[j][0] = filt_table( Util.addn_img( refi[j][0], refi[j][1] ), ctm)
 					else:
 						#frsc = fsc_mask(refi[j][0], refi[j][1], mask, 1.0, os.path.join(outdir,"drm%03d%04d"%(Iter, j)))
-						from statistics import fsc
+						from EMAN2.statistics import fsc
 						frsc = fsc(refi[j][0], refi[j][1], 1.0, os.path.join(outdir,"drm%03d%04d.txt"%(Iter,j)))
 						Util.add_img( refi[j][0], refi[j][1] )
 						Util.mul_scalar( refi[j][0], 1.0/float(refi[j][2]) )
@@ -2526,12 +2522,12 @@ def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrn
 		for im in xrange(len(data)): data[im].set_attr('ctf_applied', 0)
 	par_str = ['xform.align2d', 'assign', 'ID']
 	if myid == main_node:
-		from utilities import file_type
+		from EMAN2.utilities import file_type
 		if(file_type(stack) == "bdb"):
-			from utilities import recv_attr_dict_bdb
+			from EMAN2.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		else:
-			from utilities import recv_attr_dict
+			from EMAN2.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	else:           send_attr_dict(main_node, data, par_str, image_start, image_end)
 
@@ -2545,13 +2541,13 @@ def mref_ali2d_MPI(stack, refim, outdir, maskfile = None, ir=1, ou=-1, rs=1, xrn
 def ali2d_ra(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check_mirror = False, CTF = False, rand_seed = 1000):
 # 2D rotational alignment using ccf in polar coordinates
 
-	from utilities    import model_circle, compose_transform2, combine_params2, drop_image, get_im, get_arb_params, get_params2D, set_params2D
-	from alignment    import Numrinit, ringwe, ang_n
-	from statistics   import kmn, kmn_ctf
-	from morphology   import ctf_2
-	from statistics   import add_series
-	from applications import transform2d
-	from random       import random
+	from EMAN2.utilities import model_circle, compose_transform2, combine_params2, drop_image, get_im, get_arb_params, get_params2D, set_params2D
+	from EMAN2.alignment import Numrinit, ringwe, ang_n
+	from EMAN2.statistics import kmn, kmn_ctf
+	from EMAN2.morphology import ctf_2
+	from EMAN2.statistics import add_series
+	from EMAN2.applications import transform2d
+	from random import random
 	from utilities    import print_begin_msg, print_end_msg, print_msg
 
 	print_begin_msg("ali2d_ra")
@@ -2588,7 +2584,7 @@ def ali2d_ra(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check_
 	lnumr = numr[len(numr)-1]
 	# prepare 2-D mask for normalization
 	if maskfile:
-		import  types
+		import types
 		if(type(maskfile) is types.StringType):  mask2D = get_im(maskfile)
 		else: mask2D = maskfile
 	else : mask2D = model_circle(last_ring, nx, nx)
@@ -2628,10 +2624,10 @@ def ali2d_ra(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check_
 			ctf_params = temp.get_attr( "ctf" )
 			temp -= st[0]
 			if(temp.get_attr("ctf_applied") == 0):
-				from filter import filt_ctf
+				from EMAN2.filter import filt_ctf
 				temp = filt_ctf(temp, ctf_params)
 				temp.set_attr('ctf_applied', 1)
-			from filter       import filt_table
+			from EMAN2.filter import filt_table
 			refc = filt_table(temp, ctf2)
 			
 			alpha_original, sx, sy, miri, scale = get_params2D(temp)
@@ -2689,7 +2685,7 @@ def ali2d_ra(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check_
 		del mask2D
 		kmn(data, numr, wr, check_mirror, max_iter, rand_seed)
 	#  write out the alignment parameters to headers
-	from utilities import write_header, file_type
+	from EMAN2.utilities import write_header, file_type
 	temp = EMData()
 	for im in xrange(nima):
 		alpha_original   = data[im].get_attr('alpha_original')
@@ -2711,15 +2707,15 @@ def ali2d_ra(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check_
 def ali2d_rag(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check_mirror = False, CTF = False, rand_seed = 1000):
 # 2D rotational alignment using ccf in polar coordinates and gridding-based interpolation
 
-	from utilities    import model_circle, compose_transform2, combine_params2, drop_image, get_im, get_arb_params
-	from alignment    import Numrinit, ringwe, ang_n
-	from statistics   import kmn_g, kmn_ctf
-	from morphology   import ctf_2
-	from statistics   import add_series
-	from applications import transform2d
-	from random       import random
+	from EMAN2.utilities import model_circle, compose_transform2, combine_params2, drop_image, get_im, get_arb_params
+	from EMAN2.alignment import Numrinit, ringwe, ang_n
+	from EMAN2.statistics import kmn_g, kmn_ctf
+	from EMAN2.morphology import ctf_2
+	from EMAN2.statistics import add_series
+	from EMAN2.applications import transform2d
+	from random import random
 	from utilities    import print_begin_msg, print_end_msg, print_msg
-	from fundamentals import prepi
+	from EMAN2.fundamentals import prepi
 
 	print_begin_msg("ali2d_rag")
 
@@ -2755,7 +2751,7 @@ def ali2d_rag(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check
 	maxrin = numr[len(numr)-1]
 	# prepare 2-D mask for normalization
 	if maskfile:
-		import  types
+		import types
 		if(type(maskfile) is types.StringType):  mask2D = get_im(maskfile)
 		else: mask2D = maskfile
 	else : mask2D = model_circle(last_ring, nx, nx)
@@ -2795,11 +2791,11 @@ def ali2d_rag(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check
 					
 			temp -= st[0]
 			if(temp.get_attr("ctf_applied") == 0):
-				from filter import filt_ctf
+				from EMAN2.filter import filt_ctf
 				ctf_params = temp.get_attr( "ctf" )
 				temp = filt_ctf(temp, ctf_params)
 				temp.set_attr('ctf_applied', 1)
-			from filter       import filt_table
+			from EMAN2.filter import filt_table
 			refc = filt_table(temp, ctf2)
 			
 			alpha_original = temp.get_attr('alpha')
@@ -2846,10 +2842,10 @@ def ali2d_rag(stack, maskfile = None, ir = 1, ou = -1, rs = 1, maxit = 10, check
 		del mask2D
 		kmn_g(data, numr, wr, stack, check_mirror, max_iter, rand_seed)
 	#  write out the alignment parameters to headers
-	from utilities import write_header, file_type
+	from EMAN2.utilities import write_header, file_type
 	ext = file_type(stack)
 	if(ext == "bdb"):
-		from EMAN2db import EMAN2DB
+		from EMAN2.EMAN2db import EMAN2DB
 		DB = EMAN2DB()
 		DB = EMAN2DB.open_db(ipath)
 	temp = EMData()
@@ -2877,17 +2873,17 @@ def ali2d_rac(stack, maskfile = None, ir = 1, ou = -1, rs = 1, nclass = 2, maxit
 	test = True
 	if MPI:
 		if test:
-			from development import ali2d_rac_MPI
+			from EMAN2.development import ali2d_rac_MPI
 			ali2d_rac_MPI(stack, maskfile, ir, ou, rs, nclass, maxit, maxin, check_mirror, rand_seed)
 			return
 		else:
 			print 'ali2d_rac: no mpi version'
 			return
 
-	from utilities    import model_circle, combine_params2, drop_image
-	from alignment    import Numrinit, ringwe, ang_n
-	from statistics   import kmnr, kmn, add_series_class
-	from random       import seed, randint
+	from EMAN2.utilities import model_circle, combine_params2, drop_image
+	from EMAN2.alignment import Numrinit, ringwe, ang_n
+	from EMAN2.statistics import kmnr, kmn, add_series_class
+	from random import seed, randint
 
 	from utilities    import info, ttime, print_list_format
 	import time
@@ -2935,7 +2931,7 @@ def ali2d_rac(stack, maskfile = None, ir = 1, ou = -1, rs = 1, nclass = 2, maxit
 	lnumr = numr[len(numr)-1]
 	# prepare 2-D ask for normalization
 	if maskfile:
-		import  types
+		import types
 		if(type(maskfile) is types.StringType):  mask2D = get_image(maskfile)
 		else: mask2D = maskfile
 	else : mask2D = model_circle(last_ring,nx,nx)
@@ -3116,10 +3112,10 @@ def ali2d_rac(stack, maskfile = None, ir = 1, ou = -1, rs = 1, nclass = 2, maxit
 	del tave
 	#  write out the alignment parameters to headers
 	del temp
-	from utilities import write_header, file_type
+	from EMAN2.utilities import write_header, file_type
 	ext = file_type(stack)
 	if(ext == "bdb"):
-		from EMAN2db import EMAN2DB
+		from EMAN2.EMAN2db import EMAN2DB
 		DB = EMAN2DB()
 		DB = EMAN2DB.open_db(ipath)
 	temp = EMData()
@@ -3163,11 +3159,11 @@ def ali2d_ras(data2d, randomize = False, ir = 1, ou = -1, rs = 1, step = 1.0, ds
 # stripped down 2D rotational alignment in polar coordinates
 #  I did not check the version with no check mirror, I doubt it works.
 
-	from utilities    import compose_transform2, combine_params2, get_arb_params, get_params2D, set_params2D, inverse_transform2
-	from alignment    import Numrinit, ringwe, ang_n
-	from statistics   import ave_series
-	from filter       import filt_tanl
-	from random       import random, randint
+	from EMAN2.utilities import compose_transform2, combine_params2, get_arb_params, get_params2D, set_params2D, inverse_transform2
+	from EMAN2.alignment import Numrinit, ringwe, ang_n
+	from EMAN2.statistics import ave_series
+	from EMAN2.filter import filt_tanl
+	from random import random, randint
 
 	first_ring=int(ir); last_ring=int(ou); rstep=int(rs); max_iter=int(maxit); 
 
@@ -3252,7 +3248,7 @@ def ali2d_ras(data2d, randomize = False, ir = 1, ou = -1, rs = 1, step = 1.0, ds
 def ali2d_rotationaltop(outdir, stack, randomize = False, orient=True, ir = 4, ou = -1, rs = 1, psi_max = 180.0, mode = "F", maxit = 10):
 	# calling program for rotational alignment of power spectra
 	from utilities    import print_begin_msg, print_end_msg, print_msg
-	from utilities    import file_type
+	from EMAN2.utilities import file_type
 	import os
 
 	
@@ -3272,18 +3268,18 @@ def ali2d_rotationaltop(outdir, stack, randomize = False, orient=True, ir = 4, o
 	tavg = ali2d_rotational(data2d, randomize, orient, first_ring, last_ring, rstep, psi_max, mode, max_iter)
 	tavg.write_image(os.path.join(outdir, "aqfinal.hdf"))
 	# write out headers
-	from utilities import write_headers
+	from EMAN2.utilities import write_headers
 	write_headers(stack, data2d, range(nima))
 	
 
 def ali2d_rotational(data2d, randomize = False, orient=True, ir = 1, ou = -1, rs = 1, psi_max = 180.0, mode = "F", maxit = 10):
 # 2D rotational alignment of power spectra in polar coordinates
 
-	from utilities    import get_params2D, set_params2D, model_blank, model_circle
-	from alignment    import Numrinit, ringwe, ang_n
-	from fundamentals import rot_shift2D, mirror
-	from statistics   import ave_series
-	from random       import randint
+	from EMAN2.utilities import get_params2D, set_params2D, model_blank, model_circle
+	from EMAN2.alignment import Numrinit, ringwe, ang_n
+	from EMAN2.fundamentals import rot_shift2D, mirror
+	from EMAN2.statistics import ave_series
+	from random import randint
 
 	first_ring=int(ir); last_ring=int(ou); rstep=int(rs); max_iter=int(maxit); 
 
@@ -3356,13 +3352,13 @@ def ali2d_cross_res(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1
 		Cross resolution alignment
 	"""
 	import os
-	from utilities 		import model_circle, combine_params2, drop_image
-	from utilities          import get_input_from_string, get_image, get_arb_params, set_arb_params
-	from fundamentals 	import rot_shift2D
-	from statistics 	      import add_oe_series, ave_series_ctf, ave_series, fsc_mask
-	from alignment 		import Numrinit, ringwe, ali2d_single_iter, align2d
-	from filter 		import filt_table, filt_ctf
-	from morphology     import ctf_2
+	from EMAN2.utilities import model_circle, combine_params2, drop_image
+	from EMAN2.utilities import get_input_from_string, get_image, get_arb_params, set_arb_params
+	from EMAN2.fundamentals import rot_shift2D
+	from EMAN2.statistics import add_oe_series, ave_series_ctf, ave_series, fsc_mask
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter, align2d
+	from EMAN2.filter import filt_table, filt_ctf
+	from EMAN2.morphology import ctf_2
 
 	from utilities import print_begin_msg, print_end_msg, print_msg
 	import	types
@@ -3374,7 +3370,7 @@ def ali2d_cross_res(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1
 
 	print_begin_msg("ali2d_cross_res")
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	xrng        = get_input_from_string(xr)
@@ -3564,10 +3560,10 @@ def ali2d_cross_res(stack, outdir, maskfile=None, ir=1, ou=-1, rs=1, xr="4 2 1 1
 		for k in xrange(NG):
 			for im in xrange(len(data[k])):
 				data[k][im].set_attr('ctf_applied', 0)
-	from utilities import write_header, file_type
+	from EMAN2.utilities import write_header, file_type
 	ext = file_type(stack)
 	if(ext == "bdb"):
-		from EMAN2db import EMAN2DB
+		from EMAN2.EMAN2db import EMAN2DB
 		DB = EMAN2DB()
 		DB = EMAN2DB.open_db(ipath)
 	for im in xrange(nima):
@@ -3619,20 +3615,20 @@ def ali3d_abandoned(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs
 			fourvar, npad, debug, termprec)
 		return
 
-	from alignment      import proj_ali_incore, proj_ali_incore_local
-	from utilities      import model_circle, drop_image, get_image, get_input_from_string
-	from utilities      import get_params_proj
-	from utilities      import estimate_3D_center, rotate_3D_shift
-	from filter         import filt_params, fit_tanh, filt_tanl, filt_ctf
-	from statistics     import fsc_mask
+	from EMAN2.alignment import proj_ali_incore, proj_ali_incore_local
+	from EMAN2.utilities import model_circle, drop_image, get_image, get_input_from_string
+	from EMAN2.utilities import get_params_proj
+	from EMAN2.utilities import estimate_3D_center, rotate_3D_shift
+	from EMAN2.filter import filt_params, fit_tanh, filt_tanl, filt_ctf
+	from EMAN2.statistics import fsc_mask
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from alignment      import Numrinit, prepare_refrings
-	from projection     import prep_vol
+	from EMAN2.alignment import Numrinit, prepare_refrings
+	from EMAN2.projection import prep_vol
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	import os
 	import types
-	from math			import radians, sin, cos
+	from math import radians, sin, cos
 
 	user_func = user_functions.factory[user_func_name]
 
@@ -3693,7 +3689,7 @@ def ali3d_abandoned(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf
-		from filter         import filt_ctf
+		from EMAN2.filter import filt_ctf
 	else: from reconstruction import recons3d_4nn
 
 	if debug:  outf = file(os.path.join(outdir, "progress"), "w")
@@ -3788,7 +3784,7 @@ def ali3d_abandoned(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs
 
 			drop_image(vol, os.path.join(outdir, "volf%04d.hdf"%(N_step*max_iter+Iter+1)))
 			#  here we write header info
-			from utilities import write_headers
+			from EMAN2.utilities import write_headers
 			#from utilities import write_select_headers
 			if CTF:
 				for dat in data:  dat.set_attr('ctf_applied',0)
@@ -3806,21 +3802,21 @@ def Xali3d_MPI_chunks(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, 
 	    center = -1, maxit = 5, CTF = False, snr = 1.0,  ref_a = "S", sym = "c1",  user_func_name = "ref_ali3d",
 	    fourvar = True, npad = 4, debug = False, termprec = 0.0):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string
-	from utilities       import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities       import send_attr_dict
-	from utilities       import get_params_proj, file_type
-	from fundamentals    import rot_avg_image
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import get_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image
 	import os
 	import types
 	from utilities       import print_begin_msg, print_end_msg, print_msg
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi             import mpi_reduce, MPI_INT, MPI_SUM
-	from filter          import filt_ctf
-	from projection      import prep_vol, prgs
-	from statistics      import hist_list, varf3d_MPI
-	from applications    import MPI_start_end
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
 
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
@@ -3886,7 +3882,7 @@ def Xali3d_MPI_chunks(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, 
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -3924,12 +3920,12 @@ def Xali3d_MPI_chunks(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, 
 	fscmask = mask3D  #model_circle(last_ring,nx,nx,nx)  For a fancy mask circle would work better  PAP 7/21/11
 	if CTF:
 		from reconstruction import rec3D_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import rec3D_MPI_noCTF
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import rec3D_MPI_noCTF
 
 	if myid == main_node:
        		if file_type(stack) == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		active = EMUtil.get_all_attributes(stack, 'active')
 		list_of_particles = []
@@ -4007,7 +4003,7 @@ def Xali3d_MPI_chunks(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, 
 
 			for im in xrange(nima):
 				if deltapsi[N_step] > 0.0:
-					from alignment import proj_ali_incore_delta
+					from EMAN2.alignment import proj_ali_incore_delta
 					peak, pixer[im] = proj_ali_incore_delta(data[im],refrings,numr,xrng[N_step],yrng[N_step],step[N_step],startpsi[N_step],deltapsi[N_step],finfo)						
 				elif an[N_step] == -1:
 					peak, pixer[im] = proj_ali_incore_chunks(data[im],refrings,numr,xrng[N_step],yrng[N_step],step[N_step],finfo)
@@ -4029,7 +4025,7 @@ def Xali3d_MPI_chunks(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, 
 			terminate = 0
 			if myid == main_node:
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if region[0] < 0.0:  region[0] = 0.0
@@ -4053,7 +4049,7 @@ def Xali3d_MPI_chunks(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, 
 			terminate = int(terminate[0])
 
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -4071,10 +4067,10 @@ def Xali3d_MPI_chunks(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, 
 			par_str = ['xform.projection', 'previousmax', 'ID']
 			if myid == main_node:
 	   			if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
+	        			from EMAN2.utilities import recv_attr_dict_bdb
 	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        		else:
-	        			from utilities import recv_attr_dict
+	        			from EMAN2.utilities import recv_attr_dict
 	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 				print_msg("Time to write header information= %d\n"%(time()-start_time))
 				start_time = time()
@@ -4153,19 +4149,19 @@ def ali3d(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 			fourvar, npad, debug, termprec)
 		return
 
-	from alignment      import proj_ali_incore, proj_ali_incore_local
-	from utilities      import model_circle, drop_image, get_image, get_input_from_string
-	from utilities      import get_params_proj
-	from utilities      import estimate_3D_center, rotate_3D_shift
-	from filter         import filt_params, fit_tanh, filt_tanl, filt_ctf
-	from statistics     import fsc_mask
+	from EMAN2.alignment import proj_ali_incore, proj_ali_incore_local
+	from EMAN2.utilities import model_circle, drop_image, get_image, get_input_from_string
+	from EMAN2.utilities import get_params_proj
+	from EMAN2.utilities import estimate_3D_center, rotate_3D_shift
+	from EMAN2.filter import filt_params, fit_tanh, filt_tanl, filt_ctf
+	from EMAN2.statistics import fsc_mask
 	import os
 	import types
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from alignment      import Numrinit, prepare_refrings
-	from projection     import prep_vol
+	from EMAN2.alignment import Numrinit, prepare_refrings
+	from EMAN2.projection import prep_vol
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	if os.path.exists(outdir):  ERROR('Output directory exists, please change the name and restart the program', "ali3d", 1)
@@ -4225,7 +4221,7 @@ def ali3d(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf
-		from filter         import filt_ctf
+		from EMAN2.filter import filt_ctf
 	else: from reconstruction import recons3d_4nn
 
 	if debug:  outf = file(os.path.join(outdir, "progress"), "w")
@@ -4265,7 +4261,7 @@ def ali3d(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 			del volft, kb
 			if( an[N_step] > 0):
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 					generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 
@@ -4309,7 +4305,7 @@ def ali3d(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 
 			drop_image(vol, os.path.join(outdir, "volf%04d.hdf"%(N_step*max_iter+Iter+1)))
 			#  here we write header info
-			from utilities import write_headers
+			from EMAN2.utilities import write_headers
 			#from utilities import write_select_headers
 			if CTF:
 				for dat in data:  dat.set_attr('ctf_applied',0)
@@ -4325,21 +4321,21 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 	    center = -1, maxit = 5, CTF = False, snr = 1.0,  ref_a = "S", sym = "c1",  user_func_name = "ref_ali3d",
 	    fourvar = True, npad = 2, debug = False, termprec = 0.0):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string
-	from utilities       import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities       import send_attr_dict
-	from utilities       import get_params_proj, file_type
-	from fundamentals    import rot_avg_image
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import get_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image
 	import os
 	import types
 	from utilities       import print_begin_msg, print_end_msg, print_msg
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi             import mpi_reduce, MPI_INT, MPI_SUM
-	from filter          import filt_ctf
-	from projection      import prep_vol, prgs
-	from statistics      import hist_list, varf3d_MPI
-	from applications    import MPI_start_end
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
 
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
@@ -4405,7 +4401,7 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -4443,12 +4439,12 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 	fscmask = mask3D  #model_circle(last_ring,nx,nx,nx)  For a fancy mask circle would work better  PAP 7/21/11
 	if CTF:
 		from reconstruction import rec3D_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import rec3D_MPI_noCTF
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import rec3D_MPI_noCTF
 
 	if myid == main_node:
 		if file_type(stack) == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, 'active')
@@ -4527,7 +4523,7 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 			del volft, kb
 			if(an[N_step] > 0):
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 				generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 			else:  list_of_reference_angles = [[1.0,1.0]]
@@ -4537,7 +4533,7 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 
 			for im in xrange(nima):
 				if deltapsi[N_step] > 0.0:
-					from alignment import proj_ali_incore_delta
+					from EMAN2.alignment import proj_ali_incore_delta
 					peak, pixer[im] = proj_ali_incore_delta(data[im],refrings,numr,xrng[N_step],yrng[N_step],step[N_step],startpsi[N_step],deltapsi[N_step],finfo)						
 				elif an[N_step] == -1:
 					peak, pixer[im] = proj_ali_incore(data[im],refrings,numr,xrng[N_step],yrng[N_step],step[N_step],finfo, sym=sym)
@@ -4562,7 +4558,7 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 			terminate = 0
 			if myid == main_node:
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if region[0] < 0.0:  region[0] = 0.0
@@ -4586,7 +4582,7 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 			terminate = int(terminate[0])
 
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -4604,10 +4600,10 @@ def ali3d_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 1,
 			par_str = ['xform.projection', 'previousmax', 'ID']
 			if myid == main_node:
 	   			if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
+	        			from EMAN2.utilities import recv_attr_dict_bdb
 	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        		else:
-	        			from utilities import recv_attr_dict
+	        			from EMAN2.utilities import recv_attr_dict
 	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 				print_msg("Time to write header information= %d\n"%(time()-start_time))
 				start_time = time()
@@ -4661,25 +4657,25 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 		
 	"""
 
-	from alignment       import Numrinit, prepare_refrings
-	from alignment       import proj_ali_incore,  proj_ali_incore_zoom,  proj_ali_incore_local, proj_ali_incore_local_zoom
-	from alignment       import shc, center_projections_3D
-	from utilities       import bcast_number_to_all, bcast_EMData_to_all, 	wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
-	from utilities       import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj, pad
-	from utilities       import even_angles
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
-	from projection      import prep_vol
-	from statistics      import hist_list
-	from applications    import MPI_start_end
-	from filter          import filt_ctf, filt_table
-	from global_def      import Util
-	from fundamentals    import resample, fshift
-	from multi_shc       import shc_multi
+	from EMAN2.alignment import Numrinit, prepare_refrings
+	from EMAN2.alignment import proj_ali_incore, proj_ali_incore_zoom, proj_ali_incore_local, proj_ali_incore_local_zoom
+	from EMAN2.alignment import shc, center_projections_3D
+	from EMAN2.utilities import bcast_number_to_all, bcast_EMData_to_all, wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
+	from EMAN2.utilities import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj, pad
+	from EMAN2.utilities import even_angles
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf, filt_table
+	from global_def import Util
+	from EMAN2.fundamentals import resample, fshift
+	from EMAN2.multi_shc import shc_multi
 	#from development     import do_volume_mrk01
-	import user_functions
-	from EMAN2           import EMUtil, EMData
+	import EMAN2.user_functions as user_functions
+	from EMAN2 import EMUtil, EMData
 	import types
-	from time            import time
+	from time import time
 
 	nsoft            = Tracker["nsoft"]
 	saturatecrit     = Tracker["saturatecrit"]
@@ -4702,7 +4698,7 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 	if mpi_comm == None: mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -4838,7 +4834,7 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 				ref_angles[0][1] = 0.01
 			if( rangle > 0.0 ):
 				# shake
-				from utilities import rotate_shift_params
+				from EMAN2.utilities import rotate_shift_params
 				ref_angles = rotate_shift_params(anglelist, [ delta[N_step]*rangle, delta[N_step]*rangle, delta[N_step]*rangle ])
 
 			#=========================================================================
@@ -4858,7 +4854,7 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 				if(an[N_step] < 0.0):
 					# adjust params to references, calculate psi+shifts, calculate previousmax
 					# generate list of angles
-					from alignment import generate_list_of_reference_angles_for_search
+					from EMAN2.alignment import generate_list_of_reference_angles_for_search
 					list_of_reference_angles = \
 					generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 					for im in xrange(nima):
@@ -4885,7 +4881,7 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 			par_r = [0]*max(2,(nsoft+1))
 			if(an[N_step] > 0):
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 				generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 			else:  list_of_reference_angles = [[1.0,1.0]]
@@ -5020,7 +5016,7 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 				#=========================================================================
 				# centering
 				if center == -1 and sym[0] == 'c':
-					from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+					from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 					cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 					if myid == main_node:
 						msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -5063,7 +5059,7 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 					assert(total_nima == len(params))
 				previousmax = wrap_mpi_gatherv(previousmax, 0, mpi_comm)
 				if myid == main_node:
-					from utilities import write_text_row, write_text_file
+					from EMAN2.utilities import write_text_row, write_text_file
 					write_text_row(params, "soft/params%04d.txt"%total_iter)
 					write_text_file(previousmax, "soft/previousmax%04d.txt"%total_iter)
 
@@ -5097,7 +5093,7 @@ def sali3d_base(stack, ref_vol = None, Tracker = None, rangle = 0.0, rshift = 0.
 			if( ( terminate or (Iter == max_iter) ) and (myid == main_node) ):
 				if( type(stack) is types.StringType ):
 					from EMAN2 import Vec2f, Transform
-					from EMAN2db import db_open_dict
+					from EMAN2.EMAN2db import db_open_dict
 					DB = db_open_dict(stack)
 					for im in xrange(len(params)):
 						t = Transform({"type":"spider","phi":params[im][0],"theta":params[im][1],"psi":params[im][2]})
@@ -5128,25 +5124,25 @@ def sali3d_base_horatio_01(stack, ref_vol = None, Tracker = None, rangle = 0.0, 
 		
 	"""
 
-	from alignment       import Numrinit, prepare_refrings, generate_indices_and_refrings
-	from alignment       import proj_ali_incore,  proj_ali_incore_zoom,  proj_ali_incore_local, proj_ali_incore_local_zoom
-	from alignment       import shc, center_projections_3D, ringwe
+	from EMAN2.alignment import Numrinit, prepare_refrings, generate_indices_and_refrings
+	from EMAN2.alignment import proj_ali_incore, proj_ali_incore_zoom, proj_ali_incore_local, proj_ali_incore_local_zoom
+	from EMAN2.alignment import shc, center_projections_3D, ringwe
 	from utilities       import bcast_number_to_all, bcast_EMData_to_all, 	wrap_mpi_gatherv, wrap_mpi_bcast, model_blank, print_from_process
-	from utilities       import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj, pad
-	from utilities       import even_angles
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
-	from projection      import prep_vol
-	from statistics      import hist_list
-	from applications    import MPI_start_end
-	from filter          import filt_ctf, filt_table
-	from global_def      import Util
-	from fundamentals    import resample, fshift
-	from multi_shc       import shc_multi
+	from EMAN2.utilities import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj, pad
+	from EMAN2.utilities import even_angles
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf, filt_table
+	from global_def import Util
+	from EMAN2.fundamentals import resample, fshift
+	from EMAN2.multi_shc import shc_multi
 	#from development     import do_volume_mrk01
-	import user_functions
-	from EMAN2           import EMUtil, EMData
+	import EMAN2.user_functions as user_functions
+	from EMAN2 import EMUtil, EMData
 	import types
-	from time            import time
+	from time import time
 
 	nsoft            = Tracker["nsoft"]
 	saturatecrit     = Tracker["saturatecrit"]
@@ -5169,7 +5165,7 @@ def sali3d_base_horatio_01(stack, ref_vol = None, Tracker = None, rangle = 0.0, 
 	if mpi_comm == None: mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -5357,7 +5353,7 @@ def sali3d_base_horatio_01(stack, ref_vol = None, Tracker = None, rangle = 0.0, 
 					# generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 				else:  list_of_reference_angles = [[1.0,1.0]]
 				error_status = 0
-				from utilities import if_error_then_all_processes_exit_program
+				from EMAN2.utilities import if_error_all_processes_quit_program
 
 				# for im in xrange(nima):
 				for im in image_indices:
@@ -5409,7 +5405,7 @@ def sali3d_base_horatio_01(stack, ref_vol = None, Tracker = None, rangle = 0.0, 
 				if len(image_indices)>0: del tempdata
 				if(an[N_step] > 0):  del list_of_reference_angles
 				#=========================================================================
-				# if_error_then_all_processes_exit_program(error_status)
+				# if_error_all_processes_quit_program(error_status)
 				# cannot have barriers in this loop because some cones might not have images assigned to them! In this case 'image_indices' is empty.
 				# mpi_barrier(mpi_comm)
 				if myid == main_node:
@@ -5501,7 +5497,7 @@ def sali3d_base_horatio_01(stack, ref_vol = None, Tracker = None, rangle = 0.0, 
 				#=========================================================================
 				# centering
 				if center == -1 and sym[0] == 'c':
-					from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+					from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 					cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 					if myid == main_node:
 						msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -5544,7 +5540,7 @@ def sali3d_base_horatio_01(stack, ref_vol = None, Tracker = None, rangle = 0.0, 
 					assert(total_nima == len(params))
 				previousmax = wrap_mpi_gatherv(previousmax, 0, mpi_comm)
 				if myid == main_node:
-					from utilities import write_text_row, write_text_file
+					from EMAN2.utilities import write_text_row, write_text_file
 					write_text_row(params, "soft/params%04d.txt"%total_iter)
 					write_text_file(previousmax, "soft/previousmax%04d.txt"%total_iter)
 
@@ -5578,7 +5574,7 @@ def sali3d_base_horatio_01(stack, ref_vol = None, Tracker = None, rangle = 0.0, 
 			if( ( terminate or (Iter == max_iter) ) and (myid == main_node) ):
 				if( type(stack) is types.StringType ):
 					from EMAN2 import Vec2f, Transform
-					from EMAN2db import db_open_dict
+					from EMAN2.EMAN2db import db_open_dict
 					DB = db_open_dict(stack)
 					for im in xrange(len(params)):
 						t = Transform({"type":"spider","phi":params[im][0],"theta":params[im][1],"psi":params[im][2]})
@@ -5603,21 +5599,21 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 	"""
 
 	"""
-	from alignment        import eqproj_cascaded_ccc
-	from filter           import filt_ctf
-	from projection       import prep_vol
-	from fundamentals     import resample
-	from utilities        import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
-	from utilities        import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict, wrap_mpi_bcast, wrap_mpi_gatherv
-	from utilities        import get_image, drop_image, file_type, get_im, get_input_from_string, model_blank
-	from utilities        import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
+	from EMAN2.alignment import eqproj_cascaded_ccc
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol
+	from EMAN2.fundamentals import resample
+	from EMAN2.utilities import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
+	from EMAN2.utilities import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict, wrap_mpi_bcast, wrap_mpi_gatherv
+	from EMAN2.utilities import get_image, drop_image, file_type, get_im, get_input_from_string, model_blank
+	from EMAN2.utilities import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
 	from utilities        import print_begin_msg, print_end_msg, print_msg
 	#from development      import do_volume_mrk01
-	import user_functions
-	from statistics       import varf3d_MPI
-	from math             import pi
-	from mpi              import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi              import mpi_reduce, MPI_INT, MPI_SUM
+	import EMAN2.user_functions as user_functions
+	from EMAN2.statistics import varf3d_MPI
+	from math import pi
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	from EMAN2 import Processor
 	from EMAN2 import Vec2f, Transform
 	import os
@@ -5637,7 +5633,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 	fourvar = False
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 
@@ -5656,7 +5652,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 		import global_def
 		global_def.LOGFILE =  os.path.join(outdir, global_def.LOGFILE)
 		print_begin_msg("local_ali3d_MPI")
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		if CTF:
 			ima = EMData()
@@ -5684,7 +5680,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 	if( type(stack) is types.StringType ):
 		if myid == main_node:
 			if(file_type(stack) == "bdb"):
-				from EMAN2db import db_open_dict
+				from EMAN2.EMAN2db import db_open_dict
 				dummy = db_open_dict(stack, True)
 
 			nima = EMUtil.get_image_count(stack)
@@ -5744,7 +5740,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 
 	"""
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -5762,7 +5758,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 		print_msg("User function               : %s\n"%(user_func_name))
 	"""
 
-	import  types
+	import types
 	if Tracker["constants"]["mask3D"]:
 		if type(Tracker["constants"]["mask3D"]) is types.StringType:
 			if myid == main_node:
@@ -5774,7 +5770,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 		if myid == main_node:
 			nxm = mask3D.get_xsize()
 			if( nxm > nx ):
-				from fundamentals import rot_shift3D
+				from EMAN2.fundamentals import rot_shift3D
 				mask3D = Util.window(rot_shift3D(mask3D,scale=float(nx)/float(nxm)),nx,nx,nx)
 				nxm = mask3D.get_xsize()
 				assert(nx == nxm)
@@ -5791,7 +5787,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 				vol = get_im(templatevol)
 				nxm = vol.get_xsize()
 				if( nxm > nx ):
-					from fundamentals import rot_shift3D
+					from EMAN2.fundamentals import rot_shift3D
 					vol = Util.window(rot_shift3D(vol,scale=float(nx)/float(nxm)),nx,nx,nx)
 					nxm = vol.get_xsize()
 					assert(nx == nxm)
@@ -5801,7 +5797,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 			if myid == main_node:
 				nxm = templatevol.get_xsize()
 				if( nxm > nx ):
-					from fundamentals import rot_shift3D
+					from EMAN2.fundamentals import rot_shift3D
 					vol = Util.window(rot_shift3D(templatevol,scale=float(nx)/float(nxm)),nx,nx,nx)
 					nxm = vol.get_xsize()
 					assert(nx == nxm)
@@ -5981,7 +5977,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 				t2 = Transform({"type":"spider","phi":optm_params[0][0],"theta":optm_params[0][1],"psi":optm_params[0][2]})
 				t2.set_trans(Vec2f(-optm_params[0][3], -optm_params[0][4]))
 				dataim[imn].set_attr("xform.projection", t2)
-				from pixel_error import max_3D_pixel_error
+				from EMAN2.pixel_error import max_3D_pixel_error
 				pixer[imn] = max_3D_pixel_error(t1, t2, last_ring)
 				#set_params_proj(dataim[imn], optm_params[0])
 				#if( myid == main_node and imn%4 == 0):
@@ -6002,7 +5998,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 		terminate = 0
 		if(myid == main_node):
 			pixer = map(float, pixer)
-			from statistics import hist_list
+			from EMAN2.statistics import hist_list
 			lhist = 20
 			region, histo = hist_list(pixer, lhist)
 			log.add(" ")
@@ -6047,7 +6043,7 @@ def slocal_ali3d_base(stack, templatevol, Tracker, mpi_comm = None, log= None, c
 		"""
 		if( type(stack) is types.StringType ):
 			from EMAN2 import Vec2f, Transform
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			DB = db_open_dict(stack)
 			for im in xrange(len(params)):
 				t = Transform({"type":"spider","phi":params[im][0],"theta":params[im][1],"psi":params[im][2]})
@@ -6070,19 +6066,19 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 	    center = -1, maxit = 5, CTF = False, snr = 1.0,  ref_a = "S", sym = "c1",  user_func_name = "ref_ali3d",
 	    fourvar = True, npad = 4, debug = False, termprec = 0.0):
 
-	from alignment       import Numrinit, ringwe, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string
-	from utilities       import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities       import send_attr_dict
-	from utilities       import get_params_proj, file_type
-	from fundamentals    import rot_avg_image
+	from EMAN2.alignment import Numrinit, ringwe, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import get_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image
 	from utilities       import print_begin_msg, print_end_msg, print_msg
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi             import mpi_reduce, MPI_INT, MPI_SUM
-	from filter          import filt_ctf
-	from projection      import prep_vol, prgs
-	from statistics      import hist_list, varf3d_MPI
-	from applications    import MPI_start_end
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
 	import os
 	import types
 
@@ -6150,7 +6146,7 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -6190,12 +6186,12 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 	fscmask = mask3D  #model_circle(last_ring,nx,nx,nx)  For a fancy mask circle would work better  PAP 7/21/11
 	if CTF:
 		from reconstruction import rec3D_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import rec3D_MPI_noCTF
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import rec3D_MPI_noCTF
 
 	if myid == main_node:
 		if file_type(stack) == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, 'active')
@@ -6295,9 +6291,9 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 					data[im].set_attr("previousmax", peak)
 
 			else:
-				from morphology import  bracket_def
-				from utilities  import  assign_projangles, cone_ang
-				from alignment  import  refprojs
+				from EMAN2.morphology import bracket_def
+				from EMAN2.utilities import assign_projangles, cone_ang
+				from EMAN2.alignment import refprojs
 
 				h = 1.0
 				dat = [sym, numberofcones, ref_a]
@@ -6332,7 +6328,7 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 			terminate = 0
 			if myid == main_node:
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if region[0] < 0.0:  region[0] = 0.0
@@ -6356,7 +6352,7 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 			terminate = int(terminate[0])
 
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -6374,10 +6370,10 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 			par_str = ['xform.projection', 'previousmax', 'ID']
 			if myid == main_node:
 	   			if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
+	        			from EMAN2.utilities import recv_attr_dict_bdb
 	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        		else:
-	        			from utilities import recv_attr_dict
+	        			from EMAN2.utilities import recv_attr_dict
 	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 				print_msg("Time to write header information= %d\n"%(time()-start_time))
 				start_time = time()
@@ -6419,7 +6415,7 @@ def ali3dlocal_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 
 # Auxiliary function to compute number of cones in ali3dlocal
 def computenumberofrefs(x, dat):
-	from utilities import even_angles
+	from EMAN2.utilities import even_angles
 	#  dat = [sym, desired number of refs, ref_a]
 	return (len(even_angles(x, method = dat[2], symmetry = dat[0])) - dat[1])**2
 
@@ -6429,21 +6425,21 @@ def ali3dpsi_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 	    center = -1, maxit = 5, CTF = False, snr = 1.0,  ref_a = "S", sym = "c1",  user_func_name = "ref_ali3d",
 	    fourvar = True, npad = 4, debug = False, termprec = 0.0):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string
-	from utilities       import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities       import send_attr_dict
-	from utilities       import get_params_proj, set_params_proj, file_type
-	from fundamentals    import rot_avg_image
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image
 	import os
 	import types
 	from utilities       import print_begin_msg, print_end_msg, print_msg
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi             import mpi_reduce, MPI_INT, MPI_SUM
-	from filter          import filt_ctf
-	from projection      import prep_vol, prgs
-	from statistics      import hist_list, varf3d_MPI
-	from applications    import MPI_start_end
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
 
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
@@ -6509,7 +6505,7 @@ def ali3dpsi_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -6546,12 +6542,12 @@ def ali3dpsi_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 	fscmask = mask3D  #model_circle(last_ring,nx,nx,nx)  For a fancy mask circle would work better  PAP 7/21/11
 	if CTF:
 		from reconstruction import rec3D_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import rec3D_MPI_noCTF
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import rec3D_MPI_noCTF
 
 	if myid == main_node:
 		if file_type(stack) == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, 'active')
@@ -6633,7 +6629,7 @@ def ali3dpsi_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 			for im in xrange(nima):
 				phi,tht,psi,s2x,s2y = get_params_proj(data[im])
 				refim = prgs( volft,kb,[phi,tht,0.0,0.0,0.0] )
-				from alignment import align2d
+				from EMAN2.alignment import align2d
 				ang, sxs, sys, mirror, peak = align2d(data[im], refim, xrng=0.0, yrng=0.0, step=1, first_ring=first_ring, last_ring=last_ring, rstep=1, mode = "F")
 				if mirror > 0:
 					phi   = (540.0 + phi)%360.0
@@ -6670,10 +6666,10 @@ def ali3dpsi_MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 			par_str = ['xform.projection', 'previousmax', 'ID']
 			if myid == main_node:
 	   			if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
+	        			from EMAN2.utilities import recv_attr_dict_bdb
 	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        		else:
-	        			from utilities import recv_attr_dict
+	        			from EMAN2.utilities import recv_attr_dict
 	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 				print_msg("Time to write header information= %d\n"%(time()-start_time))
 				start_time = time()
@@ -6687,19 +6683,19 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 	    center = -1, maxit = 5, CTF = False, snr = 1.0,  ref_a = "S", sym = "c1",  user_func_name = "ref_ali3d",
 	    fourvar = True, npad = 4, debug = False, termprec = 0.0, gamma=-1):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi, shc
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string
-	from utilities       import bcast_list_to_all, bcast_number_to_all, bcast_EMData_to_all
-	from utilities       import send_attr_dict, get_params_proj, file_type
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi, shc
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, get_params_proj, file_type
 	import os
 	import types
 	from utilities       import print_begin_msg, print_end_msg, print_msg
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, MPI_INT
-	from projection      import prep_vol, prgs
-	from statistics      import hist_list, varf3d_MPI
-	from applications    import MPI_start_end
-	from math            import sqrt, acos, radians
-	from random          import shuffle
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, MPI_INT
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
+	from math import sqrt, acos, radians
+	from random import shuffle
 
 	if gamma > 0:
 		gamma = radians(gamma)
@@ -6767,7 +6763,7 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -6804,12 +6800,12 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 	fscmask = mask3D  #model_circle(last_ring,nx,nx,nx)  For a fancy mask circle would work better  PAP 7/21/11
 	if CTF:
 		from reconstruction import rec3D_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import rec3D_MPI_noCTF
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import rec3D_MPI_noCTF
 
 	if myid == main_node:
 		if file_type(stack) == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		active = EMUtil.get_all_attributes(stack, 'active')
 		list_of_particles = []
@@ -6952,7 +6948,7 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 			iter_indexes = range(nima)
 			shuffle(iter_indexes)
 			for im in iter_indexes:
-				from utilities import get_params_proj
+				from EMAN2.utilities import get_params_proj
 				#print "  IN  ",im,get_params_proj(data[im]),data[im].get_attr("previousmax")
 				peak, pixer[im], number_of_checked_refs, iref = \
 					shc0(data[im], cimages[im], refrings, numr, xrng[N_step], yrng[N_step], step[N_step], an[N_step], sym, finfo)
@@ -6988,7 +6984,7 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 			terminate = 0
 			if myid == main_node:
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if region[0] < 0.0:  region[0] = 0.0
@@ -7015,7 +7011,7 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 			#=========================================================================
 			# centering
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -7037,10 +7033,10 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 				par_str = ['xform.projection', 'previousmax', 'ID']
 				if myid == main_node:
 					if(file_type(stack) == "bdb"):
-						from utilities import recv_attr_dict_bdb
+						from EMAN2.utilities import recv_attr_dict_bdb
 						recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 					else:
-						from utilities import recv_attr_dict
+						from EMAN2.utilities import recv_attr_dict
 						recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 					"""
 					# save parameters to file
@@ -7050,7 +7046,7 @@ def Xali3d_shc0MPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs 
 						a1,a2,a3,a4,a5 = get_params_proj(projs_headers[im])
 						previousmax = projs_headers[im].get_attr("previousmax")
 						paro[im] = [a1,a2,a3,a4,a5,previousmax]
-					from utilities import write_text_row
+					from EMAN2.utilities import write_text_row
 					write_text_row(paro,os.path.join(outdir, "params%04d.txt"%(total_iter)))
 					final_params = paro
 					del projs_headers
@@ -7108,19 +7104,19 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 	    center = -1, maxit = 5, CTF = False, snr = 1.0,  ref_a = "S", sym = "c1",  user_func_name = "ref_ali3d",
 	    fourvar = True, npad = 4, debug = False, termprec = 0.0, gamma=-1):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi, shc
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string
-	from utilities       import bcast_list_to_all, bcast_number_to_all, bcast_EMData_to_all
-	from utilities       import send_attr_dict, get_params_proj, file_type
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi, shc
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, get_params_proj, file_type
 	import os
 	import types
 	from utilities       import print_begin_msg, print_end_msg, print_msg
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, MPI_INT
-	from projection      import prep_vol, prgs
-	from statistics      import hist_list, varf3d_MPI
-	from applications    import MPI_start_end
-	from math            import sqrt, acos, radians
-	from random          import shuffle
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, MPI_INT
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
+	from math import sqrt, acos, radians
+	from random import shuffle
 
 	if gamma > 0:
 		gamma = radians(gamma)
@@ -7188,7 +7184,7 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -7225,12 +7221,12 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 	fscmask = mask3D  #model_circle(last_ring,nx,nx,nx)  For a fancy mask circle would work better  PAP 7/21/11
 	if CTF:
 		from reconstruction import rec3D_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import rec3D_MPI_noCTF
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import rec3D_MPI_noCTF
 
 	if myid == main_node:
 		if file_type(stack) == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, 'active')
@@ -7351,7 +7347,7 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 			iter_indexes = range(nima)
 			shuffle(iter_indexes)
 			for im in iter_indexes:
-				from utilities import get_params_proj
+				from EMAN2.utilities import get_params_proj
 				#print "  IN  ",im,get_params_proj(data[im]),data[im].get_attr("previousmax")
 				peak, pixer[im], number_of_checked_refs, iref = \
 					shc(data[im], refrings, numr, xrng[N_step], yrng[N_step], step[N_step], an[N_step], sym, finfo)
@@ -7387,7 +7383,7 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 			terminate = 0
 			if myid == main_node:
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if region[0] < 0.0:  region[0] = 0.0
@@ -7414,7 +7410,7 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 			#=========================================================================
 			# centering
 			if center == -1 and sym[0] == 'c':
-				from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+				from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)
 				if myid == main_node:
 					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -7436,10 +7432,10 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 				par_str = ['xform.projection', 'previousmax', 'ID']
 				if myid == main_node:
 					if(file_type(stack) == "bdb"):
-						from utilities import recv_attr_dict_bdb
+						from EMAN2.utilities import recv_attr_dict_bdb
 						recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 					else:
-						from utilities import recv_attr_dict
+						from EMAN2.utilities import recv_attr_dict
 						recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 
 					'''
@@ -7450,7 +7446,7 @@ def ali3d_shcMPI(stack, ref_vol, outdir, maskfile = None, ir = 1, ou = -1, rs = 
 						a1,a2,a3,a4,a5 = get_params_proj(projs_headers[im])
 						previousmax = projs_headers[im].get_attr("previousmax")
 						paro[im] = [a1,a2,a3,a4,a5,previousmax]
-					from utilities import write_text_row
+					from EMAN2.utilities import write_text_row
 					write_text_row(paro,os.path.join(outdir, "params%04d.txt"%(total_iter)))
 					final_params = paro
 					del projs_headers
@@ -7508,14 +7504,14 @@ def mref_ali3d(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1, ir=
            xr = "4 2 2 1", yr = "-1", ts = "1 1 0.5 0.25", delta="10 6 4 4", an="-1", 
 	     center = 1.0, nassign = 3, nrefine = 1, CTF = False, snr = 1.0,  ref_a = "S", sym="c1",
 	     user_func_name="ref_ali3d", MPI=False, npad = 4, debug = False, fourvar=False, termprec = 0.0):
-	from utilities      import model_circle, drop_image, get_image, get_input_from_string
-	from utilities      import get_arb_params, set_arb_params, get_im, write_headers
-	from projection     import prep_vol, prgs
-	from utilities      import get_params_proj, estimate_3D_center
-	from alignment      import proj_ali_incore, proj_ali_incore_local, Numrinit, prepare_refrings
-	from filter	    import filt_params, filt_tanl
-	from fundamentals   import fshift
-	from statistics     import fsc_mask
+	from EMAN2.utilities import model_circle, drop_image, get_image, get_input_from_string
+	from EMAN2.utilities import get_arb_params, set_arb_params, get_im, write_headers
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.utilities import get_params_proj, estimate_3D_center
+	from EMAN2.alignment import proj_ali_incore, proj_ali_incore_local, Numrinit, prepare_refrings
+	from EMAN2.filter import filt_params, filt_tanl
+	from EMAN2.fundamentals import fshift
+	from EMAN2.statistics import fsc_mask
 	from utilities      import print_begin_msg, print_end_msg, print_msg
 
 	import os
@@ -7523,7 +7519,7 @@ def mref_ali3d(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1, ir=
 	# 2D alignment using rotational ccf in polar coords and linear
 	# interpolation	
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	
@@ -7542,10 +7538,10 @@ def mref_ali3d(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1, ir=
 	if (an == "-1"):
 		an = []
 		for i in xrange(len(xrng)):   an.append(-1)
-		from alignment	  import proj_ali_incore
+		from EMAN2.alignment import proj_ali_incore
 	else:
 		an = get_input_from_string(an)
-		from alignment	  import proj_ali_incore_local
+		from EMAN2.alignment import proj_ali_incore_local
 
 	first_ring  = int(ir)
 	rstep       = int(rs)
@@ -7562,7 +7558,7 @@ def mref_ali3d(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1, ir=
 
 	fscmask = model_circle(last_ring, nx, nx, nx)
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	print_msg("Input stack                 : %s\n"%(stack))
@@ -7616,8 +7612,8 @@ def mref_ali3d(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1, ir=
 		#  ERROR if ctf applied
 		if data[0].get_attr("ctf_applied") > 0:  ERROR("mref_ali3d does not work for CTF-applied data", "mref_ali3d", 1)
 		from reconstruction import recons3d_4nn_ctf
-		from filter import filt_ctf
-	else   : from reconstruction import recons3d_4nn
+		from EMAN2.filter import filt_ctf
+	else : from reconstruction import recons3d_4nn
 
 	# initialize data for the reference preparation function
 	ref_data = [mask3D, center, None, None]
@@ -7640,10 +7636,10 @@ def mref_ali3d(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1, ir=
 		peaks = [-1.0e23]*nima
 		trans = [tr_dummy]*nima
 		if(an[N_step] > 0):
-			from utilities    import even_angles
+			from EMAN2.utilities import even_angles
 			ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
 			# generate list of angles
-			from alignment import generate_list_of_reference_angles_for_search
+			from EMAN2.alignment import generate_list_of_reference_angles_for_search
 			list_of_reference_angles = \
 			generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
 			del ref_angles
@@ -7757,29 +7753,29 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
             nassign = 3, nrefine= 1, CTF = False, snr = 1.0,  ref_a="S", sym="c1",
 			user_func_name="ref_ali3d", npad = 2, debug = False, fourvar=False, termprec = 0.0,\
 			mpi_comm = None, log = None):
-	from utilities      import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
-	from utilities      import bcast_list_to_all, get_image, get_input_from_string, get_im
-	from utilities      import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, model_blank, wrap_mpi_bcast
-	from filter         import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
-	from utilities      import rotate_3D_shift,estimate_3D_center_MPI
-	from alignment      import Numrinit, prepare_refrings, proj_ali_incore
-	from random         import randint, random
-	from filter         import filt_ctf
+	from EMAN2.utilities import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
+	from EMAN2.utilities import bcast_list_to_all, get_image, get_input_from_string, get_im
+	from EMAN2.utilities import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, model_blank, wrap_mpi_bcast
+	from EMAN2.filter import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
+	from EMAN2.utilities import rotate_3D_shift,estimate_3D_center_MPI
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore
+	from random import randint, random
+	from EMAN2.filter import filt_ctf
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from projection     import prep_vol, prgs, project, prgq, gen_rings_ctf
-	from morphology     import binarize
+	from EMAN2.projection import prep_vol, prgs, project, prgq, gen_rings_ctf
+	from EMAN2.morphology import binarize
 
 	import os
 	import types
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, mpi_gatherv, mpi_scatterv, MPI_INT, MPI_SUM
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, mpi_gatherv, mpi_scatterv, MPI_INT, MPI_SUM
 
 
 	if mpi_comm == None: mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -7826,7 +7822,7 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 		an = []
 		for i in xrange(len(xrng)):   an.append(-1)
 	else:
-		from  alignment	    import proj_ali_incore_local
+		from EMAN2.alignment import proj_ali_incore_local
 		an      = get_input_from_string(an)
 
 	first_ring  = int(ir)
@@ -7841,7 +7837,7 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 	if last_ring < 0:	last_ring = nx//2 - 2
 
 	if (myid == main_node):
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		log.add("mref_ali3d_MPI")
 		log.add("Input stack                               : %s"%(stack))
@@ -7941,7 +7937,7 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 
 	if fourvar:
 		from reconstruction import rec3D_MPI
-		from statistics     import varf3d_MPI
+		from EMAN2.statistics import varf3d_MPI
 		#  Compute Fourier variance
 		vol, fscc = rec3D_MPI(data, snr, sym, model_circle(last_ring, nx, nx, nx), os.path.join(outdir, "resolution0000"), myid, main_node, finfo=frec, npad=npad)
 		varf = varf3d_MPI(data, os.path.join(outdir, "ssnr0000"), None, vol, last_ring, 1.0, 1, CTF, 1, sym, myid)
@@ -8014,10 +8010,10 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
  			trans = [ [ tr_dummy for im in xrange(nima) ] for iref in xrange(numref) ]
 			pixer = [ [  0.0     for im in xrange(nima) ] for iref in xrange(numref) ]
 			if(an[N_step] > 0):
-				from utilities    import even_angles
+				from EMAN2.utilities import even_angles
 				ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 				generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
 				del ref_angles
@@ -8109,7 +8105,7 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 
 		#  The while loop over even angles delta should start here.
 		#  prepare reference directions
-		from utilities import even_angles, getvec
+		from EMAN2.utilities import even_angles, getvec
 		refa = even_angles(60.0)
 		numrefang = len(refa)
 		refanorm = empty( (numrefang, 3), dtype = float32)
@@ -8153,7 +8149,7 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 		if myid == main_node:
 
 			for imrefa in xrange(numrefang):
-				from utilities import findall
+				from EMAN2.utilities import findall
 				N = findall(imrefa, assigntorefa)
 				current_nima = len(N)
 				if( current_nima >= numref and report_error == 0):
@@ -8197,7 +8193,7 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 			asi = [[] for iref in xrange(numref)]
 			report_error = 0
 			for imrefa in xrange(numrefang):
-				from utilities import findall
+				from EMAN2.utilities import findall
 				N = findall(imrefa, assigntorefa)
 				current_nima = len(N)
 				if( current_nima >= numref and report_error == 0):
@@ -8392,7 +8388,7 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 			mpi_barrier(MPI_COMM_WORLD)
 			if(myid == main_node):
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if(region[0] < 0.0):  region[0] = 0.0
@@ -8450,12 +8446,12 @@ def mref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1,
 			else:
 				par_str = ['group', 'ID' ]
 	        	if myid == main_node:
-				from utilities import file_type
+				from EMAN2.utilities import file_type
 	        		if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
+	        			from EMAN2.utilities import recv_attr_dict_bdb
 	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        		else:
-	        			from utilities import recv_attr_dict
+	        			from EMAN2.utilities import recv_attr_dict
 	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        	else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
 			if(myid == 0):
@@ -8473,28 +8469,28 @@ def Kmref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1
             xr ="4 2  2  1", yr="-1", ts="1 1 0.5 0.25",   delta="10  6  4  4", an="-1",
 	      center = -1, nassign = 3, nrefine= 1, CTF = False, snr = 1.0,  ref_a="S", sym="c1",
 	      user_func_name="ref_ali3d", npad = 4, debug = False, fourvar=False, termprec = 0.0, mpi_comm = None, log = None): 
-	from utilities      import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
-	from utilities      import bcast_list_to_all, get_image, get_input_from_string, get_im
-	from utilities      import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, model_blank
-	from filter         import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
-	from utilities      import rotate_3D_shift,estimate_3D_center_MPI
-	from alignment      import Numrinit, prepare_refrings, proj_ali_incore
-	from random         import randint
-	from filter         import filt_ctf
+	from EMAN2.utilities import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
+	from EMAN2.utilities import bcast_list_to_all, get_image, get_input_from_string, get_im
+	from EMAN2.utilities import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, model_blank
+	from EMAN2.filter import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
+	from EMAN2.utilities import rotate_3D_shift,estimate_3D_center_MPI
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore
+	from random import randint
+	from EMAN2.filter import filt_ctf
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from projection     import prep_vol, prgs, project, prgq, gen_rings_ctf
+	from EMAN2.projection import prep_vol, prgs, project, prgq, gen_rings_ctf
 	import os
 	import types
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	
 	if mpi_comm == None: mpi_comm = MPI_COMM_WORLD
 	number_of_proc = mpi_comm_size(mpi_comm)
 	myid           = mpi_comm_rank(mpi_comm)
 	main_node = 0
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log =Logger()
 
 	if os.path.exists(outdir): ERROR('Output directory exists, please change the name and restart the program', "mref_ali3d_MPI ", 1, myid)
@@ -8531,7 +8527,7 @@ def Kmref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1
 		an = []
 		for i in xrange(len(xrng)):   an.append(-1)
 	else:
-		from  alignment	    import proj_ali_incore_local
+		from EMAN2.alignment import proj_ali_incore_local
 		an      = get_input_from_string(an)
 
 	first_ring  = int(ir)
@@ -8548,7 +8544,7 @@ def Kmref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1
 	fscmask = model_circle(last_ring, nx, nx, nx)
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		log.add("Input stack                 : %s"%(stack))
 		log.add("Reference volumes           : %s"%(ref_vol))	
@@ -8617,7 +8613,7 @@ def Kmref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1
 
 	if fourvar:
 		from reconstruction import rec3D_MPI
-		from statistics     import varf3d_MPI
+		from EMAN2.statistics import varf3d_MPI
 		#  Compute Fourier variance
 		vol, fscc = rec3D_MPI(data, snr, sym, fscmask, os.path.join(outdir, "resolution0000"), myid, main_node, finfo=frec, npad=npad)
 		varf = varf3d_MPI(data, os.path.join(outdir, "ssnr0000"), None, vol, last_ring, 1.0, 1, CTF, 1, sym, myid)
@@ -8672,10 +8668,10 @@ def Kmref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1
 			trans = [tr_dummy]*nima
 			pixer = [0.0]*nima
 			if(an[N_step] > 0):
-				from utilities    import even_angles
+				from EMAN2.utilities import even_angles
 				ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 				generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
 				del ref_angles
@@ -8814,7 +8810,7 @@ def Kmref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1
 			mpi_barrier(MPI_COMM_WORLD)
 			if myid == main_node:
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if region[0] < 0.0:  region[0] = 0.0
@@ -8894,12 +8890,12 @@ def Kmref_ali3d_MPI(stack, ref_vol, outdir, maskfile=None, focus = None, maxit=1
         else:
                 par_str = ['group', 'ID' ]
 	if myid == main_node:
-		from utilities import file_type
+		from EMAN2.utilities import file_type
 		if file_type(stack) == "bdb":
-			from utilities import recv_attr_dict_bdb
+			from EMAN2.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		else:
-			from utilities import recv_attr_dict
+			from EMAN2.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
 	if myid == main_node:
@@ -8922,22 +8918,22 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 	"""
 	  Focus on intersubunit region	
 	"""
-	from alignment	    import eqproj_cascaded_ccc
-	from filter         import filt_ctf, filt_params, filt_table, filt_from_fsc, filt_btwl, filt_tanl, filt_vols
-	from fundamentals   import fshift, rot_avg_image
-	from projection     import prep_vol, prgs, project
-	from utilities      import amoeba_multi_level, model_circle, get_arb_params, set_arb_params, drop_spider_doc
-	from utilities      import bcast_number_to_all, bcast_list_to_all,get_image, drop_image, bcast_EMData_to_all, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, get_im
+	from EMAN2.alignment import eqproj_cascaded_ccc
+	from EMAN2.filter import filt_ctf, filt_params, filt_table, filt_from_fsc, filt_btwl, filt_tanl, filt_vols
+	from EMAN2.fundamentals import fshift, rot_avg_image
+	from EMAN2.projection import prep_vol, prgs, project
+	from EMAN2.utilities import amoeba_multi_level, model_circle, get_arb_params, set_arb_params, drop_spider_doc
+	from EMAN2.utilities import bcast_number_to_all, bcast_list_to_all,get_image, drop_image, bcast_EMData_to_all, send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, get_im
 	from utilities      import model_blank, print_begin_msg, print_msg, print_end_msg, file_type
 	from reconstruction import rec3D_MPI
-	from statistics     import ccc
-	from pixel_error    import max_3D_pixel_error
-	from math           import pi, sqrt
-	from string         import replace
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+	from EMAN2.statistics import ccc
+	from EMAN2.pixel_error import max_3D_pixel_error
+	from math import pi, sqrt
+	from string import replace
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 	from EMAN2 import Processor
 	import os
 	import sys
@@ -8980,7 +8976,7 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 	ou = int(ou)
 	if(ou <= 0):  ou = nx//2-2
 	if maskfile:
-		import  types
+		import types
 		if(type(maskfile) is types.StringType): 
 			mask3D = get_image(maskfile)
 		else:   
@@ -8993,7 +8989,7 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 
 	numref = EMUtil.get_image_count(refvol)
 	if myid==main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		for krf in xrange(numref):
 			vol = get_im(refvol, krf)
@@ -9010,7 +9006,7 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 
 	if(myid == main_node):
 		if(file_type(stack) == "bdb"):
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, "active")
@@ -9057,7 +9053,7 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 	if fourvar:
 		#  I am not sure why it is here!  PAP 09/26/09
 		from reconstruction import rec3D_MPI
-		from statistics     import varf3d_MPI
+		from EMAN2.statistics import varf3d_MPI
 		#  Compute Fourier variance
 		vol, fscc = rec3D_MPI(data, snr, sym, fscmask, os.path.join(outdir, "resolution0000"), myid, main_node, finfo=finfo)
 		varf = varf3d_MPI(data, os.path.join(outdir, "ssnr0000"), None, vol, int(ou), 1.0, 1, CTF, 1, sym, myid)
@@ -9094,7 +9090,7 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 	else:
 		momm =  model_blank(nx, nx, nx)
 	bcast_EMData_to_all(momm, myid, main_node)
-	from projection import project
+	from EMAN2.projection import project
 	
 
 
@@ -9232,7 +9228,7 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 			mpi_barrier(MPI_COMM_WORLD)
 			if(myid == main_node):
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if(region[0] < 0.0):  region[0] = 0.0
@@ -9293,12 +9289,12 @@ def local_ali3dm_MPI_(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25,
 			par_str = ["group", "ID"]
 
 	        if myid == main_node:
-			from utilities import file_type
+			from EMAN2.utilities import file_type
 	        	if(file_type(stack) == "bdb"):
-	        		from utilities import recv_attr_dict_bdb
+	        		from EMAN2.utilities import recv_attr_dict_bdb
 	        		recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        	else:
-	        		from utilities import recv_attr_dict
+	        		from EMAN2.utilities import recv_attr_dict
 	        		recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
 		if myid == main_node:
@@ -9327,22 +9323,22 @@ def local_ali3dm_MPI(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25, 
 	"""
 	  The original, fully operational version	
 	"""
-	from alignment	    import eqproj_cascaded_ccc
-	from filter         import filt_ctf, filt_params, filt_table, filt_from_fsc, filt_btwl, filt_tanl, filt_vols
-	from fundamentals   import fshift, rot_avg_image
-	from projection     import prep_vol, prgs, project
-	from utilities      import amoeba_multi_level, model_circle, get_arb_params, set_arb_params, drop_spider_doc
-	from utilities      import bcast_number_to_all, bcast_list_to_all,get_image, drop_image, bcast_EMData_to_all, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, get_im
+	from EMAN2.alignment import eqproj_cascaded_ccc
+	from EMAN2.filter import filt_ctf, filt_params, filt_table, filt_from_fsc, filt_btwl, filt_tanl, filt_vols
+	from EMAN2.fundamentals import fshift, rot_avg_image
+	from EMAN2.projection import prep_vol, prgs, project
+	from EMAN2.utilities import amoeba_multi_level, model_circle, get_arb_params, set_arb_params, drop_spider_doc
+	from EMAN2.utilities import bcast_number_to_all, bcast_list_to_all,get_image, drop_image, bcast_EMData_to_all, send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, get_im
 	from utilities      import model_blank, print_begin_msg, print_msg, print_end_msg, file_type
 	from reconstruction import rec3D_MPI
-	from statistics     import ccc
-	from pixel_error    import max_3D_pixel_error
-	from math           import pi, sqrt
-	from string         import replace
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+	from EMAN2.statistics import ccc
+	from EMAN2.pixel_error import max_3D_pixel_error
+	from math import pi, sqrt
+	from string import replace
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 	from EMAN2 import Processor
 	import os
 	import sys
@@ -9386,7 +9382,7 @@ def local_ali3dm_MPI(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25, 
 	ou = int(ou)
 	if(ou <= 0):  ou = nx//2-2
 	if maskfile:
-		import  types
+		import types
 		if(type(maskfile) is types.StringType): 
 			mask3D = get_image(maskfile)
 		else:   
@@ -9399,7 +9395,7 @@ def local_ali3dm_MPI(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25, 
 
 	numref = EMUtil.get_image_count(refvol)
 	if myid==main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		for krf in xrange(numref):
 			vol = get_im(refvol, krf)
@@ -9417,7 +9413,7 @@ def local_ali3dm_MPI(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25, 
 
 	if(myid == main_node):
 		if(file_type(stack) == "bdb"):
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, "active")
@@ -9464,7 +9460,7 @@ def local_ali3dm_MPI(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25, 
 	if fourvar:
 		#  I am not sure why it is here!  PAP 09/26/09
 		from reconstruction import rec3D_MPI
-		from statistics     import varf3d_MPI
+		from EMAN2.statistics import varf3d_MPI
 		#  Compute Fourier variance
 		vol, fscc = rec3D_MPI(data, snr, sym, fscmask, os.path.join(outdir, "resolution0000"), myid, main_node, finfo=finfo, npad = npad)
 		varf = varf3d_MPI(data, os.path.join(outdir, "ssnr0000"), None, vol, int(ou), 1.0, 1, CTF, 1, sym, myid)
@@ -9627,7 +9623,7 @@ def local_ali3dm_MPI(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25, 
 			mpi_barrier(MPI_COMM_WORLD)
 			if(myid == main_node):
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if(region[0] < 0.0):  region[0] = 0.0
@@ -9689,12 +9685,12 @@ def local_ali3dm_MPI(stack, refvol, outdir, maskfile, ou=-1,  delta=2, ts=0.25, 
 			par_str = ["group", "ID"]
 
 	        if myid == main_node:
-			from utilities import file_type
+			from EMAN2.utilities import file_type
 	        	if(file_type(stack) == "bdb"):
-	        		from utilities import recv_attr_dict_bdb
+	        		from EMAN2.utilities import recv_attr_dict_bdb
 	        		recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        	else:
-	        		from utilities import recv_attr_dict
+	        		from EMAN2.utilities import recv_attr_dict
 	        		recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
 		if myid == main_node:
@@ -9730,13 +9726,13 @@ def local_ali3d(stack, outdir, maskfile = None, ou = -1,  delta = 2, ts=0.25, ce
 				fourvar, npad, debug)
 		return
 
-	from alignment      import eqproj_cascaded_ccc
-	from projection     import prep_vol
-	from utilities      import model_circle, get_params_proj, set_params_proj
-	from utilities      import get_image, drop_image
-	from utilities      import amoeba_multi_level, rotate_3D_shift, estimate_3D_center
-	from math           import pi
-	from statistics     import fsc_mask
+	from EMAN2.alignment import eqproj_cascaded_ccc
+	from EMAN2.projection import prep_vol
+	from EMAN2.utilities import model_circle, get_params_proj, set_params_proj
+	from EMAN2.utilities import get_image, drop_image
+	from EMAN2.utilities import amoeba_multi_level, rotate_3D_shift, estimate_3D_center
+	from math import pi
+	from EMAN2.statistics import fsc_mask
 	from utilities      import print_begin_msg, print_end_msg, print_msg
 	from EMAN2 import Processor
 	import os 
@@ -9749,7 +9745,7 @@ def local_ali3d(stack, outdir, maskfile = None, ou = -1,  delta = 2, ts=0.25, ce
 	
 	print_begin_msg('local_ali3d')
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 
 	if CTF:
@@ -9759,8 +9755,8 @@ def local_ali3d(stack, outdir, maskfile = None, ou = -1,  delta = 2, ts=0.25, ce
 		del ima
 		if ctf_applied == 1:  ERROR("local_ali3d does not work for CTF-applied data", "local_ali3d", 1)
 		from reconstruction import recons3d_4nn_ctf
-		from filter         import filt_ctf
-	else   : from reconstruction import recons3d_4nn
+		from EMAN2.filter import filt_ctf
+	else : from reconstruction import recons3d_4nn
 
 	last_ring   = int(ou)
 	max_iter    = int(maxit)
@@ -9788,7 +9784,7 @@ def local_ali3d(stack, outdir, maskfile = None, ou = -1,  delta = 2, ts=0.25, ce
 	print_msg("User function               : %s\n"%(user_func_name))
 	
 	if maskfile:
-		import  types
+		import types
 		if type(maskfile) is types.StringType:  mask3D = get_image(maskfile)
 		else:                                  mask3D = maskfile
 	else:
@@ -9900,7 +9896,7 @@ def local_ali3d(stack, outdir, maskfile = None, ou = -1,  delta = 2, ts=0.25, ce
 					ctf_params = dataim[imn].get_attr( "ctf" )
 					if ctf_params.defocus != previous_defocus:
 						previous_defocus = ctf_params.defocus
-						data[0], data[1] = prep_vol(filt_ctf(vol, ctf_params, dopad=False))
+						data[0], data[1] = prep_vol(filt_ctf(vol, ctf_params))
 
 				data[2] = dataim[imn]
 
@@ -9939,7 +9935,7 @@ def local_ali3d(stack, outdir, maskfile = None, ou = -1,  delta = 2, ts=0.25, ce
 				set_params_proj(dataim[imn], optm_params[0])
 
 			#  here we write header infomation
-			from utilities import write_headers
+			from EMAN2.utilities import write_headers
 			#write_headers(stack, dataim, list_of_particles)
 
 
@@ -9949,19 +9945,19 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 	"""
 		
 	"""
-	from alignment        import eqproj_cascaded_ccc
-	from filter           import filt_ctf
-	from projection       import prep_vol
-	from utilities        import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
-	from utilities        import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict
-	from utilities        import get_image, drop_image, file_type
-	from utilities        import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
+	from EMAN2.alignment import eqproj_cascaded_ccc
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol
+	from EMAN2.utilities import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
+	from EMAN2.utilities import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict
+	from EMAN2.utilities import get_image, drop_image, file_type
+	from EMAN2.utilities import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
 	from utilities        import print_begin_msg, print_end_msg, print_msg
-	from reconstruction   import rec3D_MPI, rec3D_MPI_noCTF
-	from statistics       import varf3d_MPI
-	from math             import pi
-	from mpi              import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi              import mpi_reduce, MPI_INT, MPI_SUM
+	from reconstruction import rec3D_MPI, rec3D_MPI_noCTF
+	from EMAN2.statistics import varf3d_MPI
+	from math import pi
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	from EMAN2 import Processor
 	from EMAN2 import Vec2f
 	import os
@@ -9972,7 +9968,7 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
 
 	if CTF:
-		from filter import filt_ctf
+		from EMAN2.filter import filt_ctf
 
 	main_node = 0
 	
@@ -10008,7 +10004,7 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 
 	if myid == main_node:
 		if(file_type(stack) == "bdb"):
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, 'active')
@@ -10046,7 +10042,7 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 	n_of_chunks = int(1.0/chunk)
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -10064,7 +10060,7 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 		print_msg("User function               : %s\n\n"%(user_func_name))
 
 	if maskfile:
-		import  types
+		import types
 		if type(maskfile) is types.StringType:  mask3D = get_image(maskfile)
 		else:                                  mask3D = maskfile
 	else:
@@ -10210,7 +10206,7 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 					ctf_params = dataim[imn-image_start].get_attr( "ctf" )
 					if ctf_params.defocus != previous_defocus:
 						previous_defocus = ctf_params.defocus
-						data[0], data[1] = prep_vol(filt_ctf(vol, ctf_params, dopad = False))
+						data[0], data[1] = prep_vol(filt_ctf(vol, ctf_params))
 
 				data[2] = dataim[imn-image_start]
 				if ts > 0.0:
@@ -10250,7 +10246,7 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 				t2 = Transform({"type":"spider","phi":optm_params[0][0],"theta":optm_params[0][1],"psi":optm_params[0][2]})
 				t2.set_trans(Vec2f(-optm_params[0][3], -optm_params[0][4]))
 				dataim[imn-image_start].set_attr("xform.projection", t2)
-				from pixel_error import max_3D_pixel_error
+				from EMAN2.pixel_error import max_3D_pixel_error
 				pixer[imn-image_start] = max_3D_pixel_error(t1, t2, last_ring)
 				#set_params_proj(dataim[imn-image_start], optm_params[0])
 				if( myid == main_node ):
@@ -10263,12 +10259,12 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 			mpi_barrier(MPI_COMM_WORLD)
 			par_str = ['xform.projection', 'ID']
 			if myid == main_node:
-				from utilities import file_type
+				from EMAN2.utilities import file_type
 				if(file_type(stack) == "bdb"):
-					from utilities import recv_attr_dict_bdb
+					from EMAN2.utilities import recv_attr_dict_bdb
 					recv_attr_dict_bdb(main_node, stack, dataim, par_str, image_start, image_end, number_of_proc)
 				else:
-					from utilities import recv_attr_dict
+					from EMAN2.utilities import recv_attr_dict
 					recv_attr_dict(main_node, stack, dataim, par_str, image_start, image_end, number_of_proc)
 			else:	        send_attr_dict(main_node, dataim, par_str, image_start, image_end)
 			if myid == main_node:
@@ -10282,385 +10278,7 @@ def local_ali3d_MPI(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, cente
 		terminate = 0
 		if(myid == main_node):
 			recvbuf = map(float, recvbuf)
-			from statistics import hist_list
-			lhist = 20
-			region, histo = hist_list(recvbuf, lhist)
-			if(region[0] < 0.0):  region[0] = 0.0
-			msg = "      Histogram of pixel errors\n      ERROR       number of particles\n"
-			print_msg(msg)
-			for lhx in xrange(lhist):
-				msg = " %10.3f     %7d\n"%(region[lhx], histo[lhx])
-				print_msg(msg)
-			# Terminate if 95% within 1 pixel error
-			im = 0
-			for lhx in xrange(lhist):
-				if(region[lhx] > 1.0): break
-				im += histo[lhx]
-			if(im/float(total_nima) > 0.95):  terminate = 1
-			del region, histo
-		del recvbuf
-		terminate = mpi_bcast(terminate, 1, MPI_INT, 0, MPI_COMM_WORLD)
-		terminate = int(terminate[0])
-
-
-def local_ali3d_MPI_scipy_minimization(stack, outdir, maskfile, ou = -1,  delta = 2, ts=0.25, center = -1, maxit = 10, 
-                CTF = False, snr = 1.0, sym = "c1", chunk = -1.0, user_func_name = "ref_ali3d",
-		    fourvar = True, npad = 4, debug = False):
-	"""
-		
-	"""
-	from scipy.optimize import minimize
-	from fundamentals import fft
-	from alignment        import eqproj_cascaded_ccc, objective_function_just_ccc_has_maximum, objective_function_just_ccc_has_minimum, objective_function_just_ccc_has_minimum_reduced
-	from filter           import filt_ctf
-	from projection       import prep_vol
-	from utilities        import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
-	from utilities        import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict
-	from utilities        import get_image, drop_image, file_type
-	from utilities        import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
-	from utilities        import print_begin_msg, print_end_msg, print_msg
-	from reconstruction   import rec3D_MPI, rec3D_MPI_noCTF
-	from statistics       import varf3d_MPI
-	from math             import pi
-	from mpi              import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi              import mpi_reduce, MPI_INT, MPI_SUM
-	from EMAN2 import Processor
-	from EMAN2 import Vec2f
-	import os
-	import sys
-
-
-	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
-	myid = mpi_comm_rank(MPI_COMM_WORLD)
-
-	if CTF:
-		from filter import filt_ctf
-
-	main_node = 0
-	
-	if os.path.exists(outdir):  ERROR('Output directory exists, please change the name and restart the program', "local_ali3d_MPI ", 1,myid)
-	mpi_barrier(MPI_COMM_WORLD)
-
-	if myid == main_node:
-		os.mkdir(outdir)
-		import global_def
-		global_def.LOGFILE =  os.path.join(outdir, global_def.LOGFILE)
-		print_begin_msg("local_ali3d_MPI")
-		if CTF:
-			ima = EMData()
-			ima.read_image(stack, 0)
-			ctf_applied = ima.get_attr_default("ctf_applied", 0)
-			del ima
-			if ctf_applied == 1:  ERROR("local_ali3d does not work for CTF-applied data", "local_ali3d_MPI", 1,myid)
-	mpi_barrier(MPI_COMM_WORLD)
-
-	########## I52DqDNCvGHVn4uZ
-	# debug = myid == 7
-	# debug = myid in [7,8,9,10]
-	# debug = myid in list(range(number_of_proc))
-
-	if debug:
-		from time import sleep
-		while not os.path.exists(outdir):
-			print  "Node ",myid,"  waiting..."
-			sleep(5)
-
-		finfo = open(os.path.join(outdir, "progress%04d"%myid), 'w')
-	else:
-		finfo = None
-
-	last_ring   = int(ou)
-	max_iter    = int(maxit)
-	center      = int(center)
-
-	if myid == main_node:
-		if(file_type(stack) == "bdb"):
-			from EMAN2db import db_open_dict
-			dummy = db_open_dict(stack, True)
-			
-		nima = EMUtil.get_image_count(stack)
-		list_of_particles = range(nima)
-			
-		ima     = EMData()
-		ima.read_image(stack, 0)
-		nx      = ima.get_xsize()
-		del ima
-	else:
-		nima = 0
-		nx = 0
-	total_nima = bcast_number_to_all(nima, source_node = main_node)
-	nx = bcast_number_to_all(nx, source_node = main_node)
-
-	if myid != main_node:
-		list_of_particles = [-1]*total_nima
-	list_of_particles = bcast_list_to_all(list_of_particles, myid,  source_node = main_node)
-
-	image_start, image_end = MPI_start_end(total_nima, number_of_proc, myid)
-	# create a list of images for each node
-	list_of_particles = list_of_particles[image_start: image_end]
-	nima = len(list_of_particles)
-
-	if last_ring < 0:	last_ring = int(nx/2) - 2
-
-	if chunk <= 0.0:  chunk = 1.0
-	n_of_chunks = int(1.0/chunk)
-
-	if myid == main_node:
-		import user_functions
-		user_func = user_functions.factory[user_func_name]
-
-		print_msg("Input stack                 : %s\n"%(stack))
-		print_msg("Output directory            : %s\n"%(outdir))
-		print_msg("Maskfile                    : %s\n"%(maskfile))
-		print_msg("Outer radius                : %i\n"%(last_ring))
-		print_msg("Angular search range        : %s\n"%(delta))
-		print_msg("Shift search range          : %f\n"%(ts))
-		print_msg("Maximum iteration           : %i\n"%(max_iter))
-		print_msg("Center type                 : %i\n"%(center))
-		print_msg("CTF correction              : %s\n"%(CTF))
-		print_msg("Signal-to-Noise Ratio       : %f\n"%(snr))
-		print_msg("Symmetry group              : %s\n"%(sym))
-		print_msg("Chunk size                  : %f\n"%(chunk))
-		print_msg("User function               : %s\n\n"%(user_func_name))
-
-	if maskfile:
-		import  types
-		if type(maskfile) is types.StringType:  mask3D = get_image(maskfile)
-		else:                                  mask3D = maskfile
-	else:
-		mask3D = model_circle(last_ring, nx, nx, nx)
-	mask2D = model_circle(last_ring, nx, nx)
-
-	if debug:
-		finfo.write( "image_start, image_end: %d %d\n" %(image_start, image_end) )
-		finfo.flush()
-
-	if debug:
-		finfo.write("  chunk = "+str(chunk)+"   ")
-		finfo.write("\n")
-		finfo.flush()
-		finfo.write("  Number of chunks = "+str(n_of_chunks)+"   ")
-		finfo.write("\n")
-		finfo.flush()
-
-	dataim = EMData.read_images(stack, list_of_particles)
-	for im in xrange(len(dataim)):
-		dataim[im].set_attr('ID', list_of_particles[im])
-		if CTF:
-			ctf_params = dataim[im].get_attr("ctf")
-			st = Util.infomask(dataim[im], mask2D, False)
-			dataim[im] -= st[0]
-			dataim[im] = filt_ctf(dataim[im], ctf_params)
-			dataim[im].set_attr('ctf_applied', 1)
-	del list_of_particles
-
-	if debug:
-		finfo.write("  First image on this processor: "+str(image_start)+"   ")
-		finfo.write("  Last  image on this processor: "+str(image_end)+"   ")
-		finfo.write("\n")
-		finfo.flush()
-
-	if myid == main_node:
-		# initialize data for the reference preparation function
-		ref_data = [ mask3D, max(center,0), None, None, None ]
-		# for method -1, switch off centering in user function
-		ref_data.append( None )
-
-	from time import time	
-		
-	M = nx
-	npad = 2
-	N = M*npad
-	K = 6
-	alpha = 1.75
-	r = M/2
-	v = K/2.0/N
-	params = {"filter_type": Processor.fourier_filter_types.KAISER_SINH_INVERSE, "alpha":alpha, "K":K, "r":r, "v":v, "N":N}
-
-
-	disps = []
-	recvcount = []
-	for im in xrange(number_of_proc):
-		if( im == main_node ):  disps.append(0)
-		else:                  disps.append(disps[im-1] + recvcount[im-1])
-		ib, ie = MPI_start_end(total_nima, number_of_proc, im)
-		recvcount.append( ie - ib )
-
-	#  this is needed for gathering of pixel errors
-	pixer = [0.0]*nima
-	data = [None]*7
-	data[3] = mask2D
-	cs = [0.0]*3
-
-	for iteration in xrange(maxit+1):
-		if myid == main_node:
-			start_time = time()
-			print_msg("ITERATION #%3d\n"%(iteration+1))
-		if debug:
-			finfo.write("  iteration = "+str(iteration)+"   ")
-			finfo.write("\n")
-			finfo.flush()
-		for ic in xrange(n_of_chunks):
-			if(center == -1 and sym[0] == 'c'):
-				if debug:
-					finfo.write("  begin centering \n")
-					finfo.flush()
-				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(dataim, total_nima, myid, number_of_proc, main_node)
-				cs = mpi_bcast(cs, 3, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-				cs = [-float(cs[0]), -float(cs[1]), -float(cs[2])]
-				if int(sym[1]) > 1:
-					cs[0] = cs[1] = 0.0
-				rotate_3D_shift(dataim, cs)
-				if myid == main_node:
-					msg = "Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
-					print_msg(msg)
-					print_msg("Time to center = %d\n"%(time()-start_time))
-					start_time = time()
-			# compute updated 3D before each chunk
-				# resolution
-			if debug:
-				finfo.write("  begin reconstruction = "+str(image_start))
-				finfo.write("\n")
-				finfo.flush()
-
-			if CTF: vol, fscc = rec3D_MPI(dataim, snr, sym, mask3D, os.path.join(outdir, "resolution%03d_%03d"%(iteration, ic)), myid, main_node, npad = npad)
-			else:   vol, fscc = rec3D_MPI_noCTF(dataim, sym, mask3D, os.path.join(outdir, "resolution%03d_%03d"%(iteration, ic)), myid, main_node, npad = npad)
-
-			if myid == main_node:
-				drop_image(vol, os.path.join(outdir, "vol%03d_%03d.hdf"%(iteration, ic) ))
-				print_msg("3D reconstruction time = %d\n"%(time()-start_time))
-				start_time = time()
-			if debug:
-				finfo.write("  done reconstruction = "+str(image_start))
-				finfo.write("\n")
-				finfo.flush()
-
-			if fourvar:
-			#  Compute Fourier variance
-				varf = varf3d_MPI(dataim, ssnr_text_file = os.path.join(outdir, "ssnr%03d_%03d"%(iteration, ic)), mask2D = None, reference_structure = vol, ou = ou, rw = 1.0, npad = 1, CTF = CTF, sign = 1, sym =sym, myid = myid)
-				if myid == main_node:
-					varf = 1.0/varf
-					print_msg("Time to calculate 3D Fourier variance= %d\n"%(time()-start_time))
-					start_time = time()
-
-			else:  varf = None
-			if myid == main_node:
-				ref_data[2] = vol
-				ref_data[3] = fscc
-				ref_data[4] = varf
-				#  call user-supplied function to prepare reference image, i.e., filter it
-				# When center = -1, which is by default, we use the average center method
-				ref_data[1] = 0
-				vol, dummy = user_func(ref_data)
-				drop_image(vol, os.path.join(outdir, "volf%03d_%03d.hdf"%(iteration, ic)))
-			del varf
-
-			# in last iteration return here
-			if(iteration == maxit):
-				if myid == main_node: print_end_msg("local_ali3d_MPI")
-				return
-			bcast_EMData_to_all(vol, myid, main_node)
-
-			data[0] = prep_vol(vol, 1, 1)
-
-			image_start_in_chunk = image_start + ic*nima/n_of_chunks
-			image_end_in_chunk   = image_start + (ic+1)*nima/n_of_chunks
-			if debug:
-				finfo.write("Chunk "+str(ic)+"   Number of images in this chunk: "+str(image_end_in_chunk-image_start_in_chunk)+"\n")
-				finfo.write("First image in this chunk: "+str(image_start_in_chunk)+"   Last image in this chunk: "+str(image_end_in_chunk-1)+"\n")
-				finfo.flush()
-
-			for imn in xrange(image_start_in_chunk, image_end_in_chunk):
-				data[2] = fft(dataim[imn-image_start])
-				data[2].set_attr("is_complex",0)
-	
-				#phi, theta, psi, tx, ty = get_params_proj(dataim[imn-image_start])
-				t1 = dataim[imn-image_start].get_attr("xform.projection")
-				dp = t1.get_params("spider")
-				atparams = [dp["phi"], dp["theta"], dp["psi"]]
-				data[5] = [dp["tx"], dp["ty"]]
-				if debug:
-					# we have to distiguish between no shift situation, which is done through ccc, and shift, which is done using gridding in 2D
-					if(ts == 0.0):  data[6] = 0.0
-					# else:           data[6] = -1.0#ts#-1.0
-					else:           data[6] = ts
-	
-					finfo.write('Old  %6.2f  %6.2f  %6.2f   %5.2f  %5.2f\n'%(atparams[0],atparams[1],atparams[2], data[5][0], data[5][1]))
-	
-				# change signs of shifts for projections
-				data[6] = ts
-				#from random import random
-				#data[5] = [(random()-0.5)*2,(random()-0.5)*2]  #  HERE !!!!!!!!!!!
-	
-				# region cobyla
-				atparams_for_minimize = atparams + data[5]
-				
-				total_number_of_function_calls = 0
-				res = minimize(objective_function_just_ccc_has_minimum, atparams_for_minimize, (data,), method='COBYLA')
-				total_number_of_function_calls += res.nfev
-				result = res.x.tolist()
-				data[5] = result[3:5]
-				res = minimize(objective_function_just_ccc_has_minimum_reduced, result[0:3], (data,), method='COBYLA')
-				total_number_of_function_calls += res.nfev
-				result = res.x.tolist() + data[5]
-				res = minimize(objective_function_just_ccc_has_minimum, result, (data,), method='COBYLA')
-				total_number_of_function_calls += res.nfev
-
-				optm_params = [[], 0, 0, 0]
-				optm_params[0] = res.x.tolist()
-				optm_params[0][3] *= -1
-				optm_params[0][4] *= -1
-				
-				optm_params[1] = res.fun
-				# optm_params[2] = res.nfev
-				optm_params[2] = total_number_of_function_calls
-				# endregion
-	
-	
-
-	
-				if debug:
-					# finfo.write('New  %6.1f  %6.1f  %6.1f   %5.2f  %5.2f  %11.4e  %4d, time_dur=%4d  %6.1f\n'%(optm_params[0][0], optm_params[0][1], optm_params[0][2], optm_params[0][3], optm_params[0][4], optm_params[1], optm_params[2], time_duration_user, optm_params[3]))
-					finfo.write('New  %6.2f  %6.2f  %6.2f   %5.2f  %5.2f  %11.4e  %4d\n'%(optm_params[0][0], optm_params[0][1], optm_params[0][2], optm_params[0][3], optm_params[0][4], optm_params[1], optm_params[2]))
-					finfo.flush()
-				#from sys import exit
-				#exit()
-				t2 = Transform({"type":"spider","phi":optm_params[0][0],"theta":optm_params[0][1],"psi":optm_params[0][2]})
-				t2.set_trans(Vec2f(-optm_params[0][3], -optm_params[0][4]))
-				dataim[imn-image_start].set_attr("xform.projection", t2)
-				from pixel_error import max_3D_pixel_error
-				pixer[imn-image_start] = max_3D_pixel_error(t1, t2, last_ring)
-				#set_params_proj(dataim[imn-image_start], optm_params[0])
-				if( myid == main_node ):
-					print_msg( "Time to process %6d particles : %d\n" % (image_end_in_chunk-image_start_in_chunk, time()-start_time) )
-					start_time = time()
-			# release memory of volft
-			data[0] = None
-
-			# write out headers, under MPI writing has to be done sequentially
-			mpi_barrier(MPI_COMM_WORLD)
-			par_str = ['xform.projection', 'ID']
-			if myid == main_node:
-				from utilities import file_type
-				if(file_type(stack) == "bdb"):
-					from utilities import recv_attr_dict_bdb
-					recv_attr_dict_bdb(main_node, stack, dataim, par_str, image_start, image_end, number_of_proc)
-				else:
-					from utilities import recv_attr_dict
-					recv_attr_dict(main_node, stack, dataim, par_str, image_start, image_end, number_of_proc)
-			else:	        send_attr_dict(main_node, dataim, par_str, image_start, image_end)
-			if myid == main_node:
-				print_msg("Time to write header information= %d\n"%(time()-start_time))
-				start_time = time()
-
-		#output pixel errors after all headers were processed
-		from mpi import mpi_gatherv
-		recvbuf = mpi_gatherv(pixer, nima, MPI_FLOAT, recvcount, disps, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-		mpi_barrier(MPI_COMM_WORLD)
-		terminate = 0
-		if(myid == main_node):
-			recvbuf = map(float, recvbuf)
-			from statistics import hist_list
+			from EMAN2.statistics import hist_list
 			lhist = 20
 			region, histo = hist_list(recvbuf, lhist)
 			if(region[0] < 0.0):  region[0] = 0.0
@@ -10686,20 +10304,20 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 	"""
 		
 	"""
-	from alignment        import eqproj_cascaded_ccc
-	from filter           import filt_ctf
-	from projection       import prep_vol
-	from fundamentals     import resample
-	from utilities        import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
-	from utilities        import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict, wrap_mpi_bcast, wrap_mpi_gatherv
-	from utilities        import get_image, drop_image, file_type, get_im, get_input_from_string, model_blank
-	from utilities        import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
+	from EMAN2.alignment import eqproj_cascaded_ccc
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol
+	from EMAN2.fundamentals import resample
+	from EMAN2.utilities import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
+	from EMAN2.utilities import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict, wrap_mpi_bcast, wrap_mpi_gatherv
+	from EMAN2.utilities import get_image, drop_image, file_type, get_im, get_input_from_string, model_blank
+	from EMAN2.utilities import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
 	from utilities        import print_begin_msg, print_end_msg, print_msg
-	from multi_shc        import do_volume
-	from statistics       import varf3d_MPI
-	from math             import pi
-	from mpi              import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi              import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.multi_shc import do_volume
+	from EMAN2.statistics import varf3d_MPI
+	from math import pi
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	from EMAN2 import Processor
 	from EMAN2 import Vec2f, Transform
 	import os
@@ -10719,7 +10337,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 
@@ -10742,7 +10360,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 		import global_def
 		global_def.LOGFILE =  os.path.join(outdir, global_def.LOGFILE)
 		print_begin_msg("local_ali3d_MPI")
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		if CTF:
 			ima = EMData()
@@ -10768,7 +10386,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 	if( type(stack) is types.StringType ):
 		if myid == main_node:
 			if(file_type(stack) == "bdb"):
-				from EMAN2db import db_open_dict
+				from EMAN2.EMAN2db import db_open_dict
 				dummy = db_open_dict(stack, True)
 			# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 			# active = EMUtil.get_all_attributes(stack, 'active')
@@ -10858,7 +10476,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 
 	"""
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -10876,7 +10494,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 		print_msg("User function               : %s\n"%(user_func_name))
 	"""
 
-	import  types
+	import types
 	if ali3d_options.mask3D:
 		if type(ali3d_options.mask3D) is types.StringType:
 			if myid == main_node:
@@ -11038,7 +10656,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 					ctf_params = dataim[imn].get_attr( "ctf" )
 					if ctf_params.defocus != previous_defocus:
 						previous_defocus = ctf_params.defocus
-						data[0], data[1] = prep_vol(filt_ctf(vol, ctf_params, dopad = False))
+						data[0], data[1] = prep_vol(filt_ctf(vol, ctf_params))
 
 				data[2] = dataim[imn]
 				if ts > 0.0:
@@ -11078,7 +10696,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 				t2 = Transform({"type":"spider","phi":optm_params[0][0],"theta":optm_params[0][1],"psi":optm_params[0][2]})
 				t2.set_trans(Vec2f(-optm_params[0][3], -optm_params[0][4]))
 				dataim[imn].set_attr("xform.projection", t2)
-				from pixel_error import max_3D_pixel_error
+				from EMAN2.pixel_error import max_3D_pixel_error
 				pixer[imn] = max_3D_pixel_error(t1, t2, last_ring)
 				#set_params_proj(dataim[imn], optm_params[0])
 				#if( myid == main_node and imn%4 == 0):
@@ -11099,7 +10717,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 		terminate = 0
 		if(myid == main_node):
 			pixer = map(float, pixer)
-			from statistics import hist_list
+			from EMAN2.statistics import hist_list
 			lhist = 20
 			region, histo = hist_list(pixer, lhist)
 			log.add(" ")
@@ -11142,7 +10760,7 @@ def local_ali3d_base_MPI(stack, templatevol, ali3d_options, shrinkage = 1.0,
 		"""
 		if( type(stack) is types.StringType ):
 			from EMAN2 import Vec2f, Transform
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			DB = db_open_dict(stack)
 			for im in xrange(len(params)):
 				t = Transform({"type":"spider","phi":params[im][0],"theta":params[im][1],"psi":params[im][2]})
@@ -11170,12 +10788,12 @@ def autowin(indir,outdir, noisedoc, noisemic, templatefile, deci, CC_method, p_s
 	if MPI:
 		autowin_MPI(indir, outdir, noisedoc, noisemic, templatefile, deci, CC_method, p_size, sigma, hf_p, n_peak_max, contract_invert, prm)
 		return
-	from utilities 		import get_image, model_circle, ce_fit, drop_image,info
-	from utilities          import get_arb_params, set_arb_params
-	from fundamentals 	import smallprime, window2d, ccf, ramp, fft
-	from filter 		import filt_gaussh, filt_tanl
-	from string 		import split
-	from morphology 	import flcc
+	from EMAN2.utilities import get_image, model_circle, ce_fit, drop_image,info
+	from EMAN2.utilities import get_arb_params, set_arb_params
+	from EMAN2.fundamentals import smallprime, window2d, ccf, ramp, fft
+	from EMAN2.filter import filt_gaussh, filt_tanl
+	from string import split
+	from EMAN2.morphology import flcc
 	import os
 	if os.path.exists(indir)  is False: ERROR("micrograph directory does not exsit", "autowin",1)
 	else                              : flist=os.listdir(indir)
@@ -11282,17 +10900,17 @@ def autowin_MPI(indir,outdir, noisedoc, noisemic, templatefile, deci, CC_method,
 		CC_method=2  Using fast local normalization method to detect protein particles
 		The output files are detected coordinates and windowed particles
 	"""
-	from utilities 		import get_image, model_circle,ce_fit,drop_image,info
-	from fundamentals 	import smallprime, window2d, ccf, ramp, fft
-	from filter 		import filt_gaussh, filt_tanl
-	from string 		import split
-	from morphology 	import flcc
-	from random     	import randint
+	from EMAN2.utilities import get_image, model_circle,ce_fit,drop_image,info
+	from EMAN2.fundamentals import smallprime, window2d, ccf, ramp, fft
+	from EMAN2.filter import filt_gaussh, filt_tanl
+	from string import split
+	from EMAN2.morphology import flcc
+	from random import randint
 	import sys
 	import os
-	from mpi 	    import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	    import mpi_barrier, mpi_bcast
-	from mpi 	    import MPI_INT
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_barrier, mpi_bcast
+	from mpi import MPI_INT
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid           = mpi_comm_rank(MPI_COMM_WORLD)
@@ -11438,25 +11056,25 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 	rmin, rmax, fract, nise, npad, sym, user_func_name, datasym,\
 	pixel_size, debug, y_restrict, WRAP):
 
-	from alignment      import Numrinit, prepare_refrings, proj_ali_helical, proj_ali_helical_90, proj_ali_helical_local, proj_ali_helical_90_local, helios,helios7
-	from utilities      import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank, sym_vol
-	from utilities      import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities      import send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, file_type
-	from fundamentals   import rot_avg_image
-	from pixel_error    import max_3D_pixel_error
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_helical, proj_ali_helical_90, proj_ali_helical_local, proj_ali_helical_90_local, helios,helios7
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank, sym_vol
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image
+	from EMAN2.pixel_error import max_3D_pixel_error
 	import os
 	import types
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_recv,  mpi_send
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from filter         import filt_ctf
-	from projection     import prep_vol, prgs
-	from statistics     import hist_list, varf3d_MPI
-	from applications   import MPI_start_end
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import Vec2f
-	from string    import lower,split
+	from string import lower,split
 	from math import cos, pi
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
@@ -11544,7 +11162,7 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                               : %s\n"%(stack))
@@ -11584,12 +11202,12 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	if myid == main_node:
 		if(file_type(stack) == "bdb"):
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		# horatio active_refactoring Jy51i1EwmLD4tWZ9_00000_1
 		# active = EMUtil.get_all_attributes(stack, 'active')
@@ -11866,7 +11484,7 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 						if (symmetry_string[0] =="d"):  k1=360.0/2/sn
 					k3 = k1 +180.0
 
-					from utilities import get_sym
+					from EMAN2.utilities import get_sym
 					T = get_sym(symmetry_string[0:])
 
 					d1tp = tp.get_params('spider')
@@ -11976,9 +11594,9 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 			terminate = 0
 			if(myid == main_node):
 				recvbuf = map(float, recvbuf)
-				from utilities import write_text_file
+				from EMAN2.utilities import write_text_file
 				write_text_file([range(len(recvbuf)), recvbuf], os.path.join(outdir, "pixer_%04d_%04d.txt"%(N_step+1,Iter)) )
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if(region[0] < 0.0):  region[0] = 0.0
@@ -12042,13 +11660,13 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 			# write out headers, under MPI writing has to be done sequentially
 			mpi_barrier(MPI_COMM_WORLD)
 			m = 5
-			from mpi import mpi_recv, mpi_send, MPI_COMM_WORLD, MPI_FLOAT
+			from mpi import mpi_recv, mpi_send, MPI_TAG_UB, MPI_COMM_WORLD, MPI_FLOAT
 			if myid == main_node:
 				
 				fexp = open(os.path.join(outdir, "parameters_%04d_%04d.txt"%(N_step+1,Iter)),"w")
 				for n in xrange(number_of_proc):
 					if n!=main_node:
-						t = mpi_recv(recvcount[n] * m, MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						t = mpi_recv(recvcount[n]*m,MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
 						for i in xrange(recvcount[n]):
 							for j in xrange(m):
 								fexp.write(" %15.5f  "%t[j+i*m])
@@ -12069,7 +11687,7 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 					t = get_params_proj(data[i])
 					for j in xrange(m):
 						nvalue[j + i*m] = t[j]
-				mpi_send(nvalue, recvcount[myid] * m, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				mpi_send(nvalue, recvcount[myid]*m, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 				del nvalue
 			if myid == main_node:
 				print_msg("Time to write parameters = %d\n"%(time()-start_time))
@@ -12124,10 +11742,10 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 
 				if myid == main_node:
 					for n in xrange(number_of_proc):
-						if n!=main_node: mpi_send(lprms[2*recvpara[2*n]:2*recvpara[2*n+1]], 2 * (recvpara[2*n+1]-recvpara[2*n]), MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						if n!=main_node: mpi_send(lprms[2*recvpara[2*n]:2*recvpara[2*n+1]], 2*(recvpara[2*n+1]-recvpara[2*n]), MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
 						else:    list_dps = lprms[2*recvpara[2*0]:2*recvpara[2*0+1]]
 				else:
-					list_dps = mpi_recv((para_end-para_start) * 2, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					list_dps = mpi_recv((para_end-para_start)*2, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 				list_dps = map(float, list_dps)
 
@@ -12139,10 +11757,10 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 				if myid == main_node:
 					list_return = [0.0]*(3*number_of_proc)
 					for n in xrange(number_of_proc):
-						if n != main_node: list_return[3*n:3*n+3]                 = mpi_recv(3, MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						if n != main_node: list_return[3*n:3*n+3]                 = mpi_recv(3,MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
  						else:              list_return[3*main_node:3*main_node+3]  = local_pos[:]
 				else:
-					mpi_send(local_pos, 3, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					mpi_send(local_pos, 3, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 				if myid == main_node:	
 					maxvalue = list_return[2]
@@ -12186,10 +11804,10 @@ def ihrsr_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 	par_str = ["xform.projection"]
 	if myid == main_node:
 	   	if(file_type(stack) == "bdb"):
-	        	from utilities import recv_attr_dict_bdb
+	        	from EMAN2.utilities import recv_attr_dict_bdb
 	        	recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        else:
-	        	from utilities import recv_attr_dict
+	        	from EMAN2.utilities import recv_attr_dict
 	        	recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		print_msg("Time to write header information= %d\n"%(time()-start_time))
 		start_time = time()
@@ -12202,25 +11820,25 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 	rmin, rmax, fract, nise, npad, sym, user_func_name, datasym,\
 	pixel_size, debug, y_restrict, WRAP):
 
-	from alignment      import Numrinit, prepare_refrings, proj_ali_helical, proj_ali_helical_90, proj_ali_helical_local, proj_ali_helical_90_local, helios,helios7
-	from utilities      import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
-	from utilities      import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities      import send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, file_type
-	from fundamentals   import rot_avg_image
-	from pixel_error    import max_3D_pixel_error
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_helical, proj_ali_helical_90, proj_ali_helical_local, proj_ali_helical_90_local, helios,helios7
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image
+	from EMAN2.pixel_error import max_3D_pixel_error
 	import os
 	import types
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_recv,  mpi_send
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from filter         import filt_ctf
-	from projection     import prep_vol, prgs
-	from statistics     import hist_list, varf3d_MPI
-	from applications   import MPI_start_end
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import Vec2f
-	from string    import lower,split
+	from string import lower,split
 	from math import cos, pi
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
@@ -12308,7 +11926,7 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 	if last_ring < 0:	last_ring = int(nx/2) - 2
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                               : %s\n"%(stack))
@@ -12347,12 +11965,12 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	if myid == main_node:
        		if(file_type(stack) == "bdb"):
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		active = EMUtil.get_all_attributes(stack, 'active')
 		list_of_particles = []
@@ -12612,7 +12230,7 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 						if (symmetry_string[0] =="d"):  k1=360.0/2/sn
 					k3 = k1 +180.0
 
-					from utilities import get_sym
+					from EMAN2.utilities import get_sym
 					T = get_sym(symmetry_string[0:])
 
 					d1tp = tp.get_params('spider')
@@ -12722,9 +12340,9 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 			terminate = 0
 			if(myid == main_node):
 				recvbuf = map(float, recvbuf)
-				from utilities import write_text_file
+				from EMAN2.utilities import write_text_file
 				write_text_file([range(len(recvbuf)), recvbuf], os.path.join(outdir, "pixer_%04d_%04d.txt"%(N_step+1,Iter)) )
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if(region[0] < 0.0):  region[0] = 0.0
@@ -12788,13 +12406,13 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 			# write out headers, under MPI writing has to be done sequentially
 			mpi_barrier(MPI_COMM_WORLD)
 			m = 5
-			from mpi import mpi_recv, mpi_send, MPI_COMM_WORLD, MPI_FLOAT
+			from mpi import mpi_recv, mpi_send, MPI_TAG_UB, MPI_COMM_WORLD, MPI_FLOAT
 			if myid == main_node:
 				
 				fexp = open(os.path.join(outdir, "parameters_%04d_%04d.txt"%(N_step+1,Iter)),"w")
 				for n in xrange(number_of_proc):
 					if n!=main_node:
-						t = mpi_recv(recvcount[n]*m,MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						t = mpi_recv(recvcount[n]*m,MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
 						for i in xrange(recvcount[n]):
 							for j in xrange(m):
 								fexp.write(" %15.5f  "%t[j+i*m])
@@ -12815,7 +12433,7 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 					t = get_params_proj(data[i])
 					for j in xrange(m):
 						nvalue[j + i*m] = t[j]
-				mpi_send(nvalue, recvcount[myid]*m, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+				mpi_send(nvalue, recvcount[myid]*m, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 				del nvalue
 			if myid == main_node:
 				print_msg("Time to write parameters = %d\n"%(time()-start_time))
@@ -12870,10 +12488,10 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 
 				if myid == main_node:
 					for n in xrange(number_of_proc):
-						if n!=main_node: mpi_send(lprms[2*recvpara[2*n]:2*recvpara[2*n+1]], 2*(recvpara[2*n+1]-recvpara[2*n]), MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						if n!=main_node: mpi_send(lprms[2*recvpara[2*n]:2*recvpara[2*n+1]], 2*(recvpara[2*n+1]-recvpara[2*n]), MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
 						else:    list_dps = lprms[2*recvpara[2*0]:2*recvpara[2*0+1]]
 				else:
-					list_dps = mpi_recv((para_end-para_start)*2, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					list_dps = mpi_recv((para_end-para_start)*2, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 				list_dps = map(float, list_dps)
 
@@ -12885,10 +12503,10 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 				if myid == main_node:
 					list_return = [0.0]*(3*number_of_proc)
 					for n in xrange(number_of_proc):
-						if n != main_node: list_return[3*n:3*n+3]                 = mpi_recv(3,MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+						if n != main_node: list_return[3*n:3*n+3]                 = mpi_recv(3,MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
  						else:              list_return[3*main_node:3*main_node+3]  = local_pos[:]
 				else:
-					mpi_send(local_pos, 3, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					mpi_send(local_pos, 3, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 				if myid == main_node:	
 					maxvalue = list_return[2]
@@ -12929,10 +12547,10 @@ def gchelix_MPI(stack, ref_vol, outdir, maskfile, ir, ou, rs, xr, ynumber,\
 	par_str = ["xform.projection"]
 	if myid == main_node:
 	   	if(file_type(stack) == "bdb"):
-	        	from utilities import recv_attr_dict_bdb
+	        	from EMAN2.utilities import recv_attr_dict_bdb
 	        	recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        else:
-	        	from utilities import recv_attr_dict
+	        	from EMAN2.utilities import recv_attr_dict
 	        	recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		print_msg("Time to write header information= %d\n"%(time()-start_time))
 		start_time = time()
@@ -12954,9 +12572,9 @@ def copyfromtif(indir, outdir=None, input_extension="tif", film_or_CCD="f", outp
 		copyfromtif_MPI(indir, outdir, input_extension, film_or_CCD, output_extension, contrast_invert, Pixel_size, scanner_param_a, scanner_param_b, scan_step, magnification)
 		return
 
-	from utilities 		import get_image, drop_image
-	from fundamentals 	import smallprime, window2d, resample, image_decimate
-	from filter 		import filt_btwl
+	from EMAN2.utilities import get_image, drop_image
+	from EMAN2.fundamentals import smallprime, window2d, resample, image_decimate
+	from EMAN2.filter import filt_btwl
 	import types
 	import os
 	if os.path.exists(indir) is False: ERROR("Input directory doesn't exist","copyfromtif",1)
@@ -13020,16 +12638,16 @@ def copyfromtif_MPI(indir, outdir=None, input_extension="tif", film_or_CCD="f", 
 		   negative, the program will switch back to image_decimate reduce image size
 		   integer times. 
 	"""
-	from utilities 		import get_image, drop_image
-	from fundamentals 	import smallprime, window2d, resample, image_decimate
-	from filter 		import filt_btwl
-	from random     	import randint
+	from EMAN2.utilities import get_image, drop_image
+	from EMAN2.fundamentals import smallprime, window2d, resample, image_decimate
+	from EMAN2.filter import filt_btwl
+	from random import randint
 	import types
 	import os
 	import sys
-	from mpi 	    import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	    import mpi_barrier, mpi_bcast
-	from mpi 	    import MPI_INT
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_barrier, mpi_bcast
+	from mpi import MPI_INT
 
 	if os.path.exists(indir) is False: ERROR("Input directory doesn't exist","copyfromtif_MPI",1,myid)
 	else                             : flist = os.listdir(indir)
@@ -13123,12 +12741,12 @@ def cpy(ins_list, ous):
 
 	gl_index = 0
 
-	from utilities import file_type
+	from EMAN2.utilities import file_type
 
 	oextension = file_type(ous)	
 
 	if oextension == "bdb":
-		from EMAN2db import db_open_dict
+		from EMAN2.EMAN2db import db_open_dict
 		DB = db_open_dict(ous)
 
 	# iterate over all images in the list, even if it's only one...
@@ -13140,7 +12758,7 @@ def cpy(ins_list, ous):
 		iextension = file_type(ins)
 
 		if iextension == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 
 		if nima == 1 and oextension == "spi":
 			data.read_image(ins)
@@ -13195,13 +12813,13 @@ def dele_flist(flist):
 	for i in xrange(len(delist)):  os.system(delist[i])
 
 def defocus_calc(roodir, method, writetodoc="w", Pixel_size=1, voltage=120, Cs=1, amp_contrast=.1, round_off=100, dz_max=50000., frequency_low=30, frequency_high=5, polynomial_rank_baseline=5, polynomial_rank_envelope=5, prefix="roo", format="spider", skip_comment="#", micdir = "no", print_screen="no"):	
-	from morphology import defocus_get_slow, defocus_get_fast
+	from EMAN2.morphology import defocus_get_slow, defocus_get_fast
 	if( method == "s"): 	defocus_get_slow(roodir, writetodoc, Pixel_size, voltage, Cs, amp_contrast, round_off, dz_max, frequency_low, frequency_high, prefix, format, skip_comment, micdir, print_screen)
 	else: 			defocus_get_fast(roodir, writetodoc, Pixel_size, voltage, Cs, amp_contrast, round_off, dz_max, frequency_low, frequency_high, polynomial_rank_baseline,polynomial_rank_envelope, prefix, format, skip_comment,micdir, print_screen)
 
 '''
 def iso_kmeans(images, out_dir, parameter, K=None, mask=None, init_method="Random"):
-	from statistics import init_Kmeans,Kmeans_step,kmeans_ave_var,iso_kmeans_rm_cluster,iso_kmeans_split,iso_kmeans_merge
+	from EMAN2.statistics import init_Kmeans,Kmeans_step,kmeans_ave_var,iso_kmeans_rm_cluster,iso_kmeans_split,iso_kmeans_merge
 	import os
 	
 	e=EMData()
@@ -13297,10 +12915,10 @@ def iso_kmeans(images, out_dir, parameter, K=None, mask=None, init_method="Rando
 '''
 
 def project3d(volume, stack = None, mask = None, delta = 5, method = "S", phiEqpsi = "Minus", symmetry = "c1", listagls = None , listctfs = None, noise = None, realsp = False):
-	from projection    import   prgs, prep_vol, project
-	from utilities     import   even_angles, read_text_row, set_params_proj, model_gauss_noise, info
-	from string        import   split
-	from filter        import   filt_ctf,filt_gaussl
+	from EMAN2.projection import prgs, prep_vol, project
+	from EMAN2.utilities import even_angles, read_text_row, set_params_proj, model_gauss_noise, info
+	from string import split
+	from EMAN2.filter import filt_ctf,filt_gaussl
 	import os
 	import types
 
@@ -13427,7 +13045,7 @@ def project3d(volume, stack = None, mask = None, delta = 5, method = "S", phiEqp
 		# apply ctf, if ctf option is set and if we can create a valid CTF object
 		if ctfs is not None:
 			try:
-				from utilities import generate_ctf
+				from EMAN2.utilities import generate_ctf
 				if(len(ctfs[i]) == 6):  ctf = generate_ctf([ctfs[i][0], ctfs[i][1], ctfs[i][2], ctfs[i][3], ctfs[i][4], ctfs[i][5]])
 				elif(len(ctfs[i]) == 8):  ctf = generate_ctf([ctfs[i][0], ctfs[i][1], ctfs[i][2], ctfs[i][3], ctfs[i][4], ctfs[i][5], ctfs[i][6], ctfs[i][7]])
 				else:  1.0/0.0
@@ -13463,8 +13081,8 @@ def pw2sp(indir, outdir = None, w =256, xo =50, yo = 50, xd = 0, yd = 0, r = 0, 
 		pw2sp_MPI(indir, outdir, w, xo, yo, xd, yd, r, prefix_of_micrograph)
 		return
 
-	from utilities    import get_image,drop_image, model_circle, info
-	from fundamentals import welch_pw2, ro_textfile
+	from EMAN2.utilities import get_image,drop_image, model_circle, info
+	from EMAN2.fundamentals import welch_pw2, ro_textfile
 	import sys
 	import os
 	import types
@@ -13503,15 +13121,15 @@ def pw2sp_MPI(indir, outdir, w =256, xo =50, yo = 50, xd = 0, yd = 0, r = 0, pre
 		Calculate power spectra of a list of micrographs in a given directory using Welch's periodogram
 		The input options enable one selects area in micrographs to calculate overlapped periodogram.
 	"""
-	from utilities    	import get_image,drop_image, model_circle, info
-	from fundamentals 	import welch_pw2, ro_textfile
-	from random     	import randint
+	from EMAN2.utilities import get_image,drop_image, model_circle, info
+	from EMAN2.fundamentals import welch_pw2, ro_textfile
+	from random import randint
 	import sys
 	import os
 	import types
-	from mpi 	    import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	    import mpi_barrier, mpi_bcast
-	from mpi 	    import MPI_INT
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_barrier, mpi_bcast
+	from mpi import MPI_INT
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid           = mpi_comm_rank(MPI_COMM_WORLD)
@@ -13599,10 +13217,10 @@ def ra_cef(indir, noise, outdir, prf, num):
 
 def ali_vol_2(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = "ccc"):
 	#rotation and shift
-	from alignment    import ali_vol_func
-	from utilities    import get_im, model_circle
-	from utilities    import amoeba
-	from fundamentals import rot_shift3D
+	from EMAN2.alignment import ali_vol_func
+	from EMAN2.utilities import get_im, model_circle
+	from EMAN2.utilities import amoeba
+	from EMAN2.fundamentals import rot_shift3D
 
 	nx = refv.get_xsize()
 	ny = refv.get_ysize()
@@ -13619,8 +13237,8 @@ def ali_vol_2(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = "ccc
 
 def ali_vol_3(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = "ccc", mask=None):
 	#rotation and shift
-	from alignment    import ali_vol_func
-	from utilities    import model_circle, amoeba
+	from EMAN2.alignment import ali_vol_func
+	from EMAN2.utilities import model_circle, amoeba
 
 	nx = refv.get_xsize()
 	ny = refv.get_ysize()
@@ -13656,10 +13274,10 @@ def ali_vol(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = "ccc")
 
 
 	#rotation and shift
-	from alignment    import ali_vol_func
-	from utilities    import get_image, model_circle, get_params3D, set_params3D
-	from utilities    import amoeba, compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.alignment import ali_vol_func
+	from EMAN2.utilities import get_image, model_circle, get_params3D, set_params3D
+	from EMAN2.utilities import amoeba, compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	
 	ref = get_image(refv)
 	nx = ref.get_xsize()
@@ -13690,7 +13308,7 @@ def ali_vol(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = "ccc")
 	# print  " new params ", cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale, new_params[1]
 	set_params3D(e, [cphi, ctheta, cpsi, cs2x, cs2y, cs2z, 0, cscale])
 	if type(vol)==type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
@@ -13719,10 +13337,10 @@ def ali_vol_n(vol, refv, ang_scale, shift_scale, radius=None, discrepancy="ccc",
 
 
 	#rotation and shift
-	from alignment    import ali_vol_func
-	from utilities    import get_image, model_circle
-	from utilities    import amoeba, get_params3D, set_params3D
-	from utilities    import get_arb_params, set_arb_params
+	from EMAN2.alignment import ali_vol_func
+	from EMAN2.utilities import get_image, model_circle
+	from EMAN2.utilities import amoeba, get_params3D, set_params3D
+	from EMAN2.utilities import get_arb_params, set_arb_params
 	
 	ref = get_image(refv)
 	nx = ref.get_xsize()
@@ -13741,7 +13359,7 @@ def ali_vol_n(vol, refv, ang_scale, shift_scale, radius=None, discrepancy="ccc",
 
 	set_arb_params(e, [new_params[0][0], new_params[0][1], new_params[0][2], new_params[0][3], new_params[0][4], new_params[0][5]], names_params)
 	if type(vol)==type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
@@ -13775,10 +13393,10 @@ def ali_vol_grid(vol, params, refv, ang_scale, shift_scale, radius=None, discrep
 
 
 	#rotation and shift
-	from alignment    import ali_vol_func_grid
-	from utilities    import get_image, model_circle
-	from utilities    import amoeba, get_params3D, set_params3D
-	from utilities    import get_arb_params, set_arb_params
+	from EMAN2.alignment import ali_vol_func_grid
+	from EMAN2.utilities import get_image, model_circle
+	from EMAN2.utilities import amoeba, get_params3D, set_params3D
+	from EMAN2.utilities import get_arb_params, set_arb_params
 	
 	ref = get_image(refv)
 	nx = ref.get_xsize()
@@ -13822,9 +13440,9 @@ def ali_vol_M(vol, refv, ang_scale, shift_scale, mask=None, discrepancy = "ccc")
 
 
 	#rotation and shift
-	from alignment    import ali_vol_func
-	from utilities    import get_image, model_circle
-	from utilities    import amoeba, get_params3D, set_params3D
+	from EMAN2.alignment import ali_vol_func
+	from EMAN2.utilities import get_image, model_circle
+	from EMAN2.utilities import amoeba, get_params3D, set_params3D
 	
 	ref = get_image(refv)
 	nx = ref.get_xsize()
@@ -13856,7 +13474,7 @@ def ali_vol_M(vol, refv, ang_scale, shift_scale, mask=None, discrepancy = "ccc")
 
 	set_params3D(e, [new_params[0][0], new_params[0][1], new_params[0][2], new_params[0][3], new_params[0][4], new_params[0][5], 0, 1.0])
 	if type(vol)==type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
@@ -13884,10 +13502,10 @@ def ali_vol_nopsi(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = 
 
 
 	#rotation and shift
-	from alignment    import ali_vol_func_nopsi
-	from utilities    import get_image, model_circle
-	from utilities    import amoeba, get_params3D, set_params3D
-	from utilities    import get_arb_params, set_arb_params
+	from EMAN2.alignment import ali_vol_func_nopsi
+	from EMAN2.utilities import get_image, model_circle
+	from EMAN2.utilities import amoeba, get_params3D, set_params3D
+	from EMAN2.utilities import get_arb_params, set_arb_params
 	
 	ref = get_image(refv)
 	nx = ref.get_xsize()
@@ -13906,7 +13524,7 @@ def ali_vol_nopsi(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = 
 
 	set_arb_params(e, [new_params[0][0], new_params[0][1], new_params[0][2], new_params[0][3], new_params[0][4]], names_params)
 	if type(vol)==type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
@@ -13914,10 +13532,10 @@ def ali_vol_nopsi(vol, refv, ang_scale, shift_scale, radius=None, discrepancy = 
 
 def ali_vol_rotate(vol, refv, ang_scale, radius=None, discrepancy = "ccc"):
 	#rotation 
-	from alignment    import ali_vol_func_rotate
-	from utilities    import get_image, model_circle, get_params3D, set_params3D
-	from utilities    import amoeba, compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.alignment import ali_vol_func_rotate
+	from EMAN2.utilities import get_image, model_circle, get_params3D, set_params3D
+	from EMAN2.utilities import amoeba, compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 
 	ref = get_image(refv)
 	nx = ref.get_xsize()
@@ -13942,17 +13560,17 @@ def ali_vol_rotate(vol, refv, ang_scale, radius=None, discrepancy = "ccc"):
 	#print  " new params ", cphi, ctheta, cpsi, cs2x, cs2y, cs2z, cscale, new_params[1]
 	set_params3D(e, [cphi, ctheta, cpsi, cs2x, cs2y, cs2z, 0, cscale])
 	if type(vol)==type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
 
 def ali_vol_shift(vol, refv, shift_scale, radius=None, discrepancy = "ccc"):
 	# shift
-	from alignment    import ali_vol_func_shift
-	from utilities    import get_image, model_circle, get_params3D, set_params3D
-	from utilities    import amoeba, compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.alignment import ali_vol_func_shift
+	from EMAN2.utilities import get_image, model_circle, get_params3D, set_params3D
+	from EMAN2.utilities import amoeba, compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 
 	ref = get_image(refv)
 	nx = ref.get_xsize()
@@ -13977,17 +13595,17 @@ def ali_vol_shift(vol, refv, shift_scale, radius=None, discrepancy = "ccc"):
 	#print  " new params ", cphi, ctheta, cpsi, cs3x, cs3y, cs3z, cscale, new_params[1]
 	set_params3D(e, [cphi, ctheta, cpsi, cs3x, cs3y, cs3z, 0, cscale])
 	if type(vol)==type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
 
 def ali_vol_scale(vol, refv, ang_scale, shift_scale, mag_scale, radius=None, discrepancy = "ccc"):
 	# rotation shift and scale
-	from alignment    import ali_vol_func_scale
-	from utilities    import get_image, model_circle, get_params3D, set_params3D
-	from utilities    import amoeba, compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.alignment import ali_vol_func_scale
+	from EMAN2.utilities import get_image, model_circle, get_params3D, set_params3D
+	from EMAN2.utilities import amoeba, compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	ref = get_image(refv)
 	nx = ref.get_xsize()
 	ny = ref.get_ysize()
@@ -14011,17 +13629,17 @@ def ali_vol_scale(vol, refv, ang_scale, shift_scale, mag_scale, radius=None, dis
 	set_params3D(e, [cphi, ctheta, cpsi, cs2x, cs2y, cs2z, 0, cscale])
 	
 	if type(vol)==type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
 
 def ali_vol_only_scale(vol, refv, mag_scale, radius=None, discrepancy = "ccc"):
 	# scale
-	from alignment    import ali_vol_func_only_scale
-	from utilities    import get_image, model_circle, get_params3D, set_params3D
-	from utilities    import amoeba, compose_transform3
-	from fundamentals import rot_shift3D
+	from EMAN2.alignment import ali_vol_func_only_scale
+	from EMAN2.utilities import get_image, model_circle, get_params3D, set_params3D
+	from EMAN2.utilities import amoeba, compose_transform3
+	from EMAN2.fundamentals import rot_shift3D
 	ref = get_image(refv)
 	nx = ref.get_xsize()
 	ny = ref.get_ysize()
@@ -14046,7 +13664,7 @@ def ali_vol_only_scale(vol, refv, mag_scale, radius=None, discrepancy = "ccc"):
 	set_params3D(e, [cphi, ctheta, cpsi, cs2x, cs2y, cs2z, 0, cscale])
 	
 	if type(vol) == type(""):
-		from utilities import write_headers
+		from EMAN2.utilities import write_headers
 		write_headers( vol, [e], [0])
 	else:
 		return e
@@ -14054,9 +13672,9 @@ def ali_vol_only_scale(vol, refv, mag_scale, radius=None, discrepancy = "ccc"):
 def rot_sym(infile, outfile, sym_gp="d4", \
 			radius=None, phi=0, theta=0, psi=0, phirange=20, thetarange=20, psirange=20, ftolerance=1.e-4, xtolerance=1.e-4):
 
-	from alignment     import find_symm
-	from utilities     import drop_image, model_circle, sym_vol
-	from fundamentals  import  rot_shift3D
+	from EMAN2.alignment import find_symm
+	from EMAN2.utilities import drop_image, model_circle, sym_vol
+	from EMAN2.fundamentals import rot_shift3D
 
 	e=EMData()
 	e.read_image(infile)
@@ -14073,12 +13691,12 @@ def rot_sym(infile, outfile, sym_gp="d4", \
 
 def transform2d(stack_data, stack_data_ali, shift = False, ignore_mirror = False, method = "quadratic"):
 # apply 2D alignment parameters stored in the header of the input stack file using gridding interpolation and create an output stack file
-	from fundamentals   import rot_shift2D
-	from utilities 	    import set_params2D, get_params2D, get_im
+	from EMAN2.fundamentals import rot_shift2D
+	from EMAN2.utilities import set_params2D, get_params2D, get_im
 	import os
 	if  shift:
-		from utilities     import compose_transform2m
-		from fundamentals  import fshift, mirror
+		from EMAN2.utilities import compose_transform2m
+		from EMAN2.fundamentals import fshift, mirror
 
 	t = Transform({"type":"2D"})
 	nima = EMUtil.get_image_count(stack_data)
@@ -14096,17 +13714,18 @@ def transform2d(stack_data, stack_data_ali, shift = False, ignore_mirror = False
 		data.set_attr("xform.align2d", t)
 		data.write_image(stack_data_ali, im)
 
-def recons3d_n(prj_stack, pid_list, vol_stack, CTF=False, snr=1.0, sign=1, npad=4, sym="c1", listfile = "", group = -1, verbose=0, MPI = False, xysize=-1, zsize = -1, smearstep = 0.0, upweighted = False, compensate = False, chunk_id = -1):
+def recons3d_n(prj_stack, pid_list, vol_stack, CTF=False, snr=1.0, sign=1, npad=4, sym="c1", listfile = "", group = -1, verbose=0, MPI=False,xysize=-1, zsize = -1, smearstep = 0.0):
 	if MPI:
 		recons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, 1, npad, sym, listfile, group, verbose, xysize, zsize, smearstep)
 		##newrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, 1, npad, sym, listfile, group, verbose,xysize, zsize)
+		###newsrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, 1, npad, sym, listfile, group, verbose,xysize, zsize)
 		return
 
 	from reconstruction import recons3d_4nn_ctf, recons3d_4nn
-	from utilities import drop_image
+	from EMAN2.utilities import drop_image
 
 	if(listfile):
-		from utilities import read_text_file
+		from EMAN2.utilities import read_text_file
 		pid_list = read_text_file(listfile, 0)
 		pid_list = map(int, pid_list)
 	elif(group > -1):
@@ -14123,13 +13742,13 @@ def recons3d_n(prj_stack, pid_list, vol_stack, CTF=False, snr=1.0, sign=1, npad=
 	else:
 		drop_image(vol, vol_stack)
 
-def recons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF=False, snr=1.0, sign=1, npad=2, sym="c1", listfile="", group=-1, verbose=0, xysize=-1, zsize=-1, smearstep = 0.0):
+def recons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF=False, snr=1.0, sign=1, npad=2, sym="c1", listfile="", group=-1, verbose=0,xysize=-1, zsize=-1, smearstep = 0.0):
 	from reconstruction import recons3d_4nn_ctf_MPI, recons3d_4nn_MPI
-	from utilities      import get_im, drop_image, bcast_number_to_all
-	from string         import replace
-	from time           import time
-	from utilities      import iterImagesStack
-	from mpi            import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD
+	from EMAN2.utilities import get_im, drop_image, bcast_number_to_all
+	from string import replace
+	from time import time
+	from EMAN2.utilities import iterImagesStack
+	from mpi import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD
 
 	myid  = mpi_comm_rank(MPI_COMM_WORLD)
 	nproc = mpi_comm_size(MPI_COMM_WORLD)
@@ -14137,7 +13756,7 @@ def recons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF=False, snr=1.0, sign=1, n
 
 	if(myid == 0):
 		if(listfile):
-			from utilities import read_text_file
+			from EMAN2.utilities import read_text_file
 			pid_list = read_text_file(listfile, 0)
 		elif(group > -1):
 			tmp_list = EMUtil.get_all_attributes(prj_stack, 'group')
@@ -14182,240 +13801,21 @@ def recons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF=False, snr=1.0, sign=1, n
 			finfo.write( "Total time: %10.3f\n" % (time()-time_start) )
 			finfo.flush()
 
-def recons3d_trl_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym, verbose = None, niter =10, compensate = False, target_window_size=-1):
-	# unregularized reconstruction  flags reconstruct(Iunreg(), gridding_nr_iter,false, 1., dummy, dummy, dummy, dummy, 1., false, true, nr_threads, -1
+
+
+def newsrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym, listfile, group, verbose,xysize, zsize):
 	from reconstruction import recons3d_4nn_ctf_MPI, recons3d_4nn_MPI, recons3d_4nnf_MPI
-	from utilities      import get_im, drop_image, bcast_number_to_all, write_text_file, read_text_file, info
-	from string         import replace
-	from time           import time
-	from mpi            import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD, mpi_barrier
-	from EMAN2          import Reconstructors
-	from fundamentals   import fftip, fft
-	myid       = mpi_comm_rank(MPI_COMM_WORLD)
-	nproc      = mpi_comm_size(MPI_COMM_WORLD)
-	mpi_comm   = MPI_COMM_WORLD
-	time_start = time()
-	nnxo       = 0	
-	if(myid == 0):
-		nnxo = get_im(prj_stack).get_xsize()
-		print "  trilinear interpolation used in reconstruction"
-		nima = len(pid_list)
-	else:
-		nima = 0
-	nima = bcast_number_to_all(nima, source_node = 0)
-	nnxo = bcast_number_to_all(nnxo, source_node = 0)
-	if target_window_size ==-1: target_size = 2*nnxo+3
-	else:                       target_size = target_window_size*2+3
-	
-	if verbose==0: finfo = None
-	else:
-		infofile = "progress%04d.txt"%(myid+1)
-		finfo = open( infofile, 'w' )
-	
-	image_start, image_end = MPI_start_end(nima, nproc, myid)
-	prjlist                = EMData.read_images(prj_stack, pid_list[image_start:image_end])
-	
-	#nnnx = ((prjlist[0].get_ysize())*2+3)	
-
-	from utilities      import read_text_file, read_text_row, write_text_file, info, model_blank, get_im
-	from fundamentals   import fft,fshift
-	from reconstruction import insert_slices, insert_slices_pdf
-	from utilities      import reduce_EMData_to_root, model_blank
-	from filter         import filt_table
-	# reconstruction step
-	refvol = model_blank(target_size)
-	refvol.set_attr("fudge", 1.0)
-	if CTF: do_ctf = 1
-	else:   do_ctf = 0
-	if not (finfo is None): nimg = 0
-	
-	fftvol = EMData()
-	weight = EMData()
-	
-	params = {"size":target_size, "npad":2, "snr":1.0, "sign":1, "symmetry":"c1", "refvol":refvol, "fftvol":fftvol, "weight":weight, "do_ctf": do_ctf}
-	r      = Reconstructors.get( "nn4_ctfw", params )
-	r.setup()
-	m = [1.0]*target_size
-	is_complex = prjlist[0].get_attr("is_complex")
-	from filter		import filt_ctf
-	for image in prjlist:
-		if not is_complex: image = fft(image)
-		if CTF: image =filt_ctf(image, image.get_attr("ctf"))
-		image.set_attr("padffted",1)
-		image.set_attr("npad",1)
-		image.set_attr("bckgnoise",m)
-		r.insert_slice(image, image.get_attr_default("xform.projection", None), 1.0)
-	if not (finfo is None): 
-		finfo.write( "begin reduce\n" )
-		finfo.flush()
-
-	reduce_EMData_to_root(fftvol, myid, 0, comm=mpi_comm)
-	reduce_EMData_to_root(weight, myid, 0, comm=mpi_comm)
-	
-	
-	if not (finfo is None): 
-		finfo.write( "after reduce\n" )
-		finfo.flush()
-
-	if myid == 0: dummy = r.finish(compensate)
-	mpi_barrier(mpi_comm)
-
-	if myid == 0 : # post-insertion operations, done only in main_node
-		fftvol.set_attr("is_complex",1)
-		# no regularization here.
-		if( sym != "c1" ):
-			fftvol    = fftvol.symfvol(sym, -1)
-			weight    = weight.symfvol(sym, -1)  # symmetrize if not asymmetric
-		maxr2 = ((target_window_size//-1)*2)**2 
-		Util.iterefa(fftvol, weight, maxr2, target_window_size)
-		from morphology   import cosinemask
-		from fundamentals import fshift, fpol, fdecimate
-		fftvol = fft(fshift(fftvol,target_window_size, target_window_size, target_window_size))
-		fftvol = Util.window(fftvol, target_window_size, target_window_size, target_window_size)
-		fftvol = cosinemask(fftvol, target_window_size//2-1,5, None)
-		fftvol.div_sinc(1)
-		fftvol.write_image(vol_stack)
-		
-def recons3d_n_trl_MPI_one_node(prjlist, CTF, snr, sign, npad, sym, group, niter, verbose, upweighted, compensate, chunk_id):
-	from reconstruction import recons3d_4nn_ctf_MPI, recons3d_4nn_MPI, recons3d_4nnf_MPI
-	from utilities      import get_im, drop_image, bcast_number_to_all, write_text_file, read_text_file, info
-	from string         import replace
-	from time           import time
-	from mpi            import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD, mpi_barrier
-	from EMAN2      import Reconstructors
-	from fundamentals import fftip, fft
-	
-	myid       = mpi_comm_rank(MPI_COMM_WORLD)
-	nproc      = mpi_comm_size(MPI_COMM_WORLD)
-	mpi_comm   = MPI_COMM_WORLD
-	time_start = time()
-	nnxo       = 0
-	if(myid == 0): nnxo = prjlist[0].get_ysize()
-	else:          nnxo = 0
-	nnxo = bcast_number_to_all(nnxo, source_node = 0)
-	
-	if verbose==0:
-		finfo = None
-	else:
-		infofile = "progress%04d.txt"%(myid+1)
-		finfo = open( infofile, 'w' )
-
-	nnnx = ((prjlist[0].get_ysize())*2+3)
-
-	from utilities      import read_text_file, read_text_row, write_text_file, info, model_blank, get_im
-	from fundamentals   import fft,fshift
-	from reconstruction import insert_slices, insert_slices_pdf
-	from utilities      import reduce_EMData_to_root, model_blank
-	from filter         import filt_table
-	from filter		    import filt_ctf
-	# reconstruction step 
-	refvol = model_blank(nnnx)
-	refvol.set_attr("fudge", 1.0)
-	if CTF: do_ctf = 1
-	else:   do_ctf = 0
-	if not (finfo is None): nimg = 0
-	
-	fftvol = EMData()
-	weight = EMData()
-	
-	params = {"size":nnnx, "npad":2, "snr":1.0, "sign":1, "symmetry":"c1", "refvol":refvol, "fftvol":fftvol, "weight":weight, "do_ctf": do_ctf}
-	r = Reconstructors.get( "nn4_ctfw", params )
-	r.setup()
-	m = [1.0]*nnnx
-	is_complex = prjlist[0].get_attr("is_complex")
-	if chunk_id== -1:
-		for image in prjlist:
-			if not is_complex: image = fft(image)
-			image = filt_ctf(image, image.get_attr("ctf"))
-			image.set_attr("padffted",1)
-			image.set_attr("npad",1)
-			image.set_attr("bckgnoise",m)
-			if (image.get_attr("group") == group): 
-				if not upweighted:  insert_slices_pdf(r, filt_table(image, image.get_attr("bckgnoise")) )
-				else: insert_slices_pdf(r, image)
-	else:
-		for image in prjlist:
-			if not is_complex: image = fft(image)
-			image =filt_ctf(image, image.get_attr("ctf"))
-			image.set_attr("padffted",1)
-			image.set_attr("npad",1)
-			image.set_attr("bckgnoise",m)
-			if (image.get_attr("group") == group) and (image.get_attr("chunk_id") == chunk_id): 
-				if not upweighted:  insert_slices_pdf(r, filt_table(image, image.get_attr("bckgnoise")) )
-				else: insert_slices_pdf(r, image)		
-
-	if not (finfo is None): 
-		finfo.write( "begin reduce\n" )
-		finfo.flush()
-
-	reduce_EMData_to_root(fftvol, myid, 0, comm=mpi_comm)
-	reduce_EMData_to_root(weight, myid, 0, comm=mpi_comm)
-
-	if not (finfo is None): 
-		finfo.write( "after reduce\n" )
-		finfo.flush()
-
-	if myid == 0: dummy = r.finish(compensate)
-	mpi_barrier(mpi_comm)
-	dummy  = EMData()
-	if myid == 0 : # post-insertion operations, done only in main_node
-		fftvol = Util.shrinkfvol(fftvol,2)
-		weight = Util.shrinkfvol(weight,2) # reduce size 
-		if( sym != "c1" ):
-			fftvol    = fftvol.symfvol(sym, -1)
-			weight    = weight.symfvol(sym, -1)  # symmetrize if not asymmetric
-		#fftvol = Util.divn_cbyr(fftvol, weight)
-		nz     = weight.get_zsize()
-		ny     = weight.get_ysize()
-		nx     = weight.get_xsize()
-		from utilities  import tabessel
-		from morphology import notzero
-		beltab = tabessel(ny, nnxo) # iterative process
-		nwe    = notzero(weight)
-		#Util.save_slices_on_disk(weight,"slices.hdf")
-		for i in xrange(niter):
-			cvv = Util.mulreal(nwe, weight)
-			#cvv = Util.read_slice_and_multiply(nwe,weight)
-			cvv = fft(cvv)
-			Util.mul_img_tabularized(cvv, nnxo, beltab)
-			cvv = fft(cvv)
-			Util.divabs(nwe, cvv)
-		import os
-		#os.system(" rm slices.hdf")
-		del  beltab
-		from morphology   import cosinemask, threshold_outside
-		from fundamentals import fshift, fpol
-		
-		nwe    = threshold_outside(nwe, 0.0, 1.0e20)
-		nx     = fftvol.get_ysize()
-		fftvol = fshift(fftvol,nx//2,nx//2,nx//2)
-		Util.mulclreal(fftvol, nwe)
-		fftvol = fft(fftvol) 
-		fftvol = Util.window(fftvol, nnxo, nnxo, nnxo)
-		fftvol = fpol(fftvol, nnxo, nnxo, nnxo, True, False)
-		fftvol = cosinemask(fftvol, nnxo//2-1,5,None)
-		fftvol.div_sinc(1)
-		#fftvol.write_image(vol_stack)
-		return fftvol
-	else:
-		return dummy
-
-
-
-def newsrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym, listfile, group, verbose):
-	from reconstruction import recons3d_4nn_ctf_MPI, recons3d_4nn_MPI, recons3d_4nnf_MPI
-	from utilities      import get_im, drop_image, bcast_number_to_all, write_text_file, read_text_file, info
-	from string         import replace
-	from time           import time
-	from mpi            import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD
+	from EMAN2.utilities import get_im, drop_image, bcast_number_to_all, write_text_file, read_text_file
+	from string import replace
+	from time import time
+	from mpi import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD
 
 	myid  = mpi_comm_rank(MPI_COMM_WORLD)
 	nproc = mpi_comm_size(MPI_COMM_WORLD)
 	time_start = time()
 	if(myid == 0):
-		print "  news "
 		if(listfile):
-			from utilities import read_text_file
+			from EMAN2.utilities import read_text_file
 			pid_list = read_text_file(listfile, 0)
 			pid_list = map(int, pid_list)
 		elif(group > -1):
@@ -14470,16 +13870,20 @@ def newsrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym
 	pid_list = map(int, pid_list)
 	
 	image_start, image_end = MPI_start_end(nima, nproc, myid)
-	prjlist = EMData.read_images(prj_stack, pid_list[image_start:image_end])
+	prjlist = [EMData.read_images(prj_stack, pid_list[image_start:image_end])]
 
-	#if myid == 0 :  print "  NEW  "
-	#if CTF: vol = recons3d_4nn_ctf_MPI(myid, prjlist, snr, sign, sym, finfo, npad,xysize, zsize)
-	from utilities import model_blank, get_im
-	#from reconstruction import recons3d_4nnw_MPI
-	#if myid == 0 :  print  sym,finfo,npad
 	"""
-	from fundamentals import fdecimate
-	from utilities import get_params_proj,set_params_proj
+	if myid == 0 :  print "  NEW  "
+	#if CTF: vol = recons3d_4nn_ctf_MPI(myid, prjlist, snr, sign, sym, finfo, npad,xysize, zsize)
+	from EMAN2.utilities import model_blank, get_im
+	from reconstruction import recons3d_4nnw_MPI
+	from EMAN2.utilities import read_text_file, read_text_row, write_text_file
+	bckgnoise = [get_im("bckgnoise.hdf"), read_text_file("defgroup_stamp.txt")]#model_blank(1000,1,1,1.0)
+	if myid == 0 :  print  sym,finfo,npad
+	"""
+	"""
+	from EMAN2.fundamentals import fdecimate
+	from EMAN2.utilities import get_params_proj,set_params_proj
 	scale = 384./54.
 	for i in xrange(len(prjlist)):
 		prjlist[k][i] = fdecimate(prjlist[i],54,54)
@@ -14488,68 +13892,16 @@ def newsrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym
 		prjlist[i].set_attr('ctf', ctf_params)
 		phi,theta,psi,sx,sy = get_params_proj(prjlist[i])
 		set_params_proj(prjlist[i],[phi,theta,psi,sx/scale,sy/scale])
-	"""
-	nnnx = ((prjlist[0].get_ysize())*2+3)
-
-	from utilities import read_text_file, read_text_row, write_text_file
-	from fundamentals import fft,fshift
-
-	"""
-
-
-	bckgnoise = get_im("bckgnoise.hdf")
-	nlx = bckgnoise.get_xsize()
-	datastamp = read_text_file("defgroup_stamp.txt")
-	#nnnx = 200#prjlist[0].get_ysize()
-	from utilities import get_params_proj,set_params_proj
-	for i in xrange(len(prjlist)):
-		#phi,theta,psi,sxs,sys = get_params_proj(prjlist[i])
-		try:
-			stmp = prjlist[i].get_attr("ptcl_source_image")
-		except:
-			try:
-				stmp = prjlist[i].get_attr("ctf")
-				stmp = round(stmp.defocus,4)
-			except:
-				ERROR("Either ptcl_source_image or ctf has to be present in the header.","get_shrink_data",1, myid)
-		try:
-			indx = datastamp.index(stmp)
-		except:
-			ERROR("Problem with indexing ptcl_source_image.","get_shrink_data",1, myid)
-
-
-		prjlist[i] = fft(prjlist[i])
-		#prjlist[i] = fshift(prjlist[i],sxs,sys)
-		prjlist[i].set_attr("padffted",1)
-		prjlist[i].set_attr("npad",1)
-		#set_params_proj(prjlist[i] ,[phi,theta,psi,0.0,0.0])
-		prjlist[i].set_attr("bckgnoise", [bckgnoise[k,indx] for k in xrange(nlx)]) #  This is index on bckgnoise table
-
-
-
-	"""
-	m = [1.0]*600
-	for i in xrange(len(prjlist)):
-		prjlist[i] = fft(prjlist[i])
-		#prjlist[i] = fshift(prjlist[i],sxs,sys)
-		prjlist[i].set_attr("padffted",1)
-		prjlist[i].set_attr("npad",1)
-		#set_params_proj(prjlist[i] ,[phi,theta,psi,0.0,0.0])
-		prjlist[i].set_attr("bckgnoise",m)
+	"""			
 	from reconstruction import recons3d_4nnfs_MPI
-
-
-	vol,wei,reg = recons3d_4nnfs_MPI(myid, 0, prjlist,  upweighted = False, CTF = CTF, compensate = False, target_size = nnnx)
-
+	#if CTF: vol1, vol2, fff = recons3d_4nnfs_MPI(myid, prjlist, None, symmetry = sym, info = finfo, npad = npad,\
+	vol = recons3d_4nnfs_MPI(myid, prjlist, None, symmetry = sym, info = finfo, npad = npad,\
+									 smearstep = 0.0, CTF = CTF)
 	if myid == 0 :
-		#print  info(reg)
-		#for i in xrange(reg.get_xsize()):  print i,reg[i]
 		if(vol_stack[-3:] == "spi"):
 			drop_image(vol, vol_stack, "s")
 		else:
-			fft(vol).write_image( vol_stack )
-			wei.write_image("w"+vol_stack)
-			reg.write_image("r"+vol_stack)
+			drop_image(vol, vol_stack)
 		#drop_image(vol1, "nvol0.hdf")
 		#drop_image(vol2, "nvol1.hdf")
 		#write_text_file(fff,"nfsc.txt")
@@ -14561,10 +13913,10 @@ def newsrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym
 
 def newrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym, listfile, group, verbose,xysize, zsize):
 	from reconstruction import recons3d_4nn_ctf_MPI, recons3d_4nn_MPI, recons3d_4nnf_MPI
-	from utilities      import get_im, drop_image, bcast_number_to_all, write_text_file, read_text_file
-	from string         import replace
-	from time           import time
-	from mpi            import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD
+	from EMAN2.utilities import get_im, drop_image, bcast_number_to_all, write_text_file, read_text_file
+	from string import replace
+	from time import time
+	from mpi import mpi_comm_size, mpi_comm_rank, mpi_bcast, MPI_INT, MPI_COMM_WORLD
 
 	myid  = mpi_comm_rank(MPI_COMM_WORLD)
 	nproc = mpi_comm_size(MPI_COMM_WORLD)
@@ -14572,7 +13924,7 @@ def newrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym,
 	"""
 	if(myid == 0):
 		if(listfile):
-			from utilities import read_text_file
+			from EMAN2.utilities import read_text_file
 			pid_list = read_text_file(listfile, 0)
 			pid_list = map(int, pid_list)
 		elif(group > -1):
@@ -14630,8 +13982,8 @@ def newrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym,
 	image_start, image_end = MPI_start_end(nima, nproc, myid)
 	prjlist += [EMData.read_images(prj_stack, pid_list[image_start:image_end])]
 
-	from fundamentals import fdecimate
-	from utilities import get_params_proj,set_params_proj
+	from EMAN2.fundamentals import fdecimate
+	from EMAN2.utilities import get_params_proj,set_params_proj
 	scale = 384./54.
 	for k in xrange(2):
 		for i in xrange(len(prjlist[k])):
@@ -14644,9 +13996,9 @@ def newrecons3d_n_MPI(prj_stack, pid_list, vol_stack, CTF, snr, sign, npad, sym,
 			
 	if myid == 0 :  print "  NEW  "
 	#if CTF: vol = recons3d_4nn_ctf_MPI(myid, prjlist, snr, sign, sym, finfo, npad,xysize, zsize)
-	from utilities import model_blank, get_im
+	from EMAN2.utilities import model_blank, get_im
 	from reconstruction import recons3d_4nnw_MPI
-	from utilities import read_text_file, read_text_row, write_text_file
+	from EMAN2.utilities import read_text_file, read_text_row, write_text_file
 	bckgnoise = [get_im("bckgnoise.hdf"), read_text_file("defgroup_stamp.txt")]#model_blank(1000,1,1,1.0)
 	if myid == 0 :  print  sym,finfo,npad
 
@@ -14670,10 +14022,10 @@ def recons3d_f(prj_stack, vol_stack, fsc_file, mask=None, CTF=True, snr=1.0, sym
 	nima = EMUtil.get_image_count( prj_stack )
 
 	from reconstruction import recons3d_4nn_ctf, recons3d_4nn
-	from statistics     import fsc_mask
-	from utilities      import drop_image
+	from EMAN2.statistics import fsc_mask
+	from EMAN2.utilities import drop_image
 	if(listfile):
-		from utilities import read_text_file
+		from EMAN2.utilities import read_text_file
 		pid_list = read_text_file(listfile, 0)
 		pid_list = map(int, pid_list)
 	elif(group > -1):
@@ -14703,14 +14055,14 @@ def recons3d_f(prj_stack, vol_stack, fsc_file, mask=None, CTF=True, snr=1.0, sym
 
 def recons3d_f_MPI(prj_stack, vol_stack, fsc_file, mask, CTF=True, snr=1.0, sym="c1", listfile="", group=-1, npad = 4, verbose=1):
 
-	from mpi       import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_bcast, MPI_INT
-	from utilities import drop_image, bcast_number_to_all
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_bcast, MPI_INT
+	from EMAN2.utilities import drop_image, bcast_number_to_all
 	nproc = mpi_comm_size( MPI_COMM_WORLD )
 	myid  = mpi_comm_rank( MPI_COMM_WORLD )
 
 	if(myid == 0):
 		if(listfile):
-			from utilities import read_text_file
+			from EMAN2.utilities import read_text_file
 			pid_list = read_text_file(listfile, 0)
 			pid_list = map(int, pid_list)
 			nima = len(pid_list)
@@ -14770,14 +14122,14 @@ def ssnr3d(stack, output_volume = None, ssnr_text_file = None, mask = None, refe
 		ssnr3d_MPI(stack, output_volume, ssnr_text_file, mask, reference_structure, ou, rw, npad, CTF, sign, sym, random_angles)
 		return
 
-	from utilities               import model_circle, get_im
-	from filter                  import filt_ctf
-	from reconstruction          import recons3d_nn_SSNR, recons3d_4nn, recons3d_4nn_ctf
-	from projection              import prep_vol, prgs
+	from EMAN2.utilities import model_circle, get_im
+	from EMAN2.filter import filt_ctf
+	from reconstruction import recons3d_nn_SSNR, recons3d_4nn, recons3d_4nn_ctf
+	from EMAN2.projection import prep_vol, prgs
 	
 	fring_width = float(rw)
 	if mask:
-		import  types
+		import types
 		if type(mask) is types.StringType:
 			mask2D=get_im(mask)
 		else:
@@ -14810,7 +14162,7 @@ def ssnr3d(stack, output_volume = None, ssnr_text_file = None, mask = None, refe
 	volft, kb = prep_vol(vol)
 	del vol
 	prjlist = []
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	for i in xrange(nima):
 		e = EMData()
 		e.read_image(stack, i, True)
@@ -14847,16 +14199,16 @@ def ssnr3d(stack, output_volume = None, ssnr_text_file = None, mask = None, refe
 		tqt = ssnr1[i][1] - ssnr2[i][1]
 		if( tqt<qt ): qt = tqt
 	for i in xrange(len(ssnr1)): ssnr1[i][1] -= (ssnr2[i][1] + qt)
-	from utilities import dropSpiderDoc19289
+	from EMAN2.utilities import dropSpiderDoc19289
 	dropSpiderDoc(ssnr_text_file+".doc", ssnr1)
 	dropImage(vol_ssnr2, output_volume+"2.spi", "s")
 	'''
 
 def ssnr3d_MPI(stack, output_volume = None, ssnr_text_file = None, mask = None, reference_structure = None, ou = -1, rw = 1.0, npad = 1, CTF = False, sign = 1, sym ="c1", random_angles = 0):
 	from reconstruction import recons3d_nn_SSNR_MPI, recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
-	from utilities      import bcast_EMData_to_all, model_blank, model_circle, get_im
-	from projection     import prep_vol, prgs
-	from mpi            import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from EMAN2.utilities import bcast_EMData_to_all, model_blank, model_circle, get_im
+	from EMAN2.projection import prep_vol, prgs
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
 
 	nima = EMUtil.get_image_count(stack)
 	nproc = mpi_comm_size(MPI_COMM_WORLD)
@@ -14865,7 +14217,7 @@ def ssnr3d_MPI(stack, output_volume = None, ssnr_text_file = None, mask = None, 
 	image_start, image_end = MPI_start_end(nima, nproc, myid)
 
 	if mask:
-		import  types
+		import types
 		if type(mask) is types.StringType: mask2D = get_im(mask)
 		else: mask2D = mask
 	else:
@@ -14878,14 +14230,14 @@ def ssnr3d_MPI(stack, output_volume = None, ssnr_text_file = None, mask = None, 
 			# active = prj.get_attr_default('active', 1)
 			# if active == 1:
 			if random_angles == 2:
-				from  random import  random
+				from random import random
 				phi	 = 360.0*random()
 				theta	 = 180.0*random()
 				psi	 = 360.0*random()
 				xform_proj = Transform( {"type":"spider", "phi":phi, "theta":theta, "psi":psi} )
 				prj.set_attr("xform.projection", xform_proj)
 			elif random_angles == 3:
-				from  random import  random
+				from random import random
 				phi    = 360.0*random()
 				theta  = 180.0*random()
 				psi    = 360.0*random()
@@ -14894,7 +14246,7 @@ def ssnr3d_MPI(stack, output_volume = None, ssnr_text_file = None, mask = None, 
 				xform_proj = Transform( {"type":"spider", "phi":phi, "theta":theta, "psi":psi, "tx":tx, "ty":ty} )
 				prj.set_attr("xform.projection", xform_proj)
 			elif random_angles  == 1:
-				from  random import  random
+				from random import random
 				old_xform_proj = prj.get_attr( "xform.projection" )
 				dict = old_xform_proj.get_rotation( "spider" )
 				dict["psi"] = 360.0*random()
@@ -14927,7 +14279,7 @@ def ssnr3d_MPI(stack, output_volume = None, ssnr_text_file = None, mask = None, 
 	#vol *= model_circle(radius, nx, nx, nx)
 	volft, kb = prep_vol(vol)
 	del vol
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	if CTF: from filter import filt_ctf
 	for prj in prjlist:
 		phi, theta, psi, tx, ty = get_params_proj(prj)
@@ -14980,8 +14332,8 @@ def pca(input_stacks, subavg="", mask_radius=-1, nvec=3, incore=False, shuffle=F
 		genbuf       - generate disk buffer (default True), to use the disk buffer with data set to False
 		maskfile     - name of the mask file 
 	"""
-	from utilities import get_image, get_im, model_circle, model_blank
-	from statistics import pcanalyzer
+	from EMAN2.utilities import get_image, get_im, model_circle, model_blank
+	from EMAN2.statistics import pcanalyzer
 	import types
 
 	if type(input_stacks[0]) is types.StringType: data_on_disk = True	 # input_stacks is a file name
@@ -15068,12 +14420,12 @@ def prepare_2d_forPCA(data, mode = "a", output_stack = None, CTF = False):
 		   CTF_k(Im_k - CTF_k*Av)/sum(CTF_k^2)
 		average outside of a circle r = nx//2-1 is subtracted from each image
 	"""
-	from utilities    import model_blank, model_circle, set_params2D, get_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import model_blank, model_circle, set_params2D, get_params2D
+	from EMAN2.fundamentals import rot_shift2D
 	dopa = True
 	if type(data) == type(""):
 		inmem = False
-		from utilities    import get_im	
+		from EMAN2.utilities import get_im	
 	else:
 		inmem = True
 
@@ -15097,10 +14449,10 @@ def prepare_2d_forPCA(data, mode = "a", output_stack = None, CTF = False):
 	if  CTF:
 		if(img.get_attr_default('ctf_applied', 0) > 0):
 			ERROR("data cannot be ctf-applied","prepare_2d_forPCA",1)
-		from fundamentals import fft, fftip, window2d
-		from morphology   import ctf_img
-		from filter 	  import filt_ctf
-		from utilities    import pad
+		from EMAN2.fundamentals import fft, fftip, window2d
+		from EMAN2.morphology import ctf_img
+		from EMAN2.filter import filt_ctf
+		from EMAN2.utilities import pad
 
 		nx2 = 2*nx
 		ny2 = 2*ny
@@ -15172,8 +14524,8 @@ def prepare_2d_forPCA(data, mode = "a", output_stack = None, CTF = False):
 	else:                       return None
 
 def varimax(input_stack, imglist, output_stack, maskfile, mask_radius, verbose ) :
-	from utilities import get_im, model_circle
-	from EMAN2     import Analyzers
+	from EMAN2.utilities import get_im, model_circle
+	from EMAN2 import Analyzers
 
 	data = get_im( input_stack )
 
@@ -15298,7 +14650,7 @@ def wrapper_params_3D_to_2D(stack):
 	ima = EMData()
 	for im in xrange(nima):
 		ima.read_image(stack, im, True)
-		from utilities import set_params_proj, get_params_proj
+		from EMAN2.utilities import set_params_proj, get_params_proj
 		phi,theta,psi,s2x,s2y = get_params_proj( ima )
 		alpha, sx, sy, mirror = params_3D_2D(phi, theta, psi, s2x, s2y)
 		set_params2D(ima, [alpha, sx, sy, mirror, 1.0])
@@ -15308,11 +14660,11 @@ def wrapper_params_3D_to_2D(stack):
 
 # application find structure
 def cml_find_structure_main(stack, out_dir, ir, ou, delta, dpsi, lf, hf, rand_seed, maxit, given = False, first_zero = False, flag_weights = False, debug = False, trials = 1):
-	from projection import cml_open_proj, cml_init_global_var, cml_head_log, cml_disc, cml_export_txtagls
-	from projection import cml_find_structure, cml_export_struc, cml_end_log
+	from EMAN2.projection import cml_open_proj, cml_init_global_var, cml_head_log, cml_disc, cml_export_txtagls
+	from EMAN2.projection import cml_find_structure, cml_export_struc, cml_end_log
 	from utilities  import print_begin_msg, print_msg, print_end_msg, start_time, running_time
-	from copy       import deepcopy
-	from random     import seed, random
+	from copy import deepcopy
+	from random import seed, random
 	import time, sys, os
 
 	# logfile
@@ -15378,15 +14730,15 @@ def cml_find_structure_main(stack, out_dir, ir, ou, delta, dpsi, lf, hf, rand_se
 
 # application find structure
 def cml_find_structure_MPI2(stack, out_dir, ir, ou, delta, dpsi, lf, hf, rand_seed, maxit, given = False, first_zero = False, flag_weights = False, debug = False, trials = 1):
-	from projection import cml_open_proj, cml_init_global_var, cml_head_log, cml_disc, cml_export_txtagls
-	from projection import cml_find_structure2, cml_export_struc, cml_end_log
+	from EMAN2.projection import cml_open_proj, cml_init_global_var, cml_head_log, cml_disc, cml_export_txtagls
+	from EMAN2.projection import cml_find_structure2, cml_export_struc, cml_end_log
 	from utilities  import print_begin_msg, print_msg, print_end_msg, start_time, running_time
-	from copy       import deepcopy
-	from random     import seed, random
+	from copy import deepcopy
+	from random import seed, random
 	import time, sys, os
-	from mpi 	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
-	from mpi 	  import MPI_SUM, MPI_FLOAT, MPI_INT
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
@@ -15461,12 +14813,12 @@ def cml_find_structure_MPI2(stack, out_dir, ir, ou, delta, dpsi, lf, hf, rand_se
 
 # application find structure
 def cml_find_structure_MPI(stack, out_dir, ir, ou, delta, dpsi, lf, hf, rand_seed, maxit, given = False, first_zero = False, flag_weights = False, debug = False, trials = 10):
-	from projection import cml_open_proj, cml_init_global_var, cml_head_log, cml_disc, cml_export_txtagls
-	from projection import cml_find_structure, cml_export_struc, cml_end_log, cml_init_rnd, cml2_ori_collinearity
+	from EMAN2.projection import cml_open_proj, cml_init_global_var, cml_head_log, cml_disc, cml_export_txtagls
+	from EMAN2.projection import cml_find_structure, cml_export_struc, cml_end_log, cml_init_rnd, cml2_ori_collinearity
 	from utilities  import print_begin_msg, print_msg, print_end_msg, start_time, running_time
-	from random     import seed, random
-	from mpi        import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_bcast
-	from mpi        import mpi_barrier, MPI_COMM_WORLD, mpi_reduce, MPI_FLOAT, MPI_INT, MPI_SUM
+	from random import seed, random
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_bcast
+	from mpi import mpi_barrier, MPI_COMM_WORLD, mpi_reduce, MPI_FLOAT, MPI_INT, MPI_SUM
 	import time, sys, os
 
 	# init
@@ -15589,10 +14941,10 @@ def extract_value( s ):
 
 def header(stack, params, zero=False, one=False, set = 0.0, randomize=False, rand_alpha=False, fimport=None, 
 	   fexport=None, fprint=False, backup=False, suffix='_backup', restore=False, delete=False, consecutive=False):
-	from string    import split
-	from utilities import write_header, file_type, generate_ctf
-	from random    import random, randint
-	from utilities import set_params2D, get_params2D, set_params3D, get_params3D, set_params_proj, get_params_proj, set_ctf, get_ctf
+	from string import split
+	from EMAN2.utilities import write_header, file_type, generate_ctf
+	from random import random, randint
+	from EMAN2.utilities import set_params2D, get_params2D, set_params3D, get_params3D, set_params_proj, get_params_proj, set_ctf, get_ctf
 	from EMAN2 import Vec2f
 
 	if set == 0.0: doset = False
@@ -15615,7 +14967,7 @@ def header(stack, params, zero=False, one=False, set = 0.0, randomize=False, ran
 	nimage = EMUtil.get_image_count(stack)
 	ext = file_type(stack)
 	if ext == "bdb":
-		from EMAN2db import db_open_dict
+		from EMAN2.EMAN2db import db_open_dict
 		DB = db_open_dict(stack)
 	for i in xrange(nimage):
 		if fimport != None:
@@ -16034,10 +15386,10 @@ def header(stack, params, zero=False, one=False, set = 0.0, randomize=False, ran
 
 def imgstat_ccc( stacks, rad ):
 	from EMAN2 import EMUtil
-	from utilities import get_im, model_circle
-	from statistics import ccc
-	from projection import prep_vol,prgs
-	from utilities	import get_params_proj
+	from EMAN2.utilities import get_im, model_circle
+	from EMAN2.statistics import ccc
+	from EMAN2.projection import prep_vol,prgs
+	from EMAN2.utilities import get_params_proj
 
 	if len(stacks)>3: ERROR("Error: ccc should be run on two stacks","imgstat_ccc",1)
 
@@ -16087,8 +15439,8 @@ def imgstat_ccc( stacks, rad ):
 		print "%6d: %10.5f" % (i, val)
 
 def imgstat_fsc( stacks, fscfile, rad ):
-	from utilities import get_im, model_circle
-	from statistics import fsc_mask
+	from EMAN2.utilities import get_im, model_circle
+	from EMAN2.statistics import fsc_mask
 
 	if len(stacks)>3: ERROR("Error: fsc should be run on two images","imgstat_fsc",1)
 
@@ -16114,7 +15466,7 @@ def imgstat_fsc( stacks, fscfile, rad ):
 
 def imgstat_inf( stacks, rad ):
 	from EMAN2 import EMUtil
-	from utilities import get_im, model_circle
+	from EMAN2.utilities import get_im, model_circle
 	if len(stacks)>2: ERROR("Error: inf should be run on one file","imgstat_inf",1)
 
 	nimg = EMUtil.get_image_count( stacks[0] )
@@ -16165,7 +15517,7 @@ def normal_prj( prj_stack, outdir, refvol, weights, r, niter, snr, sym, verbose 
 		"""
 		  Find first maximum of the CTF, use CTF^2, so the sign will be ignored
 		"""
-		from morphology import ctf_2
+		from EMAN2.morphology import ctf_2
 		ctf = ctf_2( nx, ctf )
 
 		for i in xrange( 1, len(ctf)-1 ):
@@ -16179,12 +15531,12 @@ def normal_prj( prj_stack, outdir, refvol, weights, r, niter, snr, sym, verbose 
 
 		assert false
 
-	from utilities     import get_image, get_im, model_circle, drop_spider_doc
-	from utilities     import drop_image, get_params_proj
-	from projection    import prep_vol, prgs
-	from filter        import filt_ctf, filt_btwo, filt_tophatb
-	from fundamentals  import fft
-	from statistics    import ccc
+	from EMAN2.utilities import get_image, get_im, model_circle, drop_spider_doc
+	from EMAN2.utilities import drop_image, get_params_proj
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.filter import filt_ctf, filt_btwo, filt_tophatb
+	from EMAN2.fundamentals import fft
+	from EMAN2.statistics import ccc
 	import os
 
 	if(MPI and not (weights is None)):
@@ -16192,7 +15544,7 @@ def normal_prj( prj_stack, outdir, refvol, weights, r, niter, snr, sym, verbose 
 
 	if MPI:
 		from mpi import mpi_comm_size, mpi_comm_rank, mpi_barrier, mpi_init, mpi_reduce, mpi_bcast, MPI_COMM_WORLD, MPI_FLOAT, MPI_SUM
-		from utilities     import bcast_EMData_to_all
+		from EMAN2.utilities import bcast_EMData_to_all
 		nproc = mpi_comm_size( MPI_COMM_WORLD )
 		myid  = mpi_comm_rank( MPI_COMM_WORLD )
 	else:
@@ -16200,7 +15552,7 @@ def normal_prj( prj_stack, outdir, refvol, weights, r, niter, snr, sym, verbose 
 		myid  = 0
 		if( not (weights is None) ):
 			#  This section is application of weights
-			from utilities import read_text_file
+			from EMAN2.utilities import read_text_file
 			s = read_text_file(weights)
 			img_number     = EMUtil.get_image_count( prj_stack )
 			if(len(s) != img_number):  ERROR('Number of images does not agree with number of weights', "normal_prj", 1,myid)
@@ -16351,7 +15703,7 @@ def normal_prj( prj_stack, outdir, refvol, weights, r, niter, snr, sym, verbose 
 	if(myid == 0):
 		foutput = open( os.path.join(outdir,"weights.txt"), "w" )
 	if  MPI:
-		from mpi import MPI_INT, mpi_recv, mpi_send
+		from mpi import MPI_INT, MPI_TAG_UB, mpi_recv, mpi_send
 		if myid == 0:
 			ltot = 0
 			base = 0
@@ -16359,14 +15711,14 @@ def normal_prj( prj_stack, outdir, refvol, weights, r, niter, snr, sym, verbose 
 				if(iq == 0):
 					ltot = spill_out(ltot, base, pred, 1, foutput)
 				else:
-					lend = mpi_recv(1, MPI_INT, iq, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					lend = mpi_recv(1, MPI_INT, iq, MPI_TAG_UB, MPI_COMM_WORLD)
 					lend = int(lend[0])
-					pred = mpi_recv(lend, MPI_FLOAT, iq, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					pred = mpi_recv(lend, MPI_FLOAT, iq, MPI_TAG_UB, MPI_COMM_WORLD)
 					ltot = spill_out(ltot, base, pred, 1, foutput)
 				base += len(pred)
 		else:
-			mpi_send([len(pred)], 1, MPI_INT, 0, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-			mpi_send(pred, len(pred), MPI_FLOAT, 0, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			mpi_send([len(pred)], 1, MPI_INT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
+			mpi_send(pred, len(pred), MPI_FLOAT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
 	else:
 		ltot = 0
 		base = 0
@@ -16374,11 +15726,11 @@ def normal_prj( prj_stack, outdir, refvol, weights, r, niter, snr, sym, verbose 
 
 """
 def incvar(prefix, nfile, nprj, output, fl, fh, radccc, writelp, writestack):
-	from statistics import variancer, ccc
-	from string     import atoi, replace, split, atof
-	from utilities  import get_im, circumference, model_circle, drop_image
-	from filter     import filt_btwl
-	from math       import sqrt
+	from EMAN2.statistics import variancer, ccc
+	from string import atoi, replace, split, atof
+	from EMAN2.utilities import get_im, circumference, model_circle, drop_image
+	from EMAN2.filter import filt_btwl
+	from math import sqrt
 	import os
 
 	all_varer = variancer()
@@ -16479,9 +15831,9 @@ class file_set :
 		return self.files[ifile], imgid - self.fends[ifile-1]
 
 def defvar(files, outdir, fl, aa, radccc, frepa = "default", pca=False, pcamask=None, pcanvec=None):
-	from utilities  import get_im, get_image, circumference, model_blank
-	from filter     import filt_tanl
-	from math       import sqrt
+	from EMAN2.utilities import get_im, get_image, circumference, model_blank
+	from EMAN2.filter import filt_tanl
+	from math import sqrt
 	import os
 	
 	if os.path.exists(outdir): ERROR('Output directory exists, please change the name and restart the program', " defvar", 1)
@@ -16502,14 +15854,14 @@ def defvar(files, outdir, fl, aa, radccc, frepa = "default", pca=False, pcamask=
 			#from utilities import model_gauss
 			#rota = model_gauss(sqrt(2.0)*nx, nx,ny,nz)
 			#Util.mul_scalar( rota, 1.0/(rota.get_value_at(nx//2, ny//2, nz//2)) )
-			from utilities import model_blank
+			from EMAN2.utilities import model_blank
 			rota = model_blank(nx, ny, nz, 1.0)
 		else:   rota = get_im(frepa)
 
 	radcir = min(nx,ny,nz)//2 - 2
 
 	if pca :
-		from statistics import pcanalyzer
+		from EMAN2.statistics import pcanalyzer
 		pcamask = get_im( pcamask)
 		pcaer = pcanalyzer(pcamask, pcanvec, False)
 
@@ -16560,7 +15912,7 @@ def defvar(files, outdir, fl, aa, radccc, frepa = "default", pca=False, pcamask=
 
 	del avg1, avg2
 
-	from utilities import model_circle
+	from EMAN2.utilities import model_circle
 	#cccmask = model_circle(radccc, nx, ny, nz)
 	var1 = model_blank(nx,ny,nz)
 	var2 = model_blank(nx,ny,nz)
@@ -16603,12 +15955,12 @@ def defvar(files, outdir, fl, aa, radccc, frepa = "default", pca=False, pcamask=
 			eigs[i].write_image( eigfile, i )
 
 def var_mpi(files, outdir, fl, aa, radccc, frepa = "default", pca=False, pcamask=None, pcanvec=None):
-	from string     import atoi, replace, split, atof
-	from utilities  import get_im, circumference, model_circle, model_blank
-	from utilities  import bcast_EMData_to_all, reduce_EMData_to_root
-	from filter     import filt_tanl
-	from mpi        import mpi_comm_rank, mpi_comm_size, mpi_barrier, mpi_bcast, mpi_reduce
-	from mpi        import MPI_COMM_WORLD, MPI_INT, MPI_FLOAT, MPI_SUM
+	from string import atoi, replace, split, atof
+	from EMAN2.utilities import get_im, circumference, model_circle, model_blank
+	from EMAN2.utilities import bcast_EMData_to_all, reduce_EMData_to_root
+	from EMAN2.filter import filt_tanl
+	from mpi import mpi_comm_rank, mpi_comm_size, mpi_barrier, mpi_bcast, mpi_reduce
+	from mpi import MPI_COMM_WORLD, MPI_INT, MPI_FLOAT, MPI_SUM
 	import os
 	"""
 	  writelp means overwrite original stacks with repaired ones
@@ -16650,12 +16002,12 @@ def var_mpi(files, outdir, fl, aa, radccc, frepa = "default", pca=False, pcamask
 			#from utilities import model_gauss
 			#rota = model_gauss(sqrt(2.0)*nx, nx,ny,nz)
 			#Util.mul_scalar( rota, 1.0/(rota.get_value_at(nx//2, ny//2, nz//2)) )
-			from utilities import model_blank
+			from EMAN2.utilities import model_blank
 			rota = model_blank(nx, ny, nz, 1.0)
 		else:   rota = get_im(frepa)
 
 	if pca:
-		from statistics import pcanalyzer
+		from EMAN2.statistics import pcanalyzer
 		if(myid == 0):  pcamask = get_im( pcamask)
 		else:           pcamask = model_blank(nx,ny,nz)
 		bcast_EMData_to_all(pcamask, myid)
@@ -16777,7 +16129,7 @@ def var_mpi(files, outdir, fl, aa, radccc, frepa = "default", pca=False, pcamask
 				eigs[i].write_image( eigfile, i )
 
 def factcoords_vol( vol_stacks, avgvol_stack, eigvol_stack, prefix, rad = -1, neigvol = -1, fl=0.0, aa=0.0, MPI=False):
-	from utilities import get_im, model_circle, model_blank
+	from EMAN2.utilities import get_im, model_circle, model_blank
 
 	if MPI:
 		from mpi import mpi_comm_rank, mpi_comm_size, MPI_COMM_WORLD
@@ -16825,7 +16177,7 @@ def factcoords_vol( vol_stacks, avgvol_stack, eigvol_stack, prefix, rad = -1, ne
 			d.append( exp_vol.cmp( "ccc", eigvols[j], {"negative":0, "mask":m} )*eigvals[j] )
 
 	if  MPI:
-		from mpi import MPI_INT, MPI_FLOAT, MPI_COMM_WORLD, mpi_recv, mpi_send
+		from mpi import MPI_INT, MPI_FLOAT, MPI_TAG_UB, MPI_COMM_WORLD, mpi_recv, mpi_send
 		if myid == 0:
 			ltot = 0
 			base = 0
@@ -16833,24 +16185,24 @@ def factcoords_vol( vol_stacks, avgvol_stack, eigvol_stack, prefix, rad = -1, ne
 				if(iq == 0):
 					ltot = spill_out(ltot, base, d, neigvol, foutput)
 				else:
-					lend = mpi_recv(1, MPI_INT, iq, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					lend = mpi_recv(1, MPI_INT, iq, MPI_TAG_UB, MPI_COMM_WORLD)
 					lend = int(lend[0])
-					d = mpi_recv(lend, MPI_FLOAT, iq, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					d = mpi_recv(lend, MPI_FLOAT, iq, MPI_TAG_UB, MPI_COMM_WORLD)
 					ltot = spill_out(ltot, base, d, neigvol, foutput)
 				base += len(d)/neigvol
 		else:
-			mpi_send([len(d)], 1, MPI_INT, 0, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-			mpi_send(d, len(d), MPI_FLOAT, 0, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			mpi_send([len(d)], 1, MPI_INT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
+			mpi_send(d, len(d), MPI_FLOAT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
 	else:
 		ltot = 0
 		base = 0
 		ltot = spill_out(ltot, base, d, neigvol, foutput)
 
 def factcoords_prj( prj_stacks, avgvol_stack, eigvol_stack, prefix, rad, neigvol, fl=0.0, aa=0.0, CTF = False, MPI=False):
-	from utilities    import get_im, get_image, model_circle, model_blank, get_params_proj
-	from projection   import prgs, prep_vol
-	from filter       import filt_ctf, filt_tanl
-	from statistics   import im_diff
+	from EMAN2.utilities import get_im, get_image, model_circle, model_blank, get_params_proj
+	from EMAN2.projection import prgs, prep_vol
+	from EMAN2.filter import filt_ctf, filt_tanl
+	from EMAN2.statistics import im_diff
 
 	if MPI:
 		from mpi import mpi_comm_rank, mpi_comm_size, MPI_COMM_WORLD
@@ -16915,7 +16267,7 @@ def factcoords_prj( prj_stacks, avgvol_stack, eigvol_stack, prefix, rad, neigvol
 			d.append( diff.cmp( "ccc", ref_eigprj, {"negative":0, "mask":m} ))#*eigvals[j] )
         		#print  i,j,d[-1]
 	if  MPI:
-		from mpi import MPI_INT, MPI_FLOAT, MPI_COMM_WORLD, mpi_recv, mpi_send
+		from mpi import MPI_INT, MPI_FLOAT, MPI_TAG_UB, MPI_COMM_WORLD, mpi_recv, mpi_send
 		if myid == 0:
 			ltot = 0
 			base = 0
@@ -16923,14 +16275,14 @@ def factcoords_prj( prj_stacks, avgvol_stack, eigvol_stack, prefix, rad, neigvol
 				if(iq == 0):
 					ltot = spill_out(ltot, base, d, neigvol, foutput)
 				else:
-					lend = mpi_recv(1, MPI_INT, iq, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					lend = mpi_recv(1, MPI_INT, iq, MPI_TAG_UB, MPI_COMM_WORLD)
 					lend = int(lend[0])
-					d = mpi_recv(lend, MPI_FLOAT, iq, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					d = mpi_recv(lend, MPI_FLOAT, iq, MPI_TAG_UB, MPI_COMM_WORLD)
 					ltot = spill_out(ltot, base, d, neigvol, foutput)
 				base += len(d)/neigvol
 		else:
-			mpi_send([len(d)], 1, MPI_INT, 0, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
-			mpi_send(d, len(d), MPI_FLOAT, 0, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			mpi_send([len(d)], 1, MPI_INT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
+			mpi_send(d, len(d), MPI_FLOAT, 0, MPI_TAG_UB, MPI_COMM_WORLD)
 	else:
 		ltot = 0
 		base = 0
@@ -16949,11 +16301,11 @@ def spill_out(ltot, base, d, neigvol, foutput):
 	return  ltot
 
 def refvol( vollist, fsclist, output, mask ):
-	from utilities     import get_image, read_fsc
-	from fundamentals  import rops_table
-	from math          import sqrt
-	from filter        import filt_tanl, fit_tanh, filt_table, filt_vols
-	from morphology    import threshold
+	from EMAN2.utilities import get_image, read_fsc
+	from EMAN2.fundamentals import rops_table
+	from math import sqrt
+	from EMAN2.filter import filt_tanl, fit_tanh, filt_table, filt_vols
+	from EMAN2.morphology import threshold
 
 	nvol = len(vollist)
 	assert len(fsclist)==nvol
@@ -16978,26 +16330,26 @@ def k_means_main(stack, out_dir, maskname, opt_method, K, rand_seed, maxit, tria
 		 init_method = 'rnd'):
 	# Common
 	from utilities   import print_begin_msg, print_end_msg, print_msg, file_type, running_time
-	from statistics  import k_means_locasg2glbasg
-	from time        import time
+	from EMAN2.statistics import k_means_locasg2glbasg
+	from time import time
 	import sys, os
 	#import time
 	if MPI:
-		from mpi        import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier
-		from mpi        import MPI_COMM_WORLD, MPI_INT, mpi_bcast
-		from mpi	import MPI_FLOAT, MPI_INT, mpi_recv, mpi_send
-		from utilities  import bcast_number_to_all, recv_EMData, send_EMData
+		from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier
+		from mpi import MPI_COMM_WORLD, MPI_INT, mpi_bcast
+		from mpi import MPI_FLOAT, MPI_INT, mpi_recv, mpi_send, MPI_TAG_UB
+		from EMAN2.utilities import bcast_number_to_all, recv_EMData, send_EMData
 		
 	if CUDA:
-		from statistics import k_means_cuda_init_open_im, k_means_cuda_headlog
-		from statistics import k_means_cuda_export
+		from EMAN2.statistics import k_means_cuda_init_open_im, k_means_cuda_headlog
+		from EMAN2.statistics import k_means_cuda_export
 		if MPI: from statistics import k_means_CUDA_MPI
-		else:   from statistics import k_means_CUDA, k_means_SSE_CUDA
+		else: from statistics import k_means_CUDA, k_means_SSE_CUDA
 	else:
-		from statistics import k_means_init_open_im, k_means_open_im, k_means_headlog
-		from statistics import k_means_criterion, k_means_export
+		from EMAN2.statistics import k_means_init_open_im, k_means_open_im, k_means_headlog
+		from EMAN2.statistics import k_means_criterion, k_means_export
 		if MPI: from statistics import k_means_cla, k_means_SSE_MPI
-		else:   from statistics import k_means_cla, k_means_SSE
+		else: from statistics import k_means_cla, k_means_SSE
 
 	ext = file_type(stack)
 	if ext == 'txt': TXT = True
@@ -17044,7 +16396,7 @@ def k_means_main(stack, out_dir, maskname, opt_method, K, rand_seed, maxit, tria
 					
 				
 		
-		from statistics import k_means_SSE_combine
+		from EMAN2.statistics import k_means_SSE_combine
 		[ assign_return, r_Cls, je_return, n_best] = k_means_SSE_combine(Cls, assign, Je, N, K, ncpu, myid, main_node)
 		mpi_barrier(MPI_COMM_WORLD)
 		if myid == main_node:
@@ -17127,19 +16479,19 @@ def k_means_groups(stack, out_file, maskname, opt_method, K1, K2, rand_seed, max
 	if MPI:
 	 	#print "MPI version of kmeans group is under development"
 		#sys.exit()
-		from statistics import k_means_groups_MPI
+		from EMAN2.statistics import k_means_groups_MPI
 		k_means_groups_MPI(stack, out_file, maskname, opt_method, K1, K2, rand_seed, maxit, trials, CTF, F, T0, flagnorm)
 	elif CUDA:
 		import os
 		if os.path.exists(out_file):
 			ERROR('Output directory exists, please change the name and restart the program', "k_means_groups_CUDA", 1)
-		from statistics import k_means_groups_CUDA
+		from EMAN2.statistics import k_means_groups_CUDA
 		k_means_groups_CUDA(stack, out_file, maskname, K1, K2, rand_seed, maxit, F, T0)
 	else:
 		import os
 		if os.path.exists(out_file):
 			ERROR('Output directory exists, please change the name and restart the program', "k_means_groups_serial", 1)
-		from statistics import k_means_groups_serial
+		from EMAN2.statistics import k_means_groups_serial
 		k_means_groups_serial(stack, out_file, maskname, opt_method, K1, K2, rand_seed, maxit, trials, CTF, F, T0, DEBUG, flagnorm)
 
 
@@ -17147,39 +16499,37 @@ def k_means_groups(stack, out_file, maskname, opt_method, K1, K2, rand_seed, max
 # 2008-12-08 12:46:11 JB
 # Plot angles distribution on a hemisphere from a list of given projection
 def plot_projs_distrib(stack, outplot, wnx = 256):
-	from projection import plot_angles
-	from utilities  import get_params_proj, file_type, read_text_row
+	from EMAN2.projection import plot_angles
+	from EMAN2.utilities import get_params_proj, file_type
 	import sys
 
+	N    = EMUtil.get_image_count(stack)
 	ext  = file_type(stack)
-	if ext == 'txt' :
-		agls = read_text_row(stack)
-	elif ext == 'bdb' :
-		from EMAN2db import db_open_dict
-		N  = EMUtil.get_image_count(stack)
+	if ext == 'bdb':
+		from EMAN2.EMAN2db import db_open_dict
 		DB = db_open_dict(stack)
-		agls = []
-		for n in xrange(N):
-			im = EMData()
-			im.read_image(stack, n, True)
-			try:
-				p0, p1, p2, p3, p4 = get_params_proj(im)
-			except RuntimeError:
-				print 'Projection #%d from %s has no angles set!' % (n, stack)
-				sys.exit()
-			agls.append([p0, p1])
+	agls = []
+	for n in xrange(N):
+		im = EMData()
+		im.read_image(stack, n, True)
+		try:
+			p0, p1, p2, p3, p4 = get_params_proj(im)
+		except RuntimeError:
+			print 'Projection #%d from %s has no angles set!' % (n, stack)
+			sys.exit()
+		agls.append([p0, p1])
 
-		if ext == 'bdb': DB.close()
+	if ext == 'bdb': DB.close()
 
 	plot_angles(agls, wnx).write_image(outplot, 0)
 
 # 2008-12-08 12:46:46 JB
 # Wrap for the HAC part of py_cluster in the statistics.py file
 def HAC_clustering(stack, dendoname, maskname, kind_link, kind_dist, flag_diss):
-	from statistics   import ccc, py_cluster_HierarchicalClustering
-	from copy         import deepcopy
-	from utilities    import get_im, get_params2D, get_params3D
-	from fundamentals import rot_shift2D, rot_shift3D
+	from EMAN2.statistics import ccc, py_cluster_HierarchicalClustering
+	from copy import deepcopy
+	from EMAN2.utilities import get_im, get_params2D, get_params3D
+	from EMAN2.fundamentals import rot_shift2D, rot_shift3D
 
 	N    = EMUtil.get_image_count(stack)
 	if maskname != None: mask = get_im(maskname)
@@ -17240,9 +16590,9 @@ def HAC_clustering(stack, dendoname, maskname, kind_link, kind_dist, flag_diss):
 # 2008-12-08 15:20:24 JB
 # Compute the averages from the dendogram given by the function HAC_clustering
 def HAC_averages(stack, dendoname, avename, K):
-	from utilities    import get_im, get_params2D, get_params3D
-	from fundamentals import rot_shift2D, rot_shift3D
-	from utilities    import model_blank
+	from EMAN2.utilities import get_im, get_params2D, get_params3D
+	from EMAN2.fundamentals import rot_shift2D, rot_shift3D
+	from EMAN2.utilities import model_blank
 	import sys
 	
 	N    = EMUtil.get_image_count(stack)
@@ -17306,8 +16656,8 @@ def tomo(box):
 
 # Calculate averages of a given stack (wrap for ave_var in statistics)
 def ave_ali(name_stack, name_out = None, ali = False, param_to_save_size = None, set_as_member_id = None):
-	from statistics import ave_var, add_ave_varf, k_means_list_active
-	from utilities  import file_type
+	from EMAN2.statistics import ave_var, add_ave_varf, k_means_list_active
+	from EMAN2.utilities import file_type
 	"""
 	   This function is called by sxave_ali.py
 	"""
@@ -17355,12 +16705,12 @@ def within_group_refinement(data, maskfile, randomize, ir, ou, rs, xrng, yrng, s
 	# Comment by Zhengfan Yang 03/11/11
 	# This is a simple version of ali2d_data (down to the bone), no output dir, no logfile, no CTF, no MPI or CUDA, no Fourvar, no auto stop, no user function
 	
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from filter	  import filt_tanl
-	from fundamentals import fshift
-	from random	  import randint, random
-	from statistics   import ave_series
-	from utilities    import get_input_from_string, model_circle, set_params2D, get_params2D, combine_params2, inverse_transform2
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.filter import filt_tanl
+	from EMAN2.fundamentals import fshift
+	from random import randint, random
+	from EMAN2.statistics import ave_series
+	from EMAN2.utilities import get_input_from_string, model_circle, set_params2D, get_params2D, combine_params2, inverse_transform2
 
 	first_ring=int(ir); last_ring=int(ou); rstep=int(rs); max_iter=int(maxit);
 	nima = len(data)
@@ -17407,13 +16757,13 @@ def Xwithin_group_refinement(data, maskfile, randomize, ir, ou, rs, xrng, yrng, 
 	# Comment by Zhengfan Yang 03/11/11
 	# This is a simple version of ali2d_data (down to the bone), no output dir, no logfile, no CTF, no MPI or CUDA, no Fourvar, no auto stop, no user function
 
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from filter	      import filt_tanl
-	from fundamentals import fshift, fft
-	from random	      import randint, random
-	from statistics   import ave_series
-	from utilities    import get_input_from_string, model_circle, center_2D
-	from utilities    import set_params2D, get_params2D, combine_params2, inverse_transform2
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.filter import filt_tanl
+	from EMAN2.fundamentals import fshift, fft
+	from random import randint, random
+	from EMAN2.statistics import ave_series
+	from EMAN2.utilities import get_input_from_string, model_circle, center_2D
+	from EMAN2.utilities import set_params2D, get_params2D, combine_params2, inverse_transform2
 
 	first_ring=int(ir); last_ring=int(ou); rstep=int(rs); max_iter=int(maxit);
 	nima = len(data)
@@ -17510,8 +16860,8 @@ def Xwithin_group_refinement(data, maskfile, randomize, ir, ou, rs, xrng, yrng, 
 
 
 	elif( method == "PCP"):
-		from isac import prepref
-		from utilities import model_circle
+		from EMAN2.isac import prepref
+		from EMAN2.utilities import model_circle
 		stp = step[-1]
 		rings = prepref(data, model_circle(nx//2-1,nx,nx), cnx, cnx, numr, mode, xrng[0], xrng[0], stp)
 		print " rings  ",len(rings)
@@ -17629,12 +16979,12 @@ def within_group_refinement(data, maskfile, randomize, ir, ou, rs, xrng, yrng, s
 	# Comment by Zhengfan Yang 03/11/11
 	# This is a simple version of ali2d_data (down to the bone), no output dir, no logfile, no CTF, no MPI or CUDA, no Fourvar, no auto stop, no user function
 	
-	from alignment    import Numrinit, ringwe, ali2d_single_iter
-	from filter	      import filt_tanl
-	from fundamentals import fshift, fft
-	from random	      import randint, random
-	from statistics   import ave_series
-	from utilities    import get_input_from_string, model_circle, set_params2D, get_params2D, combine_params2, inverse_transform2
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter
+	from EMAN2.filter import filt_tanl
+	from EMAN2.fundamentals import fshift, fft
+	from random import randint, random
+	from EMAN2.statistics import ave_series
+	from EMAN2.utilities import get_input_from_string, model_circle, set_params2D, get_params2D, combine_params2, inverse_transform2
 
 	first_ring=int(ir); last_ring=int(ou); rstep=int(rs); max_iter=int(maxit);
 	nima = len(data)
@@ -17721,8 +17071,8 @@ def within_group_refinement(data, maskfile, randomize, ir, ou, rs, xrng, yrng, s
 
 
 	elif( method == "PCP"):
-		from alignent import prepref
-		from utilities import model_circle
+		from EMAN2.alignent import prepref
+		from EMAN2.utilities import model_circle
 		stp = step[-1]
 		rings = prepref(data, model_circle(nx//2-1,nx,nx), cnx, cnx, numr, mode, xrng[0], xrng[0], stp)
 		print " rings  ",len(rings)
@@ -17806,13 +17156,13 @@ def within_group_refinement_fast(data, dimage, maskfile, randomize, ir, ou, rs, 
 	# Comment by Zhengfan Yang 03/11/11
 	# This is a simple version of ali2d_data (down to the bone), no output dir, no logfile, no CTF, no MPI or CUDA, no Fourvar, no auto stop, no user function
 	
-	from alignment    import Numrinit, ringwe, ali2d_single_iter_fast
-	from filter	      import filt_tanl
-	from fundamentals import fshift, rot_shift2D, cyclic_shift
-	from random	      import randint, random
-	from math         import cos, sin, radians
-	from statistics   import ave_series
-	from utilities    import get_input_from_string, model_circle, model_blank, set_params2D, get_params2D, combine_params2, inverse_transform2
+	from EMAN2.alignment import Numrinit, ringwe, ali2d_single_iter_fast
+	from EMAN2.filter import filt_tanl
+	from EMAN2.fundamentals import fshift, rot_shift2D, cyclic_shift
+	from random import randint, random
+	from math import cos, sin, radians
+	from EMAN2.statistics import ave_series
+	from EMAN2.utilities import get_input_from_string, model_circle, model_blank, set_params2D, get_params2D, combine_params2, inverse_transform2
 
 	first_ring=int(ir); last_ring=int(ou); rstep=int(rs); max_iter=int(maxit);
 	nima = len(data)
@@ -17912,22 +17262,22 @@ def volalixshift_MPI(stack, ref_vol, outdir, search_rng, pixel_size, dp, dphi, f
 	    maxit = 1, CTF = False, snr = 1.0, sym = "c1",  user_func_name = "helical", \
 	    npad = 2, debug = False, nearby=3):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string, peak_search, model_cylinder, pad, model_blank
-	from utilities       import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities       import send_attr_dict, sym_vol
-	from utilities       import get_params_proj, set_params_proj, file_type
-	from fundamentals    import rot_avg_image, ccf
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, peak_search, model_cylinder, pad, model_blank
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, sym_vol
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image, ccf
 	import os
 	import types
 	from utilities       import print_begin_msg, print_end_msg, print_msg
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi             import mpi_reduce, MPI_INT, MPI_SUM
-	from filter          import filt_ctf
-	from projection      import prep_vol, prgs
-	from statistics      import hist_list, varf3d_MPI, fsc_mask
-	from applications	 import MPI_start_end, ordersegments
-	from time            import time	
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI, fsc_mask
+	from EMAN2.applications import MPI_start_end, ordersegments
+	from time import time	
 	
 	nproc     = mpi_comm_size(MPI_COMM_WORLD)
 	myid      = mpi_comm_rank(MPI_COMM_WORLD)
@@ -17969,7 +17319,7 @@ def volalixshift_MPI(stack, ref_vol, outdir, search_rng, pixel_size, dp, dphi, f
 	zsize = -1
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -17994,8 +17344,8 @@ def volalixshift_MPI(stack, ref_vol, outdir, search_rng, pixel_size, dp, dphi, f
 	fscmask = mask3D  #model_circle(last_ring,nx,nx,nx)  For a fancy mask circle would work better  PAP 7/21/11
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	filaments = ordersegments(stack, filament_attr = 'filament', verify=False)
 	
@@ -18159,10 +17509,10 @@ def volalixshift_MPI(stack, ref_vol, outdir, search_rng, pixel_size, dp, dphi, f
 	par_str = ['xform.projection', 'ID']
 	if myid == main_node:
 		if(file_type(stack) == "bdb"):
-			from utilities import recv_attr_dict_bdb
+			from EMAN2.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, 0, nima, nproc)
 		else:
-			from utilities import recv_attr_dict
+			from EMAN2.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, 0, nima, nproc)
 		print_msg("Time to write header information= %d\n"%(time()-start_time))
 		start_time = time()
@@ -18172,22 +17522,22 @@ def volalixshift_MPI(stack, ref_vol, outdir, search_rng, pixel_size, dp, dphi, f
 
 def diskali_MPI(stack, ref_vol, outdir, maskfile, dp, dphi, pixel_size, user_func_name, zstep=1.0, fract=0.67, rmax=70, rmin=0, \
 					 CTF=False, maxit=1, sym = "c1"):
-	from mpi              import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier, MPI_INT, mpi_recv, mpi_send
-	from utilities        import get_params_proj, read_text_row, model_cylinder,pad, set_params3D, get_params3D, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image, bcast_EMData_to_all, model_blank
-	from utilities        import send_attr_dict, file_type, sym_vol, get_image
-	from fundamentals     import resample, rot_shift3D
-	from applications     import MPI_start_end, ordersegments
-	from math             import fmod, atan, pi
-	from utilities        import model_blank
-	from filter           import filt_tanl, filt_ctf
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier, MPI_INT, MPI_TAG_UB, MPI_FLOAT, mpi_recv, mpi_send
+	from EMAN2.utilities import get_params_proj, read_text_row, model_cylinder,pad, set_params3D, get_params3D, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image, bcast_EMData_to_all, model_blank
+	from EMAN2.utilities import send_attr_dict, file_type, sym_vol, get_image
+	from EMAN2.fundamentals import resample, rot_shift3D
+	from EMAN2.applications import MPI_start_end, ordersegments
+	from math import fmod, atan, pi
+	from EMAN2.utilities import model_blank
+	from EMAN2.filter import filt_tanl, filt_ctf
 	import os
-	from statistics       import fsc_mask
-	from copy             import copy
-	from os               import sys
-	from time             import time	
-	from alignment        import Numrinit, ringwe
-	from reconstruction   import recons3d_wbp
-	from morphology       import ctf_2
+	from EMAN2.statistics import fsc_mask
+	from copy import copy
+	from os import sys
+	from time import time	
+	from EMAN2.alignment import Numrinit, ringwe
+	from reconstruction import recons3d_wbp
+	from EMAN2.morphology import ctf_2
 	import types
 	
 	myid  = mpi_comm_rank(MPI_COMM_WORLD)
@@ -18211,7 +17561,7 @@ def diskali_MPI(stack, ref_vol, outdir, maskfile, dp, dphi, pixel_size, user_fun
 	# for resampling to polar rmin>1
 	rminpolar = max(1,rmin)
 
-	from utilities import get_im
+	from EMAN2.utilities import get_im
 	refvol = get_im(ref_vol)
 	ref_nx = refvol.get_xsize()
 	ref_ny = refvol.get_ysize()
@@ -18252,7 +17602,7 @@ def diskali_MPI(stack, ref_vol, outdir, maskfile, dp, dphi, pixel_size, user_fun
 	if( myid == 0 ):
 		# Build a 3D dedicated correction function
 		if CTF:
-			from morphology import ctf_2
+			from EMAN2.morphology import ctf_2
 			cc = EMUtil.get_all_attributes(stack, 'ctf')
 			ctf2 = ctf_2(ref_nz, cc[0])
 			ncc = len(ctf2)
@@ -18313,7 +17663,7 @@ def diskali_MPI(stack, ref_vol, outdir, maskfile, dp, dphi, pixel_size, user_fun
 		fullvol0 -= stat[0]
 		fullvol0 *= ms3
 		"""
-		from filter import filt_tanl
+		from EMAN2.filter import filt_tanl
 		fullvol0 = filt_tanl(fullvol0, 0.3, 0.2)
 		fullvol0 = fullvol0.helicise(pixel_size, dp, dphi, fract, rmax, rmin)
 		fullvol0 = sym_vol(fullvol0, symmetry=sym)
@@ -18379,7 +17729,7 @@ def diskali_MPI(stack, ref_vol, outdir, maskfile, dp, dphi, pixel_size, user_fun
 				refvol -= stat[0]
 				refvol *= model_cylinder(rmax-1, ref_nx, ref_ny, ref_nz)
 
-			import user_functions
+			import EMAN2.user_functions as user_functions
 			user_func = user_functions.factory[user_func_name]
 
 			ref_data = [refvol, mask3D]
@@ -18404,7 +17754,7 @@ def diskali_MPI(stack, ref_vol, outdir, maskfile, dp, dphi, pixel_size, user_fun
 	forg = []
 	helisym = Transform({"type":"spider","phi":dphi,"tz":dpp})
 	ihelisym = helisym.inverse()
-	from utilities import get_params_proj, set_params_proj
+	from EMAN2.utilities import get_params_proj, set_params_proj
 	permitrange = rise/2.0
 	
 	for ivol in xrange(nfils):
@@ -18459,20 +17809,20 @@ def diskali_MPI(stack, ref_vol, outdir, maskfile, dp, dphi, pixel_size, user_fun
 	mpi_barrier(MPI_COMM_WORLD)
 
 	# write out headers, under MPI writing has to be done sequentially
-	from mpi import mpi_recv, mpi_send, MPI_COMM_WORLD, MPI_FLOAT
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB, MPI_COMM_WORLD, MPI_FLOAT
 	par_str = ['xform.projection', 'ID']
 	if myid == main_node:
 		if(file_type(stack) == "bdb"):
-			from utilities import recv_attr_dict_bdb
+			from EMAN2.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, 0, nima, nproc)
 		else:
-			from utilities import recv_attr_dict
+			from EMAN2.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, 0, nima, nproc)
 	else:
 		send_attr_dict(main_node, data, par_str, 0, nima)
 
 def cylindrical_trans(vol, rmin, rmax, rise, apply_weights = False):
-	from alignment import Numrinit, ringwe
+	from EMAN2.alignment import Numrinit, ringwe
 	refslices=[]
 	mode="F"
 	numr = Numrinit(rmin, rmax, 1, mode)
@@ -18491,7 +17841,7 @@ def cylindrical_trans(vol, rmin, rmax, rise, apply_weights = False):
 	return refslices
 
 def alihelical3(slices, refslices, zstep, dphi, rise, rmin, rmax, sym="c1"):
-	from applications import  alihelical4
+	from EMAN2.applications import alihelical4
 
 	T,qn = alihelical4(slices, refslices, zstep, dphi, rise, rmin, rmax, theta=0.0)
 	if( sym[:1] != "d" and  sym[:1] != "D" ):
@@ -18505,14 +17855,14 @@ def alihelical3(slices, refslices, zstep, dphi, rise, rmin, rmax, sym="c1"):
 # standalone code for aligning two disks 
 def alihelical4(slices, refslices, zstep, dphi, rise, rmin, rmax, theta=0.0):
 
-	from fundamentals import rot_shift3D, cyclic_shift
-	from statistics import ccc
+	from EMAN2.fundamentals import rot_shift3D, cyclic_shift
+	from EMAN2.statistics import ccc
 	from math import ceil, fmod
-	from utilities import pad, model_cylinder
+	from EMAN2.utilities import pad, model_cylinder
 	from random import randrange, randint
-	from math         import fmod
-	from alignment    import Numrinit, ringwe, ang_n
-	from utilities    import model_blank
+	from math import fmod
+	from EMAN2.alignment import Numrinit, ringwe, ang_n
+	from EMAN2.utilities import model_blank
 
 
 	pdphi = -dphi
@@ -18576,8 +17926,8 @@ def iang(alpha, maxrin):
 	return  alpha*maxrin/360.+1
 
 def stack_disks(v, nx, ny, ref_nz, dphi, rise):
-	from utilities    import model_blank
-	from fundamentals import rot_shift3D
+	from EMAN2.utilities import model_blank
+	from EMAN2.fundamentals import rot_shift3D
 	refc = ref_nz//2
 	rsc = rise//2
 	
@@ -18596,8 +17946,8 @@ def stack_disks(v, nx, ny, ref_nz, dphi, rise):
 	return heli
 
 def imgstat_hfsc( stack, file_prefix, fil_attr='filament'):
-	from utilities    import write_text_file, chunks_distribution
-	from pixel_error  import ordersegments
+	from EMAN2.utilities import write_text_file, chunks_distribution
+	from EMAN2.pixel_error import ordersegments
 	
 	infils = EMUtil.get_all_attributes(stack, fil_attr)
 	ptlcoords = EMUtil.get_all_attributes(stack, 'ptcl_source_coord')
@@ -18658,24 +18008,24 @@ def match_pixel_rise(dz,px, nz=-1, ndisk=-1, rele=0.1, stop=900000):
 	return -1.0, -1.0
 
 def gendisks_MPI(stack, mask3d, ref_nx, pixel_size, dp, dphi, fract=0.67, rmax=70, rmin=0, CTF=False, user_func_name = "helical", sym = "c1", dskfilename='bdb:disks', maxerror=0.01, new_pixel_size = -1, do_match_pixel_rise=False):
-	from mpi              import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier, MPI_INT, MPI_FLOAT, mpi_recv, mpi_send, mpi_reduce, MPI_MAX
-	from utilities        import get_params_proj, read_text_row, model_cylinder,pad, set_params3D, get_params3D, model_blank, drop_image
-	from utilities        import reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, bcast_EMData_to_all, send_EMData, recv_EMData, bcast_list_to_all
-	from utilities        import send_attr_dict, file_type, sym_vol, get_im, chunks_distribution
-	from fundamentals     import resample, rot_shift3D
-	from applications     import MPI_start_end, match_pixel_rise
-	from pixel_error	  import ordersegments
-	from math             import fmod, atan, pi
-	from utilities        import model_blank
-	from filter           import filt_tanl, filt_ctf
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier, MPI_INT, MPI_TAG_UB, MPI_FLOAT, mpi_recv, mpi_send, mpi_reduce, MPI_MAX
+	from EMAN2.utilities import get_params_proj, read_text_row, model_cylinder,pad, set_params3D, get_params3D, model_blank, drop_image
+	from EMAN2.utilities import reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, bcast_EMData_to_all, send_EMData, recv_EMData, bcast_list_to_all
+	from EMAN2.utilities import send_attr_dict, file_type, sym_vol, get_im, chunks_distribution
+	from EMAN2.fundamentals import resample, rot_shift3D
+	from EMAN2.applications import MPI_start_end, match_pixel_rise
+	from EMAN2.pixel_error import ordersegments
+	from math import fmod, atan, pi
+	from EMAN2.utilities import model_blank
+	from EMAN2.filter import filt_tanl, filt_ctf
 	import os
-	from statistics       import fsc_mask
-	from copy             import copy
-	from os               import sys
-	from time             import time
-	from alignment        import Numrinit, ringwe
-	from reconstruction   import recons3d_4nn,recons3d_4nn_ctf
-	from morphology       import ctf_2
+	from EMAN2.statistics import fsc_mask
+	from copy import copy
+	from os import sys
+	from time import time
+	from EMAN2.alignment import Numrinit, ringwe
+	from reconstruction import recons3d_4nn,recons3d_4nn_ctf
+	from EMAN2.morphology import ctf_2
 
 	myid  = mpi_comm_rank(MPI_COMM_WORLD)
 	nproc = mpi_comm_size(MPI_COMM_WORLD)
@@ -18714,7 +18064,7 @@ def gendisks_MPI(stack, mask3d, ref_nx, pixel_size, dp, dphi, fract=0.67, rmax=7
 		rise = int(ceil(dpp))
 		ratio = pixel_size/new_pixel_size
 
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 	
 	if( myid == 0):
@@ -18841,7 +18191,7 @@ def gendisks_MPI(stack, mask3d, ref_nx, pixel_size, dp, dphi, fract=0.67, rmax=7
 		if(myid == main_node):
 			for i in xrange(nproc):
 				if(i != main_node):
-					didfil = mpi_recv(1, MPI_INT, i, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+					didfil = mpi_recv(1, MPI_INT, i, MPI_TAG_UB, MPI_COMM_WORLD)
 					didfil = int(didfil[0])
 					if(didfil == 1):
 						fil = recv_EMData(i, ivol+i+70000)
@@ -18856,39 +18206,39 @@ def gendisks_MPI(stack, mask3d, ref_nx, pixel_size, dp, dphi, fract=0.67, rmax=7
 						#print outvol, filatable[main_node][ivol]
 						outvol += 1
 		else:
-			mpi_send(gotfil, 1, MPI_INT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			mpi_send(gotfil, 1, MPI_INT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 			if(gotfil == 1):
 				send_EMData(fullvol0, main_node, ivol+myid+70000)
 
 def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search_rng, rng, ywobble, ystep, pixel_size, dp, dphi, fract, rmax, rmin, FindPsi = True, maskfile = None, \
-	    maxit = 1, CTF = False, snr = 1.0, sym = "c1",  user_func_name = "helical", npad = 2, debug = False, slowIO = False):
+	    maxit = 1, CTF = False, snr = 1.0, sym = "c1",  user_func_name = "helical", npad = 2, debug = False):
 
-	from alignment       import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
-	from alignment       import ringwe, ang_n
-	from utilities       import model_circle, get_image, drop_image, get_input_from_string, peak_search, model_cylinder, pad, model_blank
-	from utilities       import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities       import send_attr_dict, sym_vol, get_input_from_string
-	from utilities       import get_params_proj, set_params_proj, file_type, compose_transform2
-	from fundamentals    import rot_avg_image, ccf, fft, rot_shift2D
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore, proj_ali_incore_local, proj_ali_incore_local_psi
+	from EMAN2.alignment import ringwe, ang_n
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, peak_search, model_cylinder, pad, model_blank
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, sym_vol, get_input_from_string
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type, compose_transform2
+	from EMAN2.fundamentals import rot_avg_image, ccf, fft, rot_shift2D
 	from utilities       import print_begin_msg, print_end_msg, print_msg, chunks_distribution
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi             import mpi_reduce, MPI_INT, MPI_SUM
-	from filter          import filt_ctf
-	from projection      import prep_vol, prgs
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
 	#from statistics      import hist_list, varf3d_MPI, fsc_mask
-	from applications	 import MPI_start_end, header
-	from pixel_error     import ordersegments
+	from EMAN2.applications import MPI_start_end, header
+	from EMAN2.pixel_error import ordersegments
 
-	from time            import time
-	from copy 			 import copy
-	from math 			 import sqrt
+	from time import time
+	from copy import copy
+	from math import sqrt
 	import os
 	import types
 
 	'''
 	def rot2pad(imi, alpha=0.0, sx=0.0, sy=0.0):
-		from utilities    import pad
-		from fundamentals import rot_shift2D
+		from EMAN2.utilities import pad
+		from EMAN2.fundamentals import rot_shift2D
 		lnx = imi.get_xsize()
 		lny = imi.get_ysize()
 		ln = max(lnx,lny)
@@ -18952,7 +18302,7 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 	delta       = get_input_from_string(delta)[0]
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                               : %s\n"%(stack))
@@ -18986,8 +18336,8 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 	fscmask = mask3D
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	if( myid == 0):
 		infils = EMUtil.get_all_attributes(stack, "filament")
@@ -19038,15 +18388,7 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 		k1 = k+len(filaments[i])
 		indcs.append([k,k1])
 		k = k1
-		
-	if slowIO:
-		for iproc in xrange(number_of_proc):
-			if myid ==iproc:
-				data = EMData.read_images(stack, list_of_particles)
-				print "Read %6d images on process  : %4d"%(len(list_of_particles),myid)
-			mpi_barrier(MPI_COMM_WORLD)
-	else: data = EMData.read_images(stack, list_of_particles)
-		
+	data = EMData.read_images(stack, list_of_particles)
 	nima = len(data)
 	#print  " READ IMAGES ", myid,nima,nproc
 
@@ -19123,8 +18465,7 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 		mode = "F"
 		cnx = data_nn//2+1
 		cny = cnx
-		numr = Numrinit(1, data_nn//2-max(nwxc,nwyc)-1, 1, mode)
-		print  "  Radius Used  ",data_nn//2-max(nwxc,nwyc)-1
+		numr = Numrinit(1, data_nn//2-2, 1, mode)
 		wr   = ringwe(numr, mode)
 		maxrin = numr[len(numr)-1]
 		crefim = [None]*nphi
@@ -19171,9 +18512,9 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 		#exit()
 		#if myid == main_node:  
 		#astart_time = time()
-		if myid == main_node:  start_time = time()
 		terminate = 0
 		for ifil in xrange(nfils):
+			if myid == main_node:  start_time = time()
 			ldata = [data[im] for im in xrange(indcs[ifil][0],indcs[ifil][1])]
 			#for im in xrange(len(ldata)):  ldata[im].set_attr("bestang", 10000.0)
 			Util.constrained_helix_exhaustive(ldata, fdata[indcs[ifil][0]:indcs[ifil][1]], refproj, rotproj, [float(dp), float(dphi), rise, float(delta), ywobble, ystep], [int(nphi), symrestrict, int(phiwobble), int(rng), int(Dsym), int(nwx), int(nwy), int(nwxc), int(nwyc)], FindPsi, float(psi_max), crefim, numr, int(maxrin), mode, int(cnx), int(cny))
@@ -19210,6 +18551,7 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 		del ldata
 		del refproj
 		if(not Dsym):  del rotproj
+		#print  "Time of alignment = ",myid,time()-astart_time
 		#mpi_barrier(MPI_COMM_WORLD)
 
 		"""
@@ -19228,10 +18570,10 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 		if myid == main_node:
 			start_time = time()
 			if(file_type(stack) == "bdb"):
-				from utilities import recv_attr_dict_bdb
+				from EMAN2.utilities import recv_attr_dict_bdb
 				recv_attr_dict_bdb(main_node, stack, data, par_str, 0, nima, nproc)
 			else:
-				from utilities import recv_attr_dict
+				from EMAN2.utilities import recv_attr_dict
 				recv_attr_dict(main_node, stack, data, par_str, 0, nima, nproc)
 			print_msg("Time to write header information= %d\n"%(time()-start_time))
 			start_time = time()
@@ -19264,30 +18606,30 @@ def ehelix_MPI(stack, ref_vol, outdir, seg_ny, delta, phiwobble, psi_max, search
 def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, ynumber,\
 						txs, delta, initial_theta, delta_theta, an, maxit, CTF, snr, dp, dphi, psi_max,\
 						rmin, rmax, fract,  npad, sym, user_func_name, \
-						pixel_size, debug, y_restrict, search_iter, slowIO):
+						pixel_size, debug, y_restrict, search_iter):
 
-	from alignment      import Numrinit, proj_ali_helicon_local, proj_ali_helicon_90_local_direct, directaligridding1, directaligriddingconstrained
-	from utilities      import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
-	from utilities      import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities      import send_attr_dict, read_text_row, sym_vol
-	from utilities      import get_params_proj, set_params_proj, file_type, chunks_distribution
-	from fundamentals   import rot_avg_image
-	from applications 	import setfilori_SP, filamentupdown, prepare_refffts
-	from pixel_error    import max_3D_pixel_error, ordersegments
+	from EMAN2.alignment import proj_ali_helicon_local, proj_ali_helicon_90_local_direct, directaligridding1, directaligriddingconstrained
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, read_text_row, sym_vol
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type, chunks_distribution
+	from EMAN2.fundamentals import rot_avg_image
+	from EMAN2.applications import setfilori_SP, filamentupdown, prepare_refffts
+	from EMAN2.pixel_error import max_3D_pixel_error, ordersegments
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_recv,  mpi_send, MPI_TAG_UB
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from filter         import filt_ctf
-	from projection     import prep_vol, prgs
-	from statistics     import hist_list, varf3d_MPI
-	from applications   import MPI_start_end, header, prepare_helical_refangles, prepare_reffft1
-	from EMAN2          import Vec2f, Processor
-	from math			import sin, cos, radians
-	from string         import lower, split
-	from copy           import copy
-	import  os
-	import  types
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end, header, prepare_helical_refangles, prepare_reffft1
+	from EMAN2 import Vec2f, Processor
+	from math import sin, cos, radians
+	from string import lower, split
+	from copy import copy
+	import os
+	import types
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid           = mpi_comm_rank(MPI_COMM_WORLD)
@@ -19374,7 +18716,7 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 	nmax = max(nx, ny, nz)
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                               : %s\n"%(stack))
@@ -19415,8 +18757,8 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	if( myid == 0):
 		infils = EMUtil.get_all_attributes(stack, "filament")
@@ -19466,15 +18808,7 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 		indcs.append([k,k1])
 		k = k1
 
-	if slowIO:
-		for iproc in xrange(number_of_proc):
-			if myid ==iproc:
-				data = EMData.read_images(stack, list_of_particles)
-				print "Read %6d images on process  : %4d"%(len(list_of_particles),myid)
-			mpi_barrier(MPI_COMM_WORLD)
-	else: data = EMData.read_images(stack, list_of_particles)
-
-	
+	data = EMData.read_images(stack, list_of_particles)
 	nima = len(data)
 	data_nx = data[0].get_xsize()
 	data_ny = data[0].get_ysize()
@@ -19486,12 +18820,7 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 	
 	if last_ring < 0:
 		last_ring = (max(seg_ny, 2*int(rmax)))//2 - 2
-		
-	numr	= Numrinit(first_ring, last_ring, rstep, "F")
 
-	maxrin = numr[len(numr)-1]
-	psistep = 360./maxrin
-	print "psistep", psistep
 	#if fourvar:  original_data = []
 	for im in xrange(nima):
 		data[im].set_attr('ID', list_of_particles[im])
@@ -19553,9 +18882,8 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 				stepx[ii] = 1.0 # this is to prevent division by zero in c++ code
 
 	#  TURN INTO PARAMETER OR COMPUTE FROM OU
-	#psistep=0.5
+	psistep=0.5
 	# do the projection matching
-	startl = time()
 	ooiter = 0
 	for N_step in xrange(lstp):
 		terminate = 0
@@ -19575,6 +18903,7 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 			pixer  = [0.0]*nima
 
 			neworient = [[0.0, 0.0, 0.0, 0.0, 0.0, -2.0e23] for i in xrange(nima)]
+
 			ooiter += 1
 			Iter += 1
 			if Iter%search_iter == 0:  total_iter += 1
@@ -19617,20 +18946,15 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 				for im in xrange( seg_start, seg_end ):
 					Torg.append(data[im].get_attr('xform.projection'))
 
-				#Fit predicted locations as new starting points
-#  				if (seg_end - seg_start) > 1:
-#  					setfilori_SP(data[seg_start: seg_end], pixel_size, dp, dphi)
+				#  Fit predicted locations as new starting points
+				if (seg_end - seg_start) > 1:
+					setfilori_SP(data[seg_start: seg_end], pixel_size, dp, dphi)
 				
 			#  Generate list of reference angles, all nodes have the entire list
 			ref_angles = prepare_helical_refangles(delta[N_step], initial_theta =initial_theta, delta_theta = delta_theta)
 			#  count how many projections did not have a peak.  If too many, something is wrong
 			nopeak = 0
 			#  DO ORIENTATION SEARCHES
-			#print "len_refang", len(ref_angles)
-
-			reftime = 0
-			searchtime = 0
-	
 			for refang in ref_angles:
 				n1 = sin(radians(refang[1]))*cos(radians(refang[0]))
 				n2 = sin(radians(refang[1]))*sin(radians(refang[0]))
@@ -19658,18 +18982,13 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 						imn3 = cos(radians(theta))
 						if( (n1*imn1 + n2*imn2 + n3*imn3)>=ant ):
 
-						
+							if(refrings[0] == None):
+								#print  "  reffft1  ",im,refang
+								refrings = prepare_reffft1(volft, kbv, refang, segmask, psi_max, psistep)
 
 							if psi < 180.0 :  direction = "up"
 							else:             direction = "down"
-							
-							if(refrings[0] == None):
-			
-								startref = time()
-								refrings = prepare_reffft2(volft, kbv, refang, segmask, psi_max, psistep)
-								endref = time()
-								#print " compute ref timing",  endref-startref,  refang,  idd
-								reftime = reftime + endref-startref
+
 							#angb, tx, ty, pik = directaligridding1(dataft[im], kb, refrings, \
 							#	psi_max, psistep, xrng[N_step], yrng[N_step], stepx, stepy, direction)
 
@@ -19684,39 +19003,33 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 							#
 							
 							
-							#tyrng = max(stepy,min(yrng[N_step],abs(y_restrict[N_step]-ty),abs(-y_restrict[N_step]-ty)))
-							tyrng = min(yrng[N_step],abs(y_restrict[N_step]))
+							tyrng = max(stepy,min(yrng[N_step],abs(y_restrict[N_step]-ty),abs(-y_restrict[N_step]-ty)))
+							
 							#print  "IMAGE  ",im
-		
-							startsearch = time()
-							angb, tx, ty, pik, = directaligriddingconstrained(dataft[im], kb, refrings, \
+							angb, tx, ty, pik = directaligriddingconstrained(dataft[im], kb, refrings, \
 								psi_max, psistep, xrng[N_step], tyrng, stepx[N_step], stepy, psi, tx, ty, direction)
-							endsearch = time()	
-							#print "image id, searching time is ", im, endsearch-startsearch, iddi
-							searchtime = searchtime +endsearch-startsearch 
+							
 							if(pik > -1.0e23):
 								if(pik > neworient[im][-1]):
 									neworient[im][-1] = pik
 									neworient[im][:4] = [angb, tx, ty, refang]
-						
-			print "total time of calculating references", reftime
-			print "total time of searching", searchtime
-			
+
+
 			for im in xrange(nima):
 				if(neworient[im][-1] > -1.0e23):
+					#print " neworient  ",im,neworient[im]
 					#from utilities import inverse_transform2
 					#t1, t2, t3, tp = inverse_transform2(neworient[im][3][1]+neworient[im][0])
 					tp = Transform({"type":"spider","phi":neworient[im][3][0],"theta":neworient[im][3][1],"psi":neworient[im][3][2]+neworient[im][0]})
 					tp.set_trans( Vec2f( neworient[im][1], neworient[im][2] ) )
 					data[im].set_attr("xform.projection", tp)
-					from utilities import get_params_proj
+					from EMAN2.utilities import get_params_proj
 					#print  "  PARAMS ",im,get_params_proj(data[im])
 					pixer[im]  = max_3D_pixel_error(Torg[im], tp, last_ring)
 					data[im].set_attr("pixerr", pixer[im])
 
 				else:
 					# peak not found, parameters not modified
-					print "peak not found image id", im
 					nopeak += 1
 					pixer[im]  = 0.0
 					data[im].set_attr("pixerr", pixer[im])
@@ -19738,7 +19051,7 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 			if (Iter-1) % search_iter == 0 :
 
 				if CTF:  vol = recons3d_4nn_ctf_MPI(myid, data, symmetry=sym, snr = snr, npad = npad)
-				else:    vol = recons3d_4nn_MPI(myid, data, symmetry=sym, npad = npad)
+				else:    vol = recons3d_4nn_MPI(myid, data, symmetry=sym, snr = snr, npad = npad)
 
 				if myid == main_node:
 					print_msg("3D reconstruction time = %d\n"%(time()-start_time))
@@ -19769,10 +19082,10 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 			par_str = ['xform.projection', 'ID','pixerr']
 			if myid == main_node:
 				if(file_type(stack) == "bdb"):
-					from utilities import recv_attr_dict_bdb
+					from EMAN2.utilities import recv_attr_dict_bdb
 					recv_attr_dict_bdb(main_node, stack, data, par_str, 0, nima, number_of_proc)
 				else:
-					from utilities import recv_attr_dict
+					from EMAN2.utilities import recv_attr_dict
 					recv_attr_dict(main_node, stack, data, par_str, 0, nima, number_of_proc)
 			else:
 				send_attr_dict(main_node, data, par_str, 0, nima)
@@ -19781,33 +19094,34 @@ def localhelicon_MPInew(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr
 				# write params to text file
 				header(stack, params='xform.projection', fexport=os.path.join(outdir, "parameters%04d.txt"%(ooiter)))
 				header(stack, params='pixerr', fexport=os.path.join(outdir, "pixelerror%04d.txt"%(ooiter)))
-	print "new method runing time", time()-startl
+
+
 def localhelicon_MPIming(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, ynumber,\
 						txs, delta, initial_theta, delta_theta, an, maxit, CTF, snr, dp, dphi, psi_max,\
 						rmin, rmax, fract,  npad, sym, user_func_name, \
-						pixel_size, debug, y_restrict, search_iter, snakeknots, slowIO):
-	from alignment      import proj_ali_helicon_local, proj_ali_helicon_90_local_direct, directaligridding1, directaligriddingconstrained, directaligriddingconstrained3dccf, alignment3Dsnake
-	from utilities      import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
-	from utilities      import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities      import send_attr_dict, read_text_row, sym_vol
-	from utilities      import get_params_proj, set_params_proj, file_type, chunks_distribution
-	from fundamentals   import rot_avg_image
-	from applications 	import setfilori_SP, filamentupdown, prepare_refffts
-	from pixel_error    import max_3D_pixel_error, ordersegments
+						pixel_size, debug, y_restrict, search_iter, snakeknots):
+	from EMAN2.alignment import proj_ali_helicon_local, proj_ali_helicon_90_local_direct, directaligridding1, directaligriddingconstrained, directaligriddingconstrained3dccf, alignment3Dsnake
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, read_text_row, sym_vol
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type, chunks_distribution
+	from EMAN2.fundamentals import rot_avg_image
+	from EMAN2.applications import setfilori_SP, filamentupdown, prepare_refffts
+	from EMAN2.pixel_error import max_3D_pixel_error, ordersegments
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_recv,  mpi_send
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from filter         import filt_ctf
-	from projection     import prep_vol, prgs
-	from statistics     import hist_list, varf3d_MPI
-	from applications   import MPI_start_end, header, prepare_helical_refangles, prepare_reffft1
-	from EMAN2          import Vec2f, Processor
-	from math			import sin, cos, radians
-	from string         import lower, split
-	from copy           import copy
-	import  os
-	import  types
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end, header, prepare_helical_refangles, prepare_reffft1
+	from EMAN2 import Vec2f, Processor
+	from math import sin, cos, radians
+	from string import lower, split
+	from copy import copy
+	import os
+	import types
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid           = mpi_comm_rank(MPI_COMM_WORLD)
@@ -19894,7 +19208,7 @@ def localhelicon_MPIming(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, x
 	nmax = max(nx, ny, nz)
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                               : %s\n"%(stack))
@@ -19935,8 +19249,8 @@ def localhelicon_MPIming(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, x
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	if( myid == 0):
 		infils = EMUtil.get_all_attributes(stack, "filament")
@@ -19985,13 +19299,8 @@ def localhelicon_MPIming(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, x
 		k1 = k+len(filaments[i])
 		indcs.append([k,k1])
 		k = k1
-	if slowIO:
-		for iproc in xrange(number_of_proc):
-			if myid ==iproc:
-				data = EMData.read_images(stack, list_of_particles)
-				print "Read %6d images on process  : %4d"%(len(list_of_particles),myid)
-			mpi_barrier(MPI_COMM_WORLD)
-	else: data = EMData.read_images(stack, list_of_particles)	
+
+	data = EMData.read_images(stack, list_of_particles)
 	nima = len(data)
 	data_nx = data[0].get_xsize()
 	data_ny = data[0].get_ysize()
@@ -20217,7 +19526,7 @@ def localhelicon_MPIming(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, x
 					tp = Transform({"type":"spider","phi":neworient[im][3][0],"theta":neworient[im][3][1],"psi":neworient[im][3][2]+neworient[im][0]})
 					tp.set_trans( Vec2f( neworient[im][1], neworient[im][2] ) )
 					data[im].set_attr("xform.projection", tp)
-					from utilities import get_params_proj
+					from EMAN2.utilities import get_params_proj
 					#print  "  PARAMS ",im,get_params_proj(data[im])
 					pixer[im]  = max_3D_pixel_error(Torg[im], tp, last_ring)
 					data[im].set_attr("pixerr", pixer[im])
@@ -20272,14 +19581,14 @@ def localhelicon_MPIming(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, x
 			mpi_barrier(MPI_COMM_WORLD)
 
 			# write out headers, under MPI writing has to be done sequentially
-			from mpi import mpi_recv, mpi_send, MPI_COMM_WORLD, MPI_FLOAT
+			from mpi import mpi_recv, mpi_send, MPI_TAG_UB, MPI_COMM_WORLD, MPI_FLOAT
 			par_str = ['xform.projection', 'ID','pixerr']
 			if myid == main_node:
 				if(file_type(stack) == "bdb"):
-					from utilities import recv_attr_dict_bdb
+					from EMAN2.utilities import recv_attr_dict_bdb
 					recv_attr_dict_bdb(main_node, stack, data, par_str, 0, nima, number_of_proc)
 				else:
-					from utilities import recv_attr_dict
+					from EMAN2.utilities import recv_attr_dict
 					recv_attr_dict(main_node, stack, data, par_str, 0, nima, number_of_proc)
 			else:
 				send_attr_dict(main_node, data, par_str, 0, nima)
@@ -20294,27 +19603,27 @@ def localhelicon_MPIming(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, x
 def localhelicon_MPInew_fullrefproj(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, ynumber,\
 						txs, delta, initial_theta, delta_theta, an, maxit, CTF, snr, dp, dphi, psi_max,\
 						rmin, rmax, fract,  npad, sym, user_func_name, \
-						pixel_size, debug, y_restrict, search_iter, slowIO):
+						pixel_size, debug, y_restrict, search_iter):
 
-	from alignment      import proj_ali_helicon_local, proj_ali_helicon_90_local_direct
-	from utilities      import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
-	from utilities      import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities      import send_attr_dict, read_text_row, sym_vol
-	from utilities      import get_params_proj, set_params_proj, file_type, chunks_distribution
-	from fundamentals   import rot_avg_image
-	from applications 	import setfilori_SP, filamentupdown, prepare_refffts
-	from pixel_error    import max_3D_pixel_error, ordersegments
+	from EMAN2.alignment import proj_ali_helicon_local, proj_ali_helicon_90_local_direct
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, read_text_row, sym_vol
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type, chunks_distribution
+	from EMAN2.fundamentals import rot_avg_image
+	from EMAN2.applications import setfilori_SP, filamentupdown, prepare_refffts
+	from EMAN2.pixel_error import max_3D_pixel_error, ordersegments
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_recv,  mpi_send
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from filter         import filt_ctf
-	from projection     import prep_vol, prgs
-	from statistics     import hist_list, varf3d_MPI
-	from applications   import MPI_start_end, header
-	from EMAN2          import Vec2f
-	from string         import lower, split
-	from copy           import copy
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end, header
+	from EMAN2 import Vec2f
+	from string import lower, split
+	from copy import copy
 	import os
 	import types
 
@@ -20404,7 +19713,7 @@ def localhelicon_MPInew_fullrefproj(stack, ref_vol, outdir, seg_ny, maskfile, ir
 	nmax = max(nx, ny, nz)
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                               : %s\n"%(stack))
@@ -20445,8 +19754,8 @@ def localhelicon_MPInew_fullrefproj(stack, ref_vol, outdir, seg_ny, maskfile, ir
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	if( myid == 0):
 		infils = EMUtil.get_all_attributes(stack, "filament")
@@ -20496,13 +19805,7 @@ def localhelicon_MPInew_fullrefproj(stack, ref_vol, outdir, seg_ny, maskfile, ir
 		indcs.append([k,k1])
 		k = k1
 
-	if slowIO:
-		for iproc in xrange(number_of_proc):
-			if myid ==iproc:
-				data = EMData.read_images(stack, list_of_particles)
-				print "Read %6d images on process  : %4d"%(len(list_of_particles),myid)
-			mpi_barrier(MPI_COMM_WORLD)
-	else: data = EMData.read_images(stack, list_of_particles)
+	data = EMData.read_images(stack, list_of_particles)
 	nima = len(data)
 	data_nx = data[0].get_xsize()
 	data_ny = data[0].get_ysize()
@@ -20679,14 +19982,14 @@ def localhelicon_MPInew_fullrefproj(stack, ref_vol, outdir, seg_ny, maskfile, ir
 			mpi_barrier(MPI_COMM_WORLD)
 
 			# write out headers, under MPI writing has to be done sequentially
-			from mpi import mpi_recv, mpi_send, MPI_COMM_WORLD, MPI_FLOAT
+			from mpi import mpi_recv, mpi_send, MPI_TAG_UB, MPI_COMM_WORLD, MPI_FLOAT
 			par_str = ['xform.projection', 'ID','pixerr']
 			if myid == main_node:
 				if(file_type(stack) == "bdb"):
-					from utilities import recv_attr_dict_bdb
+					from EMAN2.utilities import recv_attr_dict_bdb
 					recv_attr_dict_bdb(main_node, stack, data, par_str, 0, nima, number_of_proc)
 				else:
-					from utilities import recv_attr_dict
+					from EMAN2.utilities import recv_attr_dict
 					recv_attr_dict(main_node, stack, data, par_str, 0, nima, number_of_proc)
 			else:
 				send_attr_dict(main_node, data, par_str, 0, nima)
@@ -20700,28 +20003,28 @@ def localhelicon_MPInew_fullrefproj(stack, ref_vol, outdir, seg_ny, maskfile, ir
 def localhelicon_MPI(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, ynumber,\
 						txs, delta, initial_theta, delta_theta, an, maxit, CTF, snr, dp, dphi, psi_max,\
 						rmin, rmax, fract,  npad, sym, user_func_name, \
-						pixel_size, debug, y_restrict, search_iter, slowIO):
+						pixel_size, debug, y_restrict, search_iter):
 
-	from alignment      import Numrinit, prepare_refrings2, prepare_refrings
-	from alignment      import proj_ali_helicon_local, proj_ali_helicon_90_local
-	from utilities      import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
-	from utilities      import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities      import send_attr_dict, read_text_row, sym_vol
-	from utilities      import get_params_proj, set_params_proj, file_type, chunks_distribution
-	from fundamentals   import rot_avg_image
-	from applications 	import setfilori_SP, filamentupdown
-	from pixel_error    import max_3D_pixel_error, ordersegments
+	from EMAN2.alignment import Numrinit, prepare_refrings2, prepare_refrings
+	from EMAN2.alignment import proj_ali_helicon_local, proj_ali_helicon_90_local
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict, read_text_row, sym_vol
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type, chunks_distribution
+	from EMAN2.fundamentals import rot_avg_image
+	from EMAN2.applications import setfilori_SP, filamentupdown
+	from EMAN2.pixel_error import max_3D_pixel_error, ordersegments
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_recv,  mpi_send
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from filter         import filt_ctf
-	from projection     import prep_vol, prgs
-	from statistics     import hist_list, varf3d_MPI
-	from applications   import MPI_start_end, header
-	from EMAN2          import Vec2f
-	from string         import lower,split
-	from copy           import copy
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end, header
+	from EMAN2 import Vec2f
+	from string import lower,split
+	from copy import copy
 	import os
 	import types
 
@@ -20811,7 +20114,7 @@ def localhelicon_MPI(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, y
 	nmax = max(nx, ny, nz)
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                               : %s\n"%(stack))
@@ -20852,8 +20155,8 @@ def localhelicon_MPI(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, y
 
 	if CTF:
 		from reconstruction import recons3d_4nn_ctf_MPI
-		from filter         import filt_ctf
-	else:	 from reconstruction import recons3d_4nn_MPI
+		from EMAN2.filter import filt_ctf
+	else: from reconstruction import recons3d_4nn_MPI
 
 	if( myid == 0):
 		infils = EMUtil.get_all_attributes(stack, "filament")
@@ -20902,13 +20205,8 @@ def localhelicon_MPI(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, y
 		k1 = k+len(filaments[i])
 		indcs.append([k,k1])
 		k = k1
-	if slowIO:
-		for iproc in xrange(number_of_proc):
-			if myid ==iproc:
-				data = EMData.read_images(stack, list_of_particles)
-				print "Read %6d images on process  : %4d"%(len(list_of_particles),myid)
-			mpi_barrier(MPI_COMM_WORLD)
-	else: data = EMData.read_images(stack, list_of_particles)	
+
+	data = EMData.read_images(stack, list_of_particles)
 	nima = len(data)
 	data_nx = data[0].get_xsize()
 	data_ny = data[0].get_ysize()
@@ -21078,14 +20376,14 @@ def localhelicon_MPI(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, y
 			mpi_barrier(MPI_COMM_WORLD)
 
 			# write out headers, under MPI writing has to be done sequentially
-			from mpi import mpi_recv, mpi_send, MPI_COMM_WORLD, MPI_FLOAT
+			from mpi import mpi_recv, mpi_send, MPI_TAG_UB, MPI_COMM_WORLD, MPI_FLOAT
 			par_str = ['xform.projection', 'ID','pixerr']
 			if myid == main_node:
 				if(file_type(stack) == "bdb"):
-					from utilities import recv_attr_dict_bdb
+					from EMAN2.utilities import recv_attr_dict_bdb
 					recv_attr_dict_bdb(main_node, stack, data, par_str, 0, nima, number_of_proc)
 				else:
-					from utilities import recv_attr_dict
+					from EMAN2.utilities import recv_attr_dict
 					recv_attr_dict(main_node, stack, data, par_str, 0, nima, number_of_proc)
 			else:
 				send_attr_dict(main_node, data, par_str, 0, nima)
@@ -21097,7 +20395,7 @@ def localhelicon_MPI(stack, ref_vol, outdir, seg_ny, maskfile, ir, ou, rs, xr, y
 
 
 def filamentupdown(fildata, pixel_size, dp, dphi):
-	from utilities import get_params_proj, get_dist
+	from EMAN2.utilities import get_params_proj, get_dist
 
 	rise  = dp/pixel_size
 	ns = len(fildata)
@@ -21133,10 +20431,10 @@ def filamentupdown(fildata, pixel_size, dp, dphi):
 	return
 """
 def setfilori_MA(fildata, pixel_size, dp, dphi):
-	from utilities		import get_params_proj, set_params_proj, get_dist
-	from applications	import filamentupdown
-	from copy 			import copy
-	from math 			import atan2, sin, cos, pi
+	from EMAN2.utilities import get_params_proj, set_params_proj, get_dist
+	from EMAN2.applications import filamentupdown
+	from copy import copy
+	from math import atan2, sin, cos, pi
 
 	#if sym != 'c1':
 	#	ERROR("does not handle any point-group symmetry other than c1 for the time being.", 'setfilori_MA')
@@ -21250,11 +20548,11 @@ def setfilori_MA(fildata, pixel_size, dp, dphi):
 """
 
 def setfilori_SP(fildata, pixel_size, dp, dphi):
-	from utilities		import get_params_proj, set_params_proj, get_dist
-	from pixel_error 	import angle_diff
-	from applications	import filamentupdown
-	from copy 			import deepcopy
-	from math 			import atan2, sin, cos, pi, radians
+	from EMAN2.utilities import get_params_proj, set_params_proj, get_dist
+	from EMAN2.pixel_error import angle_diff
+	from EMAN2.applications import filamentupdown
+	from copy import deepcopy
+	from math import atan2, sin, cos, pi, radians
 	
 	#if sym != 'c1':
 	#	ERROR("does not handle any point-group symmetry other than c1 for the time being.", 'setfilori_SP')
@@ -21348,12 +20646,12 @@ def setfilori_SP(fildata, pixel_size, dp, dphi):
 def prepare_refffts( volft, kb, nx,ny,nz, segmask, delta,  \
 		MPI=False, psimax=1.0, psistep=1.0, kbx = None, kby = None, initial_theta = None, delta_theta = None):
 
-	from projection   import prgs
-	from math         import sin, cos, radians
-	from applications import MPI_start_end
-	from utilities    import even_angles
-	from alignment	  import preparerefsgrid, ringwe
-	from fundamentals import fft, rot_shift2D
+	from EMAN2.projection import prgs
+	from math import sin, cos, radians
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.utilities import even_angles
+	from EMAN2.alignment import preparerefsgrid, ringwe
+	from EMAN2.fundamentals import fft, rot_shift2D
 
 	# generate list of Eulerian angles for reference projections
 	#  phi, theta, psi
@@ -21384,7 +20682,7 @@ def prepare_refffts( volft, kb, nx,ny,nz, segmask, delta,  \
 	else:
 		ncpu = 1
 		myid = 0
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	ref_start, ref_end = MPI_start_end(num_ref, ncpu, myid)
 
 	refrings = []     # list of (image objects) reference projections in Fourier representation
@@ -21403,7 +20701,7 @@ def prepare_refffts( volft, kb, nx,ny,nz, segmask, delta,  \
 		ERROR("do not handle this case","prepare_refffts",1)
 		sys.exit()
 	if MPI:
-		from utilities import bcast_EMData_to_all
+		from EMAN2.utilities import bcast_EMData_to_all
 		for i in xrange(num_ref):
 			for j in xrange(ncpu):
 				ref_start, ref_end = MPI_start_end(num_ref, ncpu, j)
@@ -21449,9 +20747,9 @@ def prepare_helical_refangles(delta, initial_theta = None, delta_theta = None):
 
 def prepare_reffft1( volft, kb, ref_angles, segmask, psimax=1.0, psistep=1.0, kbx = None, kby = None):
 
-	from projection   import prgs
-	from alignment    import preparerefsgrid
-	from math         import sin, cos, radians
+	from EMAN2.projection import prgs
+	from EMAN2.alignment import preparerefsgrid
+	from math import sin, cos, radians
 
 	#refrings = []     # list of (image objects) reference projections in Fourier representation
 
@@ -21479,62 +20777,30 @@ def prepare_reffft1( volft, kb, ref_angles, segmask, psimax=1.0, psistep=1.0, kb
 
 	return refrings
 
-
-def prepare_reffft2( volft, kb, ref_angles, segmask, psimax=1.0, psistep=1.0, kbx = None, kby = None):
-
-	from projection   import prgs
-	from alignment    import preparerefsgrid, preparerefsgrid1
-	from math         import sin, cos, radians
-
-	#refrings = []     # list of (image objects) reference projections in Fourier representation
-
-	
-	if kbx is None:
-		prjref = prgs(volft, kb, [ref_angles[0], ref_angles[1], ref_angles[2], 0.0, 0.0])
-		Util.mul_img(prjref, segmask )
-		#  EVENTUALLY PASS kb inside
-		refrings = preparerefsgrid1(prjref, psimax, psistep)
-	else:
-		ERROR("do not handle this case","prepare_refffts",1)
-		sys.exit()
-
-	q0  = radians(ref_angles[0])
-	q1  = radians(ref_angles[1])
-	sq1 = sin(q1)
-	n1 = sq1*cos(q0)
-	n2 = sq1*sin(q0)
-	n3 = cos(q1)
-	refrings[0].set_attr_dict( {"n1":n1, "n2":n2, "n3":n3} )
-	refrings[0].set_attr("phi",   ref_angles[0])
-	refrings[0].set_attr("theta", ref_angles[1])
-	refrings[0].set_attr("psi",   ref_angles[2])
-
-	return refrings
-	
 def symsearch_MPI(ref_vol, outdir, maskfile, dp, ndp, dp_step, dphi, ndphi, dphi_step,\
 	rmin, rmax, fract, sym, user_func_name, datasym,\
 	pixel_size, debug):
 
-	from alignment      import helios, helios7
-	from utilities      import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank, sym_vol
-	from utilities      import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
-	from utilities      import send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, file_type
-	from fundamentals   import rot_avg_image
-	from pixel_error    import max_3D_pixel_error
+	from EMAN2.alignment import helios, helios7
+	from EMAN2.utilities import model_circle, get_image, drop_image, get_input_from_string, pad, model_blank, sym_vol
+	from EMAN2.utilities import bcast_list_to_all, bcast_number_to_all, reduce_EMData_to_root, bcast_EMData_to_all
+	from EMAN2.utilities import send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, file_type
+	from EMAN2.fundamentals import rot_avg_image
+	from EMAN2.pixel_error import max_3D_pixel_error
 	import os
 	import types
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_recv,  mpi_send
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from filter         import filt_ctf
-	from projection     import prep_vol, prgs
-	from statistics     import hist_list, varf3d_MPI
-	from applications   import MPI_start_end
-	from EMAN2          import Vec2f
-	from string         import lower,split
-	from math           import cos, pi
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_recv, mpi_send, MPI_TAG_UB
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol, prgs
+	from EMAN2.statistics import hist_list, varf3d_MPI
+	from EMAN2.applications import MPI_start_end
+	from EMAN2 import Vec2f
+	from string import lower,split
+	from math import cos, pi
 
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid           = mpi_comm_rank(MPI_COMM_WORLD)
@@ -21575,7 +20841,7 @@ def symsearch_MPI(ref_vol, outdir, maskfile, dp, ndp, dp_step, dphi, ndphi, dphi
 	vol.read_image(ref_vol)
 
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Reference volume                          : %s\n"%(ref_vol))	
@@ -21619,10 +20885,10 @@ def symsearch_MPI(ref_vol, outdir, maskfile, dp, ndp, dp_step, dphi, ndphi, dphi
 
 	if myid == main_node:
 		for n in xrange(number_of_proc):
-			if n!=main_node: mpi_send(lprms[2*recvpara[2*n]:2*recvpara[2*n+1]], 2 * (recvpara[2*n+1]-recvpara[2*n]), MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			if n!=main_node: mpi_send(lprms[2*recvpara[2*n]:2*recvpara[2*n+1]], 2*(recvpara[2*n+1]-recvpara[2*n]), MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
 			else:            list_dps = lprms[2*recvpara[2*0]:2*recvpara[2*0+1]]
 	else:
-		list_dps = mpi_recv((para_end-para_start) * 2, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+		list_dps = mpi_recv((para_end-para_start)*2, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 	list_dps = map(float, list_dps)
 
@@ -21634,10 +20900,10 @@ def symsearch_MPI(ref_vol, outdir, maskfile, dp, ndp, dp_step, dphi, ndphi, dphi
 	if myid == main_node:
 		list_return = [0.0]*(3*number_of_proc)
 		for n in xrange(number_of_proc):
-			if n != main_node: list_return[3*n:3*n+3]                 = mpi_recv(3, MPI_FLOAT, n, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+			if n != main_node: list_return[3*n:3*n+3]                 = mpi_recv(3,MPI_FLOAT, n, MPI_TAG_UB, MPI_COMM_WORLD)
 			else:              list_return[3*main_node:3*main_node+3]  = local_pos[:]
 	else:
-		mpi_send(local_pos, 3, MPI_FLOAT, main_node, SPARX_MPI_TAG_UNIVERSAL, MPI_COMM_WORLD)
+		mpi_send(local_pos, 3, MPI_FLOAT, main_node, MPI_TAG_UB, MPI_COMM_WORLD)
 
 	if myid == main_node:	
 		maxvalue = list_return[2]
@@ -21693,24 +20959,24 @@ def sali3d_base_old(stack, ref_vol = None, Tracker = None, mpi_comm = None, log 
 		
 	"""
 
-	from alignment       import Numrinit, prepare_refrings
-	from alignment       import proj_ali_incore,  proj_ali_incore_zoom,  proj_ali_incore_local, proj_ali_incore_local_zoom
-	from alignment       import shc, center_projections_3D
-	from utilities       import bcast_number_to_all, bcast_EMData_to_all, 	wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
-	from utilities       import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj
-	from mpi             import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
-	from projection      import prep_vol
-	from statistics      import hist_list
-	from applications    import MPI_start_end
-	from filter          import filt_ctf
-	from global_def      import Util
-	from fundamentals    import resample, fshift
-	from multi_shc       import shc_multi
+	from EMAN2.alignment import Numrinit, prepare_refrings
+	from EMAN2.alignment import proj_ali_incore, proj_ali_incore_zoom, proj_ali_incore_local, proj_ali_incore_local_zoom
+	from EMAN2.alignment import shc, center_projections_3D
+	from EMAN2.utilities import bcast_number_to_all, bcast_EMData_to_all, wrap_mpi_gatherv, wrap_mpi_bcast, model_blank
+	from EMAN2.utilities import get_im, file_type, model_circle, get_input_from_string, get_params_proj, set_params_proj
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.projection import prep_vol
+	from EMAN2.statistics import hist_list
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.filter import filt_ctf
+	from global_def import Util
+	from EMAN2.fundamentals import resample, fshift
+	from EMAN2.multi_shc import shc_multi
 	#from development     import do_volume_mrk01
-	import user_functions
-	from EMAN2           import EMUtil, EMData
+	import EMAN2.user_functions as user_functions
+	from EMAN2 import EMUtil, EMData
 	import types
-	from time            import time
+	from time import time
 
 	nsoft            = Tracker["nsoft"]
 	saturatecrit     = Tracker["saturatecrit"]
@@ -21733,7 +20999,7 @@ def sali3d_base_old(stack, ref_vol = None, Tracker = None, mpi_comm = None, log 
 	if mpi_comm == None: mpi_comm = MPI_COMM_WORLD
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 	number_of_proc = mpi_comm_size(mpi_comm)
@@ -21870,7 +21136,7 @@ def sali3d_base_old(stack, ref_vol = None, Tracker = None, mpi_comm = None, log 
 				if(an[N_step] < 0.0):
 					# adjust params to references, calculate psi+shifts, calculate previousmax
 					# generate list of angles
-					from alignment import generate_list_of_reference_angles_for_search
+					from EMAN2.alignment import generate_list_of_reference_angles_for_search
 					list_of_reference_angles = \
 					generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 					for im in xrange(nima):
@@ -21897,7 +21163,7 @@ def sali3d_base_old(stack, ref_vol = None, Tracker = None, mpi_comm = None, log 
 			par_r = [0]*max(2,(nsoft+1))
 			if(an[N_step] > 0):
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 				generate_list_of_reference_angles_for_search([[refrings[lr].get_attr("phi"), refrings[lr].get_attr("theta")] for lr in xrange(len(refrings))], sym=sym)			
 			else:  list_of_reference_angles = [[1.0,1.0]]
@@ -22008,7 +21274,7 @@ def sali3d_base_old(stack, ref_vol = None, Tracker = None, mpi_comm = None, log 
 				#=========================================================================
 				# centering
 				if center == -1 and sym[0] == 'c':
-					from utilities      import estimate_3D_center_MPI, rotate_3D_shift
+					from EMAN2.utilities import estimate_3D_center_MPI, rotate_3D_shift
 					cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node, mpi_comm=mpi_comm)
 					if myid == main_node:
 						msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f\n"%(cs[0], cs[1], cs[2])
@@ -22051,7 +21317,7 @@ def sali3d_base_old(stack, ref_vol = None, Tracker = None, mpi_comm = None, log 
 					assert(total_nima == len(params))
 				previousmax = wrap_mpi_gatherv(previousmax, 0, mpi_comm)
 				if myid == main_node:
-					from utilities import write_text_row, write_text_file
+					from EMAN2.utilities import write_text_row, write_text_file
 					write_text_row(params, "soft/params%04d.txt"%total_iter)
 					write_text_file(previousmax, "soft/previousmax%04d.txt"%total_iter)
 
@@ -22085,7 +21351,7 @@ def sali3d_base_old(stack, ref_vol = None, Tracker = None, mpi_comm = None, log 
 			if( ( terminate or (Iter == max_iter) ) and (myid == main_node) ):
 				if( type(stack) is types.StringType ):
 					from EMAN2 import Vec2f, Transform
-					from EMAN2db import db_open_dict
+					from EMAN2.EMAN2db import db_open_dict
 					DB = db_open_dict(stack)
 					for im in xrange(len(params)):
 						t = Transform({"type":"spider","phi":params[im][0],"theta":params[im][1],"psi":params[im][2]})
@@ -22120,21 +21386,21 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 	"""
 
 	"""
-	from alignment        import eqproj_cascaded_ccc
-	from filter           import filt_ctf
-	from projection       import prep_vol
-	from fundamentals     import resample
-	from utilities        import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
-	from utilities        import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict, wrap_mpi_bcast, wrap_mpi_gatherv
-	from utilities        import get_image, drop_image, file_type, get_im, get_input_from_string, model_blank
-	from utilities        import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
+	from EMAN2.alignment import eqproj_cascaded_ccc
+	from EMAN2.filter import filt_ctf
+	from EMAN2.projection import prep_vol
+	from EMAN2.fundamentals import resample
+	from EMAN2.utilities import bcast_number_to_all, model_circle, get_params_proj, set_params_proj
+	from EMAN2.utilities import bcast_EMData_to_all, bcast_list_to_all, send_attr_dict, wrap_mpi_bcast, wrap_mpi_gatherv
+	from EMAN2.utilities import get_image, drop_image, file_type, get_im, get_input_from_string, model_blank
+	from EMAN2.utilities import amoeba_multi_level, rotate_3D_shift, estimate_3D_center_MPI
 	from utilities        import print_begin_msg, print_end_msg, print_msg
 	#from development      import do_volume_mrk01
-	import user_functions
-	from statistics       import varf3d_MPI
-	from math             import pi
-	from mpi              import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi              import mpi_reduce, MPI_INT, MPI_SUM
+	import EMAN2.user_functions as user_functions
+	from EMAN2.statistics import varf3d_MPI
+	from math import pi
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	from EMAN2 import Processor
 	from EMAN2 import Vec2f, Transform
 	import os
@@ -22154,7 +21420,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 	fourvar = False
 
 	if log == None:
-		from logger import Logger
+		from EMAN2.logger import Logger
 		log = Logger()
 
 
@@ -22173,7 +21439,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 		import global_def
 		global_def.LOGFILE =  os.path.join(outdir, global_def.LOGFILE)
 		print_begin_msg("local_ali3d_MPI")
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 		if CTF:
 			ima = EMData()
@@ -22201,7 +21467,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 	if( type(stack) is types.StringType ):
 		if myid == main_node:
 			if(file_type(stack) == "bdb"):
-				from EMAN2db import db_open_dict
+				from EMAN2.EMAN2db import db_open_dict
 				dummy = db_open_dict(stack, True)
 
 			nima = EMUtil.get_image_count(stack)
@@ -22261,7 +21527,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 
 	"""
 	if myid == main_node:
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[user_func_name]
 
 		print_msg("Input stack                 : %s\n"%(stack))
@@ -22279,7 +21545,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 		print_msg("User function               : %s\n"%(user_func_name))
 	"""
 
-	import  types
+	import types
 	if Tracker["constants"]["mask3D"]:
 		if type(Tracker["constants"]["mask3D"]) is types.StringType:
 			if myid == main_node:
@@ -22291,7 +21557,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 		if myid == main_node:
 			nxm = mask3D.get_xsize()
 			if( nxm > nx ):
-				from fundamentals import rot_shift3D
+				from EMAN2.fundamentals import rot_shift3D
 				mask3D = Util.window(rot_shift3D(mask3D,scale=float(nx)/float(nxm)),nx,nx,nx)
 				nxm = mask3D.get_xsize()
 				assert(nx == nxm)
@@ -22308,7 +21574,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 				vol = get_im(templatevol)
 				nxm = vol.get_xsize()
 				if( nxm > nx ):
-					from fundamentals import rot_shift3D
+					from EMAN2.fundamentals import rot_shift3D
 					vol = Util.window(rot_shift3D(vol,scale=float(nx)/float(nxm)),nx,nx,nx)
 					nxm = vol.get_xsize()
 					assert(nx == nxm)
@@ -22318,7 +21584,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 			if myid == main_node:
 				nxm = templatevol.get_xsize()
 				if( nxm > nx ):
-					from fundamentals import rot_shift3D
+					from EMAN2.fundamentals import rot_shift3D
 					vol = Util.window(rot_shift3D(templatevol,scale=float(nx)/float(nxm)),nx,nx,nx)
 					nxm = vol.get_xsize()
 					assert(nx == nxm)
@@ -22497,7 +21763,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 				t2 = Transform({"type":"spider","phi":optm_params[0][0],"theta":optm_params[0][1],"psi":optm_params[0][2]})
 				t2.set_trans(Vec2f(-optm_params[0][3], -optm_params[0][4]))
 				dataim[imn].set_attr("xform.projection", t2)
-				from pixel_error import max_3D_pixel_error
+				from EMAN2.pixel_error import max_3D_pixel_error
 				pixer[imn] = max_3D_pixel_error(t1, t2, last_ring)
 				#set_params_proj(dataim[imn], optm_params[0])
 				#if( myid == main_node and imn%4 == 0):
@@ -22518,7 +21784,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 		terminate = 0
 		if(myid == main_node):
 			pixer = map(float, pixer)
-			from statistics import hist_list
+			from EMAN2.statistics import hist_list
 			lhist = 20
 			region, histo = hist_list(pixer, lhist)
 			log.add(" ")
@@ -22560,7 +21826,7 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 		"""
 		if( type(stack) is types.StringType ):
 			from EMAN2 import Vec2f, Transform
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			DB = db_open_dict(stack)
 			for im in xrange(len(params)):
 				t = Transform({"type":"spider","phi":params[im][0],"theta":params[im][1],"psi":params[im][2]})
@@ -22576,2406 +21842,4 @@ def slocal_ali3d_base_old(stack, templatevol, Tracker, mpi_comm = None, log= Non
 
 	return  params
 
-### from sxsort3d
-			
-def ali3d_mref_Kmeans_MPI(ref_list, outdir, this_data_list_file, Tracker): 
-	from utilities      import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
-	from utilities      import bcast_list_to_all, get_image, get_input_from_string, get_im, read_text_file
-	from utilities      import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, model_blank, write_text_file, get_shrink_data_huang
-	from filter         import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
-	from utilities      import rotate_3D_shift,estimate_3D_center_MPI,get_im
-	###-------
-	from utilities      import get_attr_stack, get_sorting_attr_stack, get_sorting_params, get_sorting_params_refine
-	from utilities      import parsing_sorting_params, fill_in_mpi_list, wrap_mpi_bcast, get_groups_from_partition
-	from utilities      import remove_small_groups, set_filter_parameters_from_adjusted_fsc
 
-	###------- 
-	from alignment      import Numrinit, prepare_refrings, proj_ali_incore
-	from random         import randint
-	from filter         import filt_ctf
-	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from projection     import prep_vol, prgs, prgl, project, prgq, gen_rings_ctf
-	from applications   import MPI_start_end
-	from reconstruction import rec3D_MPI_noCTF,rec3D_two_chunks_MPI
-	from morphology     import binarize, get_shrink_3dmask
-	from fundamentals   import fftip, rops_table, fft
-	import os
-	import types
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
-	from time import sleep
-	### - reconstruction parameters - No need to change
-	fourvar   = False
-	debug     = False
-	snr       = 1.0
-	ref_a     = "S"
-	npad      = 2
-	############################################################
-	from logger import Logger,BaseLogger_Files
-	log       = Logger()
-	log   =Logger(BaseLogger_Files())
-	log.prefix=outdir+"/"
-	myid      = Tracker["constants"]["myid"]
-	main_node = Tracker["constants"]["main_node"]
-	number_of_proc     = Tracker["constants"]["nproc"]
-	shrinkage = Tracker["shrinkage"]
-	### input parameters
-	maxit    = Tracker["constants"]["maxit"]
-	ou       = Tracker["constants"]["radius"]
-	ir       = Tracker["constants"]["ir"]
-	rs       = Tracker["constants"]["rs"]
-	xr       = Tracker["constants"]["xr"]
-	yr       = Tracker["constants"]["yr"]
-	ts       = Tracker["constants"]["ts"]
-	delta    = Tracker["constants"]["delta"]
-	an       = Tracker["constants"]["an"]
-	center   = Tracker["constants"]["center"]
-	nassign            = Tracker["constants"]["nassign"]
-	nrefine            = Tracker["constants"]["nrefine"]
-	CTF                = Tracker["constants"]["CTF"]
-	sym                = Tracker["constants"]["sym"]
-	termprec           = Tracker["constants"]["stoprnct"]
-	if Tracker["constants"]["mask3D"]:
-		maskfile = Tracker["mask3D"]
-	else:
-		maskfile = None
-	user_func_name     = Tracker["constants"]["user_func"]
-	Tracker["lowpass"] = Tracker["low_pass_filter"]
-	Tracker["falloff"] = .1
-	if Tracker["constants"]["PWadjustment"]:
-		Tracker["PWadjustment"]=Tracker["PW_dict"][Tracker["constants"]["nxinit"]]
-	else:
-		Tracker["PWadjustment"]=Tracker["constants"]["PWadjustment"]	
-	mpi_comm = MPI_COMM_WORLD
-	###--------------------------
-	if os.path.exists(outdir): ERROR('Output directory exists, please change the name and restart the program', "Kmref_ali3d_MPI ", 1, myid)
-	mpi_barrier(MPI_COMM_WORLD)
-	###
-	if myid == main_node:	
-		os.mkdir(outdir)
-		import global_def
-		global_def.LOGFILE =  os.path.join(outdir, global_def.LOGFILE)
-		log.add("Kmref_ali3d_MPI - Traditional Kmeans clustering  !")
-	mpi_barrier(MPI_COMM_WORLD)
-	######
-	#Tracker["applyctf"] = False
-	while not os.path.exists(this_data_list_file):
-		#print  " my_id",myid
-		sleep(2)
-	mpi_barrier(MPI_COMM_WORLD)	
-	data, old_shifts    = get_shrink_data_huang(Tracker,Tracker["nxinit"],this_data_list_file,Tracker["constants"]["partstack"],myid, main_node, number_of_proc, preshift = True)
-	if myid ==main_node:
-		list_of_particles     = read_text_file(this_data_list_file)
-		total_nima            = len(list_of_particles)
-	else:   
-		total_nima            = 0
-		list_of_particles     = 0
-	total_nima = bcast_number_to_all(total_nima,main_node)
-	list_of_particles     = wrap_mpi_bcast(list_of_particles, main_node)
-	
-	
-	from time import time	
-
-	if debug:
-		from time import sleep
-		while not os.path.exists(outdir):
-			print  "Node ",myid,"  waiting..."
-			sleep(5)
-		finfo = open(os.path.join(outdir, "progress%04d"%myid), 'w')
-		frec  = open( os.path.join(outdir, "recons%04d"%myid), "w" )
-	else:
-		finfo = None
-		frec  = None
-
-	xrng        = get_input_from_string(xr)
-	if  yr == "-1":  yrng = xrng
-	else          :  yrng = get_input_from_string(yr)
-	step        = get_input_from_string(ts)
-	delta       = get_input_from_string(delta)
-	lstp = min( len(xrng), len(yrng), len(step), len(delta) )
-	if an == "-1":
-		an = []
-		for i in xrange(len(xrng)):   an.append(-1)
-	else:
-		from  alignment	    import proj_ali_incore_local
-		an      = get_input_from_string(an)
-	first_ring  = int(ir)
-	rstep       = int(rs)
-	last_ring   = int(int(ou)*shrinkage+.5)
-	center      = int(center)
-	image_start, image_end = MPI_start_end(len(Tracker["this_data_list"]), number_of_proc, myid)
-	numref      = len(ref_list)
-	nx          = ref_list[0].get_xsize()
-	if last_ring < 0:       last_ring = nx//2 - 2
-
-	if Tracker["constants"]["focus3Dmask"]:
-		focus               = Tracker["focus3D"]
-	else:
-		focus =      None
-
-
-	fscmask     = model_circle(last_ring, nx, nx, nx)
-	stack       = Tracker["constants"]["stack"]
-	import user_functions
-	user_func = user_functions.factory[user_func_name]
-	if myid == main_node:
-		#import user_functions
-		#user_func = user_functions.factory[user_func_name]
-		log.add("Input stack                 : %s"%(stack))
-		#log.add("Reference volumes           : %s"%(ref_vol))	
-		log.add("Number of reference volumes : %i"%(numref))
-		log.add("Output directory            : %s"%(outdir))
-		log.add("User function               : %s"%(user_func_name))
-		log.add("Maskfile                    : %s"%(maskfile))
-		if(focus != None):  \
-		log.add("Maskfile 3D for focused clustering        : %s"%(focus))
-		log.add("Inner radius                : %i"%(first_ring))
-		log.add("Outer radius                : %i"%(last_ring))
-		log.add("Ring step                   : %i"%(rstep))
-		log.add("X search range              : %s"%(xrng))
-		log.add("Y search range              : %s"%(yrng))
-		log.add("Translational step          : %s"%(step))
-		log.add("Angular step                : %s"%(delta))
-		log.add("Angular search range        : %s"%(an))
-		log.add("Number of assignments in each iteration   : %i"%(nassign))
-		log.add("Number of alignments in each iteration    : %i"%(nrefine))
-		log.add("Number of iterations                      : %i"%(lstp*maxit) )
-		log.add("Center type                 : %i"%(center))
-		log.add("CTF correction              : %s"%(CTF))
-		log.add("Reference projection method : %s"%(ref_a))
-		log.add("Symmetry group              : %s"%(sym))
-		log.add("Percentage of change for termination: %f"%(termprec))
-		log.add("User function               : %s"%(user_func_name))
-		log.add("total number of particles                 : %d"%len(Tracker["this_data_list"]))
-		log.add("shrinkage is                              : %f"%shrinkage)
-		log.add("the text file for get_shrink_data is %s"%this_data_list_file)
-	if maskfile:
-		if type(maskfile) is types.StringType:  mask3D = get_shrink_3dmask(Tracker["nxinit"],maskfile)
-		else: 	                                mask3D = maskfile
-	else:  mask3D = model_circle(last_ring, nx, nx, nx)
-	numr       = Numrinit(first_ring, last_ring, rstep, "F")
-	mask2D     = model_circle(last_ring, nx, nx) - model_circle(first_ring, nx, nx)
-	total_nima = len(Tracker["this_data_list"])
-	nima       = len(data)
-    #####
-	if debug:
-		finfo.write( "Image_start, image_end: %d %d\n" %(image_start, image_end) )
-		finfo.flush()
-	start_time = time()
-	if myid == main_node:
-		log.add( "Time to read data: %d\n" % (time()-start_time) );start_time = time()
-	#  Initialize Particle ID and set group number to non-existant -1
-	assignment = [-1]*len(data)
- 	for im in xrange(len(data)):
-		data[im].set_attr_dict({'group':-1})
-	'''
-	if fourvar:
-		from reconstruction import rec3D_MPI
-		from statistics     import varf3d_MPI
-		#  Compute Fourier variance
-		vol, fscc = rec3D_MPI(data,snr,sym,fscmask,os.path.join(outdir, "resolution0000"), myid, main_node, finfo=frec, npad=npad)
-		varf = varf3d_MPI(data, os.path.join(outdir, "ssnr0000"), None, vol, last_ring, 1.0, 1, CTF, 1, sym, myid)
-		if myid == main_node:   
-			varf = 1.0/varf
-			varf.write_image( os.path.join(outdir,"varf0000.hdf") )
-	else:
-		varf = None
-	'''
-    # volume already filtered before, here is for using userfunc
-	#lowpass = 0.5 
-	#for  iref in xrange(numref):
-	#	set_filter_parameters_from_adjusted_fsc(Tracker["constants"]["total_stack"],Tracker["number_of_ref_class"][iref],Tracker)
-	#	lowpass = min(lowpass, Tracker["lowpass"])
-	#Tracker["lowpass"] = lowpass
-	
-	res = 0.5
-	for i in xrange(len(Tracker["global_fsc"][0])-1,0,-1):
-		if Tracker["global_fsc"][1][i]>0.5:
-			res = fsc_in[0][i]
-			break
-
-	Tracker["lowpass"] = min(0.45, res-0.05)
-	Tracker["falloff"] = 0.1
-	highres = []
-	for  iref in xrange(numref): highres.append(int(res*Tracker["nxinit"]+.5))	
-	if myid ==main_node:
-	
-		for  iref in xrange(numref):
-			ref_list[iref].write_image(os.path.join(outdir, "vol0000.hdf"), iref)
-			#set_filter_parameters_from_adjusted_fsc(Tracker["constants"]["total_stack"],Tracker["number_of_ref_class"][iref],Tracker)
-			log.add("%d reference low pass filter is %f  %f  %d"%(iref, Tracker["lowpass"],Tracker["falloff"],Tracker["number_of_ref_class"][iref]))
-			log.add("%d highres                   %f"%(iref, highres[iref]))
-			
-			if Tracker["mask3D"]:
-				mask3D          = get_im(Tracker["mask3D"])
-				stat            = Util.infomask(ref_list[iref], mask3D, False)
-				ref_list[iref] -= stat[0]
-				Util.mul_scalar(ref_list[iref], 1.0/stat[1])
-				
-			if(Tracker["constants"]["PWadjustment"]):
-				rt = read_text_file(Tracker["PW_dict"][Tracker["constants"]["nxinit"]])
-				ro = rops_table(ref_list[iref])
-				for i in xrange(1,len(ro)):  ro[i] = (rt[i]/ro[i])**Tracker["constants"]["upscale"]
-				ref_list[iref] = filt_table(ref_list[iref],ro)
-				
-			if (Tracker["constants"]["low_pass_filter"]==-1.):  ref_list[iref] = filt_tanl(ref_list[iref], Tracker["lowpass"], Tracker["falloff"])                                       # low pass from resolution 
-			else:                                               ref_list[iref] = filt_tanl(ref_list[iref], min(Tracker["constants"]["low_pass_filter"]/Tracker["shrinkage"],0.45), Tracker["falloff"]) # user define filter
-				
-			if Tracker["mask3D"]: Util.mul_img(ref_list[iref], mask3D)
-			ref_list[iref].write_image(os.path.join(outdir, "volf0000.hdf"), iref)
-			
-	mpi_barrier(MPI_COMM_WORLD)
-
-	if CTF:
-		#if(data[0].get_attr("ctf_applied") > 0.0):  ERROR("mref_ali3d_MPI does not work for CTF-applied data", "mref_ali3d_MPI", 1, myid)
-		from reconstruction import rec3D_MPI
-	else:
-		from reconstruction import rec3D_MPI_noCTF
-
-	if debug:
-		finfo.write( '%d loaded  \n' % len(data) )
-		finfo.flush()
-	#  this is needed for gathering of pixel errors
-	disps = []
-	recvcount = []
-	for im in xrange(number_of_proc):
-		if im == main_node:  disps.append(0)
-		else:                  disps.append(disps[im-1] + recvcount[im-1])
-		ib, ie = MPI_start_end(total_nima, number_of_proc, im)
-		recvcount.append( ie - ib )
-	total_iter = 0
-	tr_dummy = Transform({"type":"spider"})
-
-	if(focus != None):
-		if(myid == main_node):
-			focus = get_shrink_3dmask(Tracker["nxinit"],focus)
-		else:
-			focus =  model_blank(nx, nx, nx)
-		bcast_EMData_to_all(focus, myid, main_node)
-		st = Util.infomask(focus, None, True)
-		if( st[0] == 0.0 ):  ERROR("sxrsort3d","incorrect focused mask, after binarize all values zero",1, myid)
-		focus = prep_vol(focus, 1, 1)
-
-
-	Niter = int(lstp*maxit*(nassign + nrefine) )
-	for Iter in xrange(Niter):
-		N_step = (Iter%(lstp*(nassign+nrefine)))/(nassign+nrefine)
-		if Iter%(nassign+nrefine) < nassign:
-			runtype = "ASSIGNMENT"
-		else:
-			runtype = "REFINEMENT"
-
-		total_iter += 1
-		if myid == main_node:
-			log.add("\n%s ITERATION #%3d,  inner iteration #%3d\nDelta = %4.1f, an = %5.2f, xrange = %5.2f, yrange = %5.2f, step = %5.2f" \
-                        %(runtype, total_iter, Iter, delta[N_step], an[N_step], xrng[N_step],yrng[N_step],step[N_step]))
-			start_ime = time()	
-		peaks = [ -1.0e23]*nima
-		if runtype=="REFINEMENT":
-			trans = [tr_dummy]*nima
-			pixer = [0.0]*nima
-			if(an[N_step] > 0):
-				from utilities    import even_angles
-				ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
-				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
-				list_of_reference_angles = \
-				generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
-				del ref_angles
-			else:  list_of_reference_angles = [[1.0,1.0]]
-		cs = [0.0]*3
-		from fundamentals import fft
-		if( not focus ):
-			for im in xrange(nima):  data[im] = fft(data[im])
-
-		for iref in xrange(numref):
-			if myid==main_node: volft = get_im(os.path.join(outdir, "volf%04d.hdf"%(total_iter-1)), iref)
-			else:				volft=model_blank(nx,nx,nx)
-			bcast_EMData_to_all(volft, myid, main_node)
-			volft= prep_vol(volft,1,1)
-			if CTF:
-				previous_defocus = -1.0
-				if runtype=="REFINEMENT":
-					start_time = time()
-					prjref = prgq( volft, kb, nx, delta[N_step], ref_a, sym, MPI=True)
-					if myid == main_node:
-						log.add( "Calculation of projections: %d" % (time()-start_time) );start_time = time()
-					del volft, kb
-			else:
-				if runtype=="REFINEMENT":
-					start_time = time()
-					refrings = prepare_refrings( volft, kb, nx, delta[N_step], ref_a, sym, numr)
-					if myid == main_node:
-						log.add( "Initial time to prepare rings: %d" % (time()-start_time) );start_time = time()
-					del volft, kb
-
-			start_time = time()
-			for im in xrange(nima):
-				if CTF:
-					ctf = data[im].get_attr( "ctf" )
-					if runtype=="REFINEMENT":
-						if ctf.defocus != previous_defocus:
-							previous_defocus = ctf.defocus
-							rstart_time = time()
-							refrings = gen_rings_ctf( prjref, nx, ctf, numr)
-							if myid == main_node: log.add( "Repeated time to prepare rings: %d" % (time()-rstart_time) );rstart_time = time()
-				if runtype=="ASSIGNMENT":
-					phi,tht,psi,s2x,s2y = get_params_proj(data[im])
-					'''
-					if CTF:
-						ref = fft(filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y],1,False), ctf ))
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y],1)
-					peak = ref.cmp("ccc",data[im],{"mask":mask2D, "negative":0})
-					'''
-					#  Standard distance
-					#  Ref is in reciprocal space
-					if CTF:
-						ref = filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False), ctf )
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False)
-					from filter import filt_tophatl
-					from math import sqrt
-					ref = filt_tophatl(ref, float(highres[iref])/(ref.get_ysize()))
-					ref.set_attr("is_complex",0)
-					ref.set_value_at(0,0,0.0)
-					nrmref = sqrt(Util.innerproduct(ref, ref, None))
-					if(focus):
-						mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]), 1)
-						tempx = fft(data[im]*mask2D)
-						tempx.set_attr("is_complex",0)
-						peak = Util.innerproduct(ref, tempx, None)
-					else:
-						data[im].set_attr("is_complex",0)
-						peak = Util.innerproduct(ref, data[im], None)
-						data[im].set_attr("is_complex",1)
-					peak /= nrmref
-
-
-					'''  
-					#  FSC distance
-					#  Ref is in reciprocal space
-					if CTF:
-						ref = filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False), ctf )
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False)
-					from statistics import fsc
-					if(focus):
-						mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]), 1)
-						tempx = fsc(ref, fft(data[im]*mask2D))[1]
-					else:
-						tempx = fsc(ref, data[im])[1]
-					peak = sum(tempx[1:highres[iref]])/highres[iref]
-
-					if not(finfo is None):
-						finfo.write( "ID,iref,peak: %6d %d %8.5f\n" % (list_of_particles[im],iref,peak) )
-				else:
-					if an[N_step] == -1:
-						peak, pixel_error = proj_ali_incore(data[im],refrings,numr,xrng[N_step],yrng[N_step],step[N_step])
-					else:
-						peak, pixel_error = proj_ali_incore_local(data[im], refrings, list_of_reference_angles, numr,\
-																	xrng[N_step], yrng[N_step], step[N_step], an[N_step])
-					if not(finfo is None):
-						phi,tht,psi,s2x,s2y = get_params_proj(data[im])
-						finfo.write( "ID,iref,peak,trans: %6d %d %f %f %f %f %f %f\n"%(list_of_particles[im],iref,peak,phi,tht,psi,s2x,s2y) )
-						finfo.flush()
-					'''
-
-				if peak > peaks[im]:
-					peaks[im] = peak
-					data[im].set_attr('group', iref)
-					if runtype=="REFINEMENT":
-						pixer[im] = pixel_error
-						trans[im] = data[im].get_attr( "xform.projection" )
-					if not(finfo is None):
-						finfo.write( " current best\n" )
-						finfo.flush()
-				else:
-					if not(finfo is None):
-						finfo.write( "\n" )
-						finfo.flush()
-			if myid == main_node:log.add( "Time to process particles for reference %3d: %d" % (iref, time()-start_time) );start_time = time()
-		del peaks
-		if runtype=="ASSIGNMENT":  del volft, ref #kb, ref
-		else:
-			if CTF: del prjref
-			del refrings
-			if an[N_step] > 0: del list_of_reference_angles
-
-
-		#  compute number of particles that changed assignment and how many are in which group
-		nchng = 0
-		npergroup = [0]*numref
-		for im in xrange(nima):
-			iref = data[im].get_attr('group')
-			npergroup[iref] += 1
-			if iref != assignment[im]:
-				assignment[im] = iref
-				nchng += 1
-		nchng            = mpi_reduce(nchng, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-		npergroup        = mpi_reduce(npergroup, numref, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-		npergroup        = map(int, npergroup)
-		terminate        = 0
-		empty_group      = 0
-		empty_group_list = []
-		if myid == main_node:
-			ngroup = []
-			nchng = int(nchng[0])
-			precn = 100*float(nchng)/float(total_nima)
-			msg = " Number of particles that changed assignments %7d, percentage of total: %5.1f"%(nchng, precn)
-			log.add(msg)
-			msg = " Group       number of particles"
-			log.add(msg)
-			for iref in xrange(numref):
-				msg = " %5d       %7d"%(iref+1, npergroup[iref])
-				log.add(msg)
-				if npergroup[iref]==0:
-					empty_group =1
-					empty_group_list.append(iref)
-				ngroup.append(int(npergroup[iref]))
-			if precn <= termprec:
-				terminate = 1
-			if empty_group ==1:
-				terminate = 1
-		else:
-			ngroup  = 0
-		terminate   = mpi_bcast(terminate, 1, MPI_INT, 0, MPI_COMM_WORLD)
-		terminate   = int(terminate[0])
-		ngroup      = wrap_mpi_bcast(ngroup,main_node)
-		empty_group = mpi_bcast(empty_group, 1, MPI_INT, 0, MPI_COMM_WORLD)
-		empty_group = int(empty_group[0])
-		if empty_group ==1: break # program stops whenever empty_group appears!
-		if runtype=="REFINEMENT":
-			for im in xrange(nima):  data[im].set_attr('xform.projection', trans[im])
-			if center == -1:
-				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)				
-				if myid == main_node:
-					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f"%(cs[0], cs[1], cs[2])
-					log.add(msg)
-				cs = mpi_bcast(cs, 3, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-				cs = [-float(cs[0]), -float(cs[1]), -float(cs[2])]
-				rotate_3D_shift(data, cs)
-			#output pixel errors
-			from mpi import mpi_gatherv
-			recvbuf = mpi_gatherv(pixer, nima, MPI_FLOAT, recvcount, disps, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-			mpi_barrier(MPI_COMM_WORLD)
-			if myid == main_node:
-				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
-				lhist = 20
-				region, histo = hist_list(recvbuf, lhist)
-				if region[0] < 0.0:  region[0] = 0.0
-				msg = "      Histogram of pixel errors\n      ERROR       number of particles"
-				log.add(msg)
-				for lhx in xrange(lhist):
-					msg = " %10.3f      %7d"%(region[lhx], histo[lhx])
-					log.add(msg)
-				del region, histo
-			del recvbuf
-		#if CTF: del vol
-		fscc = [None]*numref
-		if fourvar and runtype=="REFINEMENT":
-			sumvol = model_blank(nx, nx, nx)
-		sart_time = time()
-	
-		#lowpass = 0.5
-		#for  iref in xrange(numref):
-		#	set_filter_parameters_from_adjusted_fsc(Tracker["constants"]["total_stack"],Tracker["number_of_ref_class"][iref],Tracker)
-		#lowpass = min(lowpass, Tracker["lowpass"])
-		#Tracker["lowpass"] = lowpass
-
-		if( not focus ):
-			for im in xrange(nima):  data[im] = fft(data[im])
-
-		highres = []
-		lowpass_tmp =[]
-		tmpref =[]
-		from statistics import fsc
-		for iref in xrange(numref):
-			#  3D stuff
-			from time import localtime, strftime
-			if Tracker["constants"]["3d-interpolation"]==" ":
-				chunk_id   = 0
-				niter      = 10
-				upweighted = False
-				compensate = False
-				verbose    =  0
-				sign       = 1
-				volref0    = recons3d_n_trl_MPI_one_node(data, CTF, snr, sign, npad, sym, iref, niter, verbose, upweighted, compensate, chunk_id)
-				chunk_id   = 1
-				volref1    = recons3d_n_trl_MPI_one_node(data, CTF, snr, sign, npad, sym, iref, niter, verbose, upweighted, compensate, chunk_id)
-				if myid == main_node:
-					fscc[iref] = fsc(volref0, volref1)
-					volref  = volref0 + volref1
-					del volref1
-					del volref0
-				#chunk_id   = -1
-				#volref = recons3d_n_trl_MPI_one_node(data, CTF, snr, sign, npad, sym, iref, niter, verbose, upweighted, compensate, chunk_id)
-			else:
-				if CTF: volref, fscc[iref] = rec3D_two_chunks_MPI(data, snr, sym, fscmask, os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)), myid, main_node, index = iref, npad = npad, finfo=frec)
-				else:   volref, fscc[iref] = rec3D_MPI_noCTF(data, sym, fscmask, os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)), myid, main_node, index = iref, npad = npad, finfo=frec)
-			if myid == main_node:
-				log.add( "Time to compute 3D: %d" % (time()-start_time) );start_time = time()
-				volref.write_image(os.path.join(outdir, "vol%04d.hdf"%( total_iter)), iref)
-				if fourvar and runtype=="REFINEMENT": sumvol += volref
-				res = 0.5
-				for ifreq in xrange(len(fscc[iref][0])-1,0,-1):
-					if fscc[iref][1][ifreq] > 0.5 : # always use .5 as cutoff
-						res = fscc[iref][0][ifreq]
-						break
-				Tracker["lowpass"] = min(0.45, res)
-				#Tracker["lowpass"] = max(0.11, res)
-				Tracker["falloff"] = 0.1
-				log.add(" low pass filter is %f    %f   %d"%(Tracker["lowpass"], Tracker["falloff"], ngroup[iref]))
-				tmpref.append(volref)
-			else:
-				Tracker["lowpass"] = 0.0
-				Tracker["falloff"] = 0.0
-				res   = 0.0
-			Tracker["lowpass"] = wrap_mpi_bcast(Tracker["lowpass"], main_node, mpi_comm)
-			Tracker["falloff"] = wrap_mpi_bcast(Tracker["falloff"], main_node, mpi_comm)
-			res = wrap_mpi_bcast(res, main_node, mpi_comm)
-			highres.append(int(res*Tracker["nxinit"]+ 0.5))
-			lowpass_tmp.append(Tracker["lowpass"])
-		Tracker["lowpass"]=min(lowpass_tmp)
-		if myid ==main_node:
-				log.add(" the adopted low pass filter is %f    %f   "%(Tracker["lowpass"], Tracker["falloff"]))
-		for iref in xrange(numref):
-			if myid == main_node:
-				log.add("%d highres                   %f"%(iref, highres[iref]))
-				if Tracker["mask3D"]:
-					mask3D = get_im(Tracker["mask3D"])
-					stat = Util.infomask(tmpref[iref], mask3D, False)
-					tmpref[iref] -= stat[0]
-					Util.mul_scalar(tmpref[iref], 1.0/stat[1])
-					
-				if(Tracker["constants"]["PWadjustment"]):
-				
-					rt = read_text_file(Tracker["PW_dict"][Tracker["constants"]["nxinit"]])
-					ro = rops_table(tmpref[iref])
-					for i in xrange(1,len(ro)):  ro[i] = (rt[i]/ro[i])**Tracker["constants"]["upscale"]
-					tmpref[iref] =filt_table(tmpref[iref],ro)
-
-				if (Tracker["constants"]["low_pass_filter"]==-1.):  tmpref[iref] = filt_tanl(tmpref[iref], Tracker["lowpass"], Tracker["falloff"])                                       # low pass from resolution 
-				else:                                               tmpref[iref] = filt_tanl(tmpref[iref], min(Tracker["constants"]["low_pass_filter"]/Tracker["shrinkage"],0.45), Tracker["falloff"]) # user define filter			
-					
-				if Tracker["mask3D"]: Util.mul_img(tmpref[iref], mask3D)
-				tmpref[iref].write_image(os.path.join(outdir, "volf%04d.hdf"%( total_iter)), iref)
-		del tmpref
-
-		if runtype=="REFINEMENT":
-			if fourvar:
-				varf = varf3d_MPI(data, os.path.join(outdir, "ssnr%04d"%total_iter), None,sumvol,last_ring, 1.0, 1, CTF, 1, sym, myid)
-				if myid == main_node:   
-					varf = 1.0/varf
-					varf.write_image( os.path.join(outdir,"varf%04d.hdf"%total_iter) )                            		
-		"""
-		if myid == main_node:
-			refdata    = [None]*7
-			refdata[0] = numref
-			refdata[1] = outdir
-			refdata[2] = None
-			refdata[3] = total_iter
-			refdata[4] = varf
-			refdata[5] = mask3D
-			refdata[6] = Tracker["low_pass_filter"]#(runtype=="REFINEMENT") # whether align on 50S, this only happens at refinement step
-			user_func( refdata )
-		"""
-		#  here we  write header info
-		mpi_barrier(MPI_COMM_WORLD)
-		#start_time = time()
-		if runtype=="REFINEMENT": par_str = ['xform.projection', 'ID', 'group']
-		else: par_str = ['group', 'ID' ]
-	        #if myid == main_node:
-		#	from utilities import file_type
-	        #	if file_type(stack) == "bdb":
-	        #		from utilities import recv_attr_dict_bdb
-	        #		recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-	        #	else:
-	        # 		from utilities import recv_attr_dict
-	        #		recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-	        #else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
-		if terminate == 1:
-			if myid == main_node: log.add("Kmref_ali3d_MPI terminated due to small number of objects changing assignments")
-			#final_list = get_sorting_params(Tracker,data)
-			#res_groups = get_groups_from_partition(final_list, Tracker["this_data_list"], numref)
-			#if myid ==main_node:
-			#	nc = 0
-			#	final_list_saved_file =os.path.join(outdir,"list2.txt")
-			#	write_text_file(final_list,final_list_saved_file)
-			#	for igrp in xrange(len(res_groups)):
-			#			if len(res_groups[igrp])>0:
-			#				saved_file = os.path.join(outdir,"Class%d.txt"%nc)
-			#				write_text_file(res_groups[igrp],saved_file)
-			#				nc +=1
-			mpi_barrier(MPI_COMM_WORLD)
-			#Tracker["this_partition"]=final_list
-			break
-		if myid == main_node:log.add( "Time to write headers: %d\n" % (time()-start_time) )
-		mpi_barrier(MPI_COMM_WORLD)
-	######writing partition only in the end of the program
-	mpi_barrier(MPI_COMM_WORLD)
-	if nrefine!=0: par_str = ['xform.projection', 'ID', 'group']
-	else: par_str = ['group', 'ID' ]
-	"""	
-	if myid == main_node:
-		from utilities import file_type
-		if file_type(stack) == "bdb":
-			from utilities import recv_attr_dict_bdb
-			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-		else:
-			from utilities import recv_attr_dict
-			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-	else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
-	"""
-	if myid == main_node:log.add("Kmref_ali3d_MPI is done!")
-	final_list = get_sorting_params_refine(Tracker,data, total_nima)
-	group_list, ali3d_params_list = parsing_sorting_params(final_list)
-	res_groups = get_groups_from_partition(group_list, list_of_particles, numref)
-	final_group_list, res_groups = remove_small_groups(res_groups, Tracker["constants"]["smallest_group"])
-	if myid ==main_node:
-		nc = 0
-		write_text_file(group_list, os.path.join(outdir,"list2.txt"))
-		for igrp in xrange(len(res_groups)):
-			if len(res_groups[igrp])>0:
-				write_text_file(res_groups[igrp], os.path.join(outdir,"Class%d.txt"%nc))
-				nc +=1
-	mpi_barrier(MPI_COMM_WORLD)
-	Tracker["this_partition"]=final_list
-	return empty_group,res_groups,final_group_list
-##########################
-
-
-def mref_ali3d_EQ_Kmeans(ref_list, outdir, particle_list_file, Tracker):
-	from utilities      import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
-	from utilities      import  bcast_list_to_all, get_image, get_input_from_string, get_im
-	from utilities      import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, model_blank, wrap_mpi_bcast, write_text_file
-	from filter         import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
-	from utilities      import rotate_3D_shift,estimate_3D_center_MPI, get_shrink_data_huang, get_im
-	####-------
-	from utilities      import get_attr_stack, get_sorting_attr_stack, get_sorting_params, get_sorting_params_refine
-	from utilities      import parsing_sorting_params, fill_in_mpi_list, wrap_mpi_bcast, get_groups_from_partition
-	from utilities      import remove_small_groups, set_filter_parameters_from_adjusted_fsc
-	###-----------
-	from alignment      import Numrinit, prepare_refrings, proj_ali_incore
-	from random         import randint, random
-	from filter         import filt_ctf
-	from utilities      import print_begin_msg, print_end_msg, print_msg, read_text_file
-	from projection     import prep_vol, prgs, prgl, project, prgq, gen_rings_ctf
-	from morphology     import binarize, get_shrink_3dmask
-	from statistics		import fsc
-
-	import os
-	import types
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, mpi_gatherv, mpi_scatterv, MPI_INT, MPI_SUM
-	from applications   import MPI_start_end
-	from reconstruction import rec3D_two_chunks_MPI, rec3D_MPI_noCTF
-	from fundamentals   import fftip, rops_table, fft
-	mpi_comm = MPI_COMM_WORLD
-	#####  reconstruction parameters, no need to change.
-	fourvar   = False
-	snr       = 1.0
-	debug     = False
-	ref_a     = "S"
-	npad      = 2
-	#####################################################
-	from logger import Logger,BaseLogger_Files
-	log       = Logger()
-	log   =Logger(BaseLogger_Files())
-	log.prefix=outdir+"/"
-	myid           = Tracker["constants"]["myid"]
-	main_node      = Tracker["constants"]["main_node"]
-	number_of_proc = Tracker["constants"]["nproc"]
-	shrinkage      = Tracker["shrinkage"]
-	### input parameters
-	maxit          = Tracker["constants"]["maxit"]
-	ou             = Tracker["constants"]["radius"]
-	ir             = Tracker["constants"]["ir"]
-	rs             = Tracker["constants"]["rs"]
-	xr             = Tracker["constants"]["xr"]
-	yr             = Tracker["constants"]["yr"]
-	ts             = Tracker["constants"]["ts"]
-	delta          = Tracker["constants"]["delta"]
-	an             = Tracker["constants"]["an"]
-	center         = Tracker["constants"]["center"]
-	nassign        = Tracker["constants"]["nassign"]
-	nrefine        = Tracker["constants"]["nrefine"]
-	CTF            = Tracker["constants"]["CTF"]
-	sym            = Tracker["constants"]["sym"]
-	termprec       = Tracker["constants"]["stoprnct"]
-	if Tracker["constants"]["mask3D"]:
-		maskfile            = Tracker["mask3D"]
-	else:
-		maskfile            = None
-	if Tracker["constants"]["focus3Dmask"]: focus = Tracker["constants"]["focus3Dmask"]
-	else:                                   focus = None
-	partstack           = Tracker["constants"]["partstack"]
-	user_func_name      = Tracker["constants"]["user_func"]
-	Tracker["lowpass"]  = Tracker["low_pass_filter"]
-	Tracker["falloff"]  = .1
-	if Tracker["constants"]["PWadjustment"] !='':
-		Tracker["PWadjustment"] = Tracker["PW_dict"][Tracker["constants"]["nxinit"]]
-	else:
-		Tracker["PWadjustment"] = None	
-	####################################################
-	from time import sleep
-	#Tracker["applyctf"] = True # 
-	data, old_shifts = get_shrink_data_huang(Tracker, Tracker["nxinit"], particle_list_file, partstack, myid,main_node,number_of_proc,preshift=True)
-	if myid ==main_node:
-		list_of_particles = read_text_file(particle_list_file)
-		total_nima        =len(list_of_particles)
-	else:
-		total_nima = 0
-		list_of_particles = 0
-	total_nima            = bcast_number_to_all(total_nima,main_node)
-	list_of_particles     = wrap_mpi_bcast(list_of_particles, main_node)
-	
-	if myid == main_node:
-		if os.path.exists(outdir):  nx = 1
-		else:  nx = 0
-	else:  nx = 0
-	ny = bcast_number_to_all(nx, source_node = main_node)
-	#image_start, image_end = MPI_start_end(total_data,number_of_proc, myid)
-	
-	if ny == 1:  ERROR('Output directory exists, please change the name and restart the program', "mref_ali3d_iter", 1,myid)
-	mpi_barrier(MPI_COMM_WORLD)
-	if myid == main_node:	
-		os.mkdir(outdir)
-		import global_def
-		global_def.LOGFILE =  os.path.join(outdir, global_def.LOGFILE)
-		log.add("Equal K-means  ")
-	mpi_barrier(MPI_COMM_WORLD)
-	from time import time	
-	if debug:
-		from time import sleep
-		while not os.path.exists(outdir):
-			print  "Node ",myid,"  waiting..."
-			sleep(5)
-		finfo = open(os.path.join(outdir, "progress%04d"%myid), 'w')
-		frec  = open( os.path.join(outdir, "recons%04d"%myid), "w" )
-	else:
-		finfo = None
-		frec  = None
-	xrng        = get_input_from_string(xr)
-	if  yr == "-1":  yrng = xrng
-	else          :  yrng = get_input_from_string(yr)
-	step        = get_input_from_string(ts)
-	delta       = get_input_from_string(delta)
-	lstp = min( len(xrng), len(yrng), len(step), len(delta) )
-	if (an == "-1"):
-		an = []
-		for i in xrange(len(xrng)):   an.append(-1)
-	else:
-		from  alignment	    import proj_ali_incore_local
-		an      = get_input_from_string(an)
-
-	first_ring  = int(ir)
-	rstep       = int(rs)
-	last_ring   = int(int(ou)*shrinkage+.5)
-	center      = int(center)
-	numref  = len(ref_list)
-	nx      = ref_list[0].get_xsize()
-	if last_ring < 0:last_ring = nx//2 - 2
-	import user_functions
-	user_func = user_functions.factory[user_func_name]
-	if (myid == main_node):
-		#import user_functions
-		#user_func = user_functions.factory[user_func_name]
-		log.add("mref_ali3d_MPI")
-		log.add("Input stack                               : %s"%(Tracker["constants"]["stack"]))
-		#log.add("Reference volumes                         : %s"%(ref_vol))	
-		log.add("Number of reference volumes               : %i"%(numref))
-		log.add("Output directory                          : %s"%(outdir))
-		log.add("User function                             : %s"%(user_func_name))
-		if(focus != None):  \
-		log.add("Maskfile 3D for focused clustering        : %s"%(focus))
-		log.add("Overall 3D mask applied in user function  : %s"%(maskfile))
-		log.add("Inner radius                              : %i"%(first_ring))
-		log.add("Outer radius                              : %i"%(last_ring))
-		log.add("Ring step                                 : %i"%(rstep))
-		log.add("X search range                            : %s"%(xrng))
-		log.add("Y search range                            : %s"%(yrng))
-		log.add("Translational step                        : %s"%(step))
-		log.add("Angular step                              : %s"%(delta))
-		log.add("Angular search range                      : %s"%(an))
-		log.add("Number of assignments in each iteration   : %i"%(nassign))
-		log.add("Number of alignments in each iteration    : %i"%(nrefine))
-		log.add("Number of iterations                      : %i"%(lstp*maxit) )
-		log.add("Center type                               : %i"%(center))
-		log.add("CTF correction                            : %s"%(CTF))
-		log.add("Symmetry group                            : %s"%(sym))
-		log.add("Percentage of change for termination      : %f"%(termprec))
-		log.add("User function                             : %s"%(user_func_name))
-		log.add("total number of particles                 : %d"%len(Tracker["this_data_list"]))
-		log.add("shrinkage is                              : %f"%shrinkage)
-		log.add("the particle id files for get_shrink_dat is %s"%particle_list_file) 
-	if(maskfile):
-		if(type(maskfile) is types.StringType): mask3D = get_shrink_3dmask(Tracker["nxinit"],maskfile) 
-		else: 	                                mask3D = maskfile
-	else        :  mask3D = model_circle(last_ring, nx, nx, nx)
-	numr     = Numrinit(first_ring, last_ring, rstep, "F")
-	mask2D   = model_circle(last_ring, nx, nx)
-	if(first_ring > 1):  mask2D -= model_circle(first_ring,nx,nx)
-	nima       = len(data) # local number of particles
-	
-	'''
-	if(myid == main_node):	
-		total_nima = EMUtil.get_image_count(stack)
-		list_of_particles = range(total_nima)
-	
-	else:
-		total_nima =0
-
-	total_nima = bcast_number_to_all(total_nima, source_node = main_node)
-
-	if(myid != main_node):
-		list_of_particles = [-1]*total_nima
-
-	list_of_particles = bcast_list_to_all(list_of_particles, myid,  source_node = main_node)
-
-	image_start, image_end = MPI_start_end(total_nima, number_of_proc, myid)
-	# create a list of images for each node
-	list_of_particles = list_of_particles[image_start: image_end]
-	nima = len(list_of_particles)
-	'''
-	if debug:
-		finfo.write( "Image_start, image_end: %d %d\n" %(image_start,image_end))
-		finfo.flush()
-	start_time = time()
-	#  Here the assumption is that input are always volumes.  It should be most likely be changed so optionally these are group assignments.
-	#  Initialize Particle ID and set group number to non-existant -1
-	for im in xrange(nima):
-		data[im].set_attr_dict({'group':-1})
-	if(myid == 0):
-		log.add( "Time to read data: %d" % (time()-start_time) );start_time = time()
-
-	if myid == main_node:
-		refdata = [None]*7
-		for  iref in xrange(numref):
-			ref_list[iref].write_image(os.path.join(outdir, "vol0000.hdf"), iref)
-		#refdata[0] = 
-		#user_func(refdata)
-	refdata        =[None]*4
-	res = 0.5
-	for i in xrange(len(Tracker["global_fsc"][0])-1,0,-1):
-		if Tracker["global_fsc"][1][i] > 0.5:
-				res=fsc_in[0][i]
-				break
-	highres = []
-	for  iref in xrange(numref): highres.append(int(res*Tracker["nxinit"] + 0.5))
-	Tracker["lowpass"] = min(0.45, res-0.05)
-	Tracker["lowpass"] = max(0.11,res)
-	Tracker["falloff"] = 0.1
-	##-----------------------------------------------
-	if myid == main_node:  ### 3-D mask, low pass filter, and power spectrum adjustment
-		for iref in xrange(numref):
-		
-			#set_filter_parameters_from_adjusted_fsc(Tracker["constants"]["total_stack"],Tracker["number_of_ref_class"][iref],Tracker)
-			log.add("%d  low pass filter   %f %f  %d"%(iref,Tracker["lowpass"],Tracker["falloff"],Tracker["number_of_ref_class"][iref]))
-			log.add("%d highres                   %f"%(iref, highres[iref]))
-			
-			if Tracker["mask3D"]:
-				mask3D = get_im(Tracker["mask3D"])
-				stat = Util.infomask(ref_list[iref], mask3D, False)
-				ref_list[iref] -= stat[0]
-				Util.mul_scalar(ref_list[iref], 1.0/stat[1])
-				
-			if(Tracker["constants"]["PWadjustment"] != ''):
-				rt = read_text_file(Tracker["PW_dict"][Tracker["constants"]["nxinit"]])
-				ro = rops_table(ref_list[iref])
-				for i in xrange(1,len(ro)):  ro[i] = (rt[i]/ro[i])**Tracker["constants"]["upscale"]
-				ref_list[iref] =filt_table(ref_list[iref],ro)
-				
-			if (Tracker["constants"]["low_pass_filter"]==-1.):  ref_list[iref] = filt_tanl(ref_list[iref], Tracker["lowpass"], Tracker["falloff"])                                       # low pass from resolution 
-			else:                                               ref_list[iref] = filt_tanl(ref_list[iref], min(Tracker["constants"]["low_pass_filter"]/Tracker["shrinkage"],0.45), Tracker["falloff"]) # user define filter
-							
-
-			if Tracker["mask3D"]: Util.mul_img(ref_list[iref], mask3D)
-			ref_list[iref].write_image(os.path.join(outdir,"volf0000.hdf"),iref)
-			
-	mpi_barrier( MPI_COMM_WORLD )
-	if CTF:
-		#if(data[0].get_attr_default("ctf_applied",0) > 0):  ERROR("mref_ali3d_MPI does not work for CTF-applied data", "mref_ali3d_MPI", 1, myid)
-		from reconstruction import rec3D_MPI
-	else:
-		from reconstruction import rec3D_MPI_noCTF
-	if debug:
-		finfo.write( '%d loaded  \n' % len(data) )
-		finfo.flush()
-	#  this is needed for gathering of pixel errors
-	disps = []
-	recvcount = []
-	for im in xrange(number_of_proc):
-		if( im == main_node ):  disps.append(0)
-		else:                   disps.append(disps[im-1] + recvcount[im-1])
-		ib, ie = MPI_start_end(total_nima, number_of_proc, im)
-		recvcount.append( ie - ib )
-	total_iter = 0
-	tr_dummy = Transform({"type":"spider"})
-
-	if(focus != None):
-		if(myid == main_node):
-			focus = get_shrink_3dmask(Tracker["nxinit"], focus)
-		else:
-			focus =  model_blank(Tracker["nxinit"], Tracker["nxinit"], Tracker["nxinit"])
-		bcast_EMData_to_all(focus, myid, main_node)
-		st = Util.infomask(focus, None, True)
-		if( st[0] == 0.0 ):  ERROR("sxrsort3d","incorrect focused mask, after binarize all values zero",1, myid)
-		focus = prep_vol(focus, 1, 1)
-
-	Niter = int(lstp*maxit*(nassign + nrefine) )
-	for Iter in xrange(Niter):
-		N_step = (Iter%(lstp*(nassign+nrefine)))/(nassign+nrefine)
-		if Iter%(nassign+nrefine) < nassign:
-			runtype = "ASSIGNMENT"
-		else:
-			runtype = "REFINEMENT"
-
-		total_iter += 1
-		if(myid == main_node):
-			log.add("\n%s ITERATION #%3d,  inner iteration #%3d\nDelta = %4.1f, an = %5.2f, xrange = %5.2f, yrange = %5.2f, step = %5.2f  \
-			"%(runtype, total_iter, Iter, delta[N_step], an[N_step], xrng[N_step],yrng[N_step],step[N_step]))
-			start_ime = time()
-		peaks =  [ [ -1.0e23 for im in xrange(nima) ] for iref in xrange(numref) ]
-		if runtype=="REFINEMENT":
- 			trans = [ [ tr_dummy for im in xrange(nima) ] for iref in xrange(numref) ]
-			pixer = [ [  0.0     for im in xrange(nima) ] for iref in xrange(numref) ]
-			if(an[N_step] > 0):
-				from utilities    import even_angles
-				ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
-				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
-				list_of_reference_angles = \
-				generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
-				del ref_angles
-			else:  list_of_reference_angles = [[1.0,1.0]]
-		cs = [0.0]*3
-		from fundamentals import fft
-		if( not focus ):
-			for im in xrange(nima):  data[im] = fft(data[im])
-
-		for iref in xrange(numref):
-			if(myid == main_node):	volft = get_im(os.path.join(outdir, "volf%04d.hdf"%(total_iter-1)), iref)
-			else: 					volft =  model_blank(nx, nx, nx)
-			bcast_EMData_to_all(volft, myid, main_node)
-			volft = prep_vol(volft, 1, 1)
-			if CTF:
-				previous_defocus=-1.0
-				if runtype=="REFINEMENT":
-					start_time = time()
-					prjref = prgq( volft, kb, nx, delta[N_step], ref_a, sym, MPI=True)
-					if(myid == 0): log.add( "Calculation of projections: %d" % (time()-start_time) );start_time = time()
-					del volft, kb
-			else:
-				if runtype=="REFINEMENT":
-					start_time = time()
-					refrings = prepare_refrings( volft, kb, nx, delta[N_step], ref_a, sym, numr)
-					if(myid == 0): log.add( "Initial time to prepare rings: %d" % (time()-start_time) );start_time = time()
-					del volft, kb
-			start_time = time()
-			for im in xrange(nima):
-				if(CTF):
-					ctf = data[im].get_attr("ctf")
-					if runtype=="REFINEMENT":
-						if(ctf.defocus != previous_defocus):
-							previous_defocus = ctf.defocus
-							rstart_time = time()
-							refrings = gen_rings_ctf( prjref, nx, ctf, numr)
-							if(myid == 0): log.add( "Repeated time to prepare rings: %d" % (time()-rstart_time) );rstart_time = time()
-
-				if runtype=="ASSIGNMENT":
-					phi,tht,psi,s2x,s2y = get_params_proj(data[im])
-					'''
-					if CTF:
-						ref = fft(filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y],1,False), ctf ))
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y],1)
-					if(focus != None):  mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]),1)  #  Should be precalculated!!
-					peak = ref.cmp("ccc",data[im],{"mask":mask2D, "negative":0})
-					'''
-					#  Standard distance
-					#  Ref is in reciprocal space
-					if CTF:
-						ref = filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False), ctf )
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False)
-					from filter import filt_tophatl
-					from math import sqrt
-					ref = filt_tophatl(ref, float(highres[iref])/(ref.get_ysize()))
-					ref.set_attr("is_complex",0)
-					ref.set_value_at(0,0,0.0)
-					nrmref = sqrt(Util.innerproduct(ref, ref, None))
-					if(focus):
-						mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]), 1)
-						tempx = fft(data[im]*mask2D)
-						tempx.set_attr("is_complex",0)
-						peak = Util.innerproduct(ref, tempx, None)
-					else:
-						data[im].set_attr("is_complex",0)
-						peak = Util.innerproduct(ref, data[im], None)
-						data[im].set_attr("is_complex",1)
-					peak /= nrmref
-
-					'''
-					#  FSC distance
-					#  Ref is in reciprocal space
-					if CTF:
-						ref = filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False), ctf )
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False)
-					if(focus):
-						mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]), 1)
-						tempx = fsc(ref, fft(data[im]*mask2D))[1]
-					else:
-						tempx = fsc(ref, data[im])[1]
-					peak = sum(tempx[1:highres[iref]])/highres[iref]
-					'''
-
-
-
-					if not(finfo is None):
-						finfo.write( "ID, iref, peak: %6d %d %8.5f\n" % (list_of_particles[im],iref,peak) )
-				else:
-					if(an[N_step] == -1):
-						peak, pixel_error = proj_ali_incore(data[im], refrings, numr, xrng[N_step], yrng[N_step], step[N_step])
-					else:
-						peak, pixel_error = proj_ali_incore_local(data[im], refrings, list_of_reference_angles, numr, \
-																	xrng[N_step], yrng[N_step], step[N_step], an[N_step],sym=sym)
-					if not(finfo is None):
-						phi,tht,psi,s2x,s2y = get_params_proj(data[im])
-						finfo.write( "ID, iref, peak,t rans: %6d %d %f %f %f %f %f %f\n"%(list_of_particles[im],iref,peak,phi,tht,psi,s2x,s2y) )
-						finfo.flush()
-
-				peaks[iref][im] = peak
-				if runtype=="REFINEMENT":
-					pixer[iref][im] = pixel_error
-					trans[iref][im] = data[im].get_attr( "xform.projection" )
-			if(myid == 0):log.add( "Time to process particles for reference %3d: %d" % (iref, time()-start_time) );start_time = time()
-		if runtype=="ASSIGNMENT":  del volft, ref #kb, ref
-		else:
-			if CTF: del prjref
-			del refrings
-			if(an[N_step] > 0): del list_of_reference_angles
-		#  send peak values to the main node, do the assignments, and bring them back
-		from numpy import float32, empty, inner, abs
-		if( myid == 0 ):
-			dtot = empty( (numref, total_nima), dtype = float32)
-		for  iref in xrange(numref):
-			recvbuf = mpi_gatherv(peaks[iref], nima, MPI_FLOAT, recvcount, disps, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-			if( myid == 0 ): dtot[iref] = recvbuf
-		del recvbuf
-		#  The while loop over even angles delta should start here.
-		#  prepare reference directions
-		from utilities import even_angles, getvec
-		if   Tracker["constants"]["protein_shape"]=="g"  :refa = even_angles(60.0)     # globular proteins
-		elif Tracker["constants"]["protein_shape"]=="f"  :refa = even_angles(40.0, theta1=65, theta2=115) # filament proteins
-		numrefang = len(refa)
-		refanorm = empty( (numrefang, 3), dtype = float32)
-		for i in xrange(numrefang):
-			tmp = getvec(refa[i][0], refa[i][1])
-			for j in xrange(3):
-				refanorm[i][j] = tmp[j]
-		del  refa, tmp
-		transv = empty( (nima, 3), dtype = float32)
-		if runtype=="ASSIGNMENT":
-			for im in xrange(nima):
-				trns = data[im].get_attr("xform.projection")
-				for j in xrange(3):
-					transv[im][j] = trns.at(2,j)
-		else:
-			# For REFINEMENT we have a problem, as the exact angle is known only after the next step of assigning projections.
-			# So, we will assume it is the one with max peak
-			for im in xrange(nima):
-				qt = -1.0e23
-				it = -1
-				for iref in xrange(numref):
-					pt = peaks[iref][im]
-					if(pt > qt):
-						qt = pt
-						it = iref
-				for j in xrange(3):
-					transv[im][j] = trans[it][im].at(2,j)
-		#  We have all vectors, now create a list of assignments of images to references
-		refassign = [-1]*nima
-		for im in xrange(nima):
-			refassign[im] = abs(inner(refanorm,transv[im])).argmax()
-		assigntorefa = mpi_gatherv(refassign, nima, MPI_INT, recvcount, disps, MPI_INT, main_node, MPI_COMM_WORLD)
-		assigntorefa = map(int, assigntorefa)
-		del refassign, refanorm, transv
-		"""
-		#  Trying to use ISAC code for EQ-Kmeans  PAP 03/21/2015
-		if myid == main_node:
-
-			for imrefa in xrange(numrefang):
-				from utilities import findall
-				N = findall(imrefa, assigntorefa)
-				current_nima = len(N)
-				if( current_nima >= numref and report_error == 0):
-					tasi = [[] for iref in xrange(numref)]
-					maxasi = current_nima//numref
-					nt = current_nima
-					kt = numref
-					K = range(numref)
-
-					d = empty( (numref, current_nima), dtype = float32)
-					for ima in xrange(current_nima):
-						for iref in xrange(numref):  d[iref][ima] = dtot[iref][N[ima]]
-
-			e b = empty( (numref, total_nima), dtype = float32)
-			for ima in xrange(total_nima):
-				for iref in xrange(numref):  d[iref][ima] = dtot[iref][N[ima]]
-			id_list_long = Util.assign_groups(str(d.__array_interface__['data'][0]), numref, nima) # string with memory address is passed as parameters
-			del d
-			id_list = [[] for i in xrange(numref)]
-			maxasi = total_nima/numref
-			for i in xrange(maxasi*numref):
-				id_list[i/maxasi].append(id_list_long[i])
-			for i in xrange(total_nima%maxasi):
-				id_list[id_list_long[-1]].append(id_list_long[maxasi*numref+i])
-			for iref in xrange(numref):
-				id_list[iref].sort()
-
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in id_list[iref]: assignment[im] = iref
-		else:
-			assignment = [0]*total_nima
-		mpi_barrier(MPI_COMM_WORLD)
-		#belongsto = mpi_bcast(belongsto, nima, MPI_INT, main_node, MPI_COMM_WORLD)
-		#belongsto = map(int, belongsto)
-		"""
-		if myid == main_node:
-			SA = False
-			asi = [[] for iref in xrange(numref)]
-			report_error = 0
-			for imrefa in xrange(numrefang):
-				from utilities import findall
-				N = findall(imrefa, assigntorefa)
-				current_nima = len(N)
-				if( current_nima >= numref and report_error == 0):
-					tasi = [[] for iref in xrange(numref)]
-					maxasi = current_nima//numref
-					nt = current_nima
-					kt = numref
-					K = range(numref)
-
-					d = empty( (numref, current_nima), dtype = float32)
-					for ima in xrange(current_nima):
-						for iref in xrange(numref):  d[iref][ima] = dtot[iref][N[ima]]
-
-					while nt > 0 and kt > 0:
-						l = d.argmax()
-						group = l//current_nima
-						ima   = l-current_nima*group
-						if SA:
-							J = [0.0]*numref
-							sJ = 0
-							Jc = [0.0]*numref
-							for iref in xrange(numref):
-								J[iref] = exp(d[iref][ima]/T)
-								sJ += J[iref]
-							for iref in xrange(numref):
-								J[iref] /= sJ
-							Jc[0] = J[0]
-							for iref in xrange(1, numref):
-								Jc[iref] = Jc[iref-1]+J[iref]
-							sss = random()
-							for group in xrange(numref):
-								if( sss <= Jc[group]): break
-						tasi[group].append(N[ima])
-						N[ima] = -1
-						for iref in xrange(numref):  d[iref][ima] = -1.e10
-						nt -= 1
-						masi = len(tasi[group])
-						if masi == maxasi:
-							for im in xrange(current_nima):  d[group][im] = -1.e10
-							kt -= 1
-					else:
-						for ima in xrange(current_nima):
-							if N[ima] > -1:
-								qm = -1.e10
-								for iref in xrange(numref):
-									qt = dtot[iref][N[ima]]
-									if( qt > qm ):
-										qm = qt
-										group = iref
-								tasi[group].append(N[ima])
-					del d, N, K
-					if  SA:  del J, Jc
-					for iref in xrange(numref):
-						asi[iref] += tasi[iref]
-					del tasi
-				else:
-					report_error = 1
-			#  This should be deleted only once we know that the number of images is sufficiently large, see below.
-			del dtot
-		else:
-			assignment = []
-			report_error = 0
-		report_error = bcast_number_to_all(report_error, source_node = main_node)
-		if report_error == 1:  ERROR('Number of images within a group too small', "mref_ali3d_MPI", 1, myid)
-		if myid == main_node:
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in xrange(len(asi[iref])):
-					assignment[asi[iref][im]] = iref
-			del asi
-		
-		"""
-		if myid == main_node:
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in xrange(len(asi[iref])):
-					assignment[asi[iref][im]] = iref
-			del asi
-		"""
-
-		'''
-		if myid == main_node:
-			SA = False
-			maxasi = total_nima//numref
-			asi = [[] for iref in xrange(numref)]
-			nt = total_nima
-			kt = numref
-			K = range(numref)
-			N = range(total_nima)
-
-			while nt > 0 and kt > 1:
-				l = d.argmax()
-				group = l//total_nima
-				ima   = l-total_nima*group
-				if SA:
-					J = [0.0]*numref
-					sJ = 0
-					Jc = [0.0]*numref
-					for iref in xrange(numref):
-						J[iref] = exp(d[iref][ima]/T)
-						sJ += J[iref]
-					for iref in xrange(numref):
-						J[iref] /= sJ
-					Jc[0] = J[0]
-					for iref in xrange(1, numref):
-						Jc[iref] = Jc[iref-1]+J[iref]
-					sss = random()
-					for group in xrange(numref):
-						if( sss <= Jc[group]): break
-				asi[group].append(N[ima])
-				for iref in xrange(numref):  d[iref][ima] = -1.e10
-				nt -= 1
-				masi = len(asi[group])
-				if masi == maxasi:
-					for im in xrange(total_nima):  d[group][im] = -1.e10
-					kt -= 1
-			else:
-				mas = [len(asi[iref]) for iref in xrange(numref)]
-				group = mas.index(min(mas))
-				del mas
-				for im in xrange(total_nima):
-					kt = 0
-					go = True
-					while(go and kt < numref):
-						if d[kt][im] > -1.e10:
-							asi[group].append(im)
-							go = False
-						kt += 1
-
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in xrange(len(asi[iref])):
-					assignment[asi[iref][im]] = iref
-
-			del asi, d, N, K
-			if  SA:  del J, Jc
-
-
-		else:
-			assignment = []
-		'''
-		assignment = mpi_scatterv(assignment, recvcount, disps, MPI_INT, recvcount[myid], MPI_INT, main_node, MPI_COMM_WORLD)
-		assignment = map(int, assignment)
-		#  compute number of particles that changed assignment and how many are in which group
-		nchng = 0
-		npergroup = [0]*numref
-		for im in xrange(nima):
-			iref = data[im].get_attr('group')
-			npergroup[assignment[im]] += 1
-			if( iref != assignment[im]): nchng += 1
-			data[im].set_attr('group', assignment[im])
-		nchng = mpi_reduce(nchng, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-		npergroup = mpi_reduce(npergroup, numref, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-		npergroup = map(int, npergroup)
-		terminate = 0
-		if( myid == 0 ):
-			ngroup=[]
-			nchng = int(nchng[0])
-			precn = 100*float(nchng)/float(total_nima)
-			msg = " Number of particles that changed assignments %7d, percentage of total: %5.1f"%(nchng, precn)
-			log.add(msg)
-			msg = " Group       number of particles"
-			log.add(msg)
-			for iref in xrange(numref):
-				msg = " %5d       %7d"%(iref+1, npergroup[iref])
-				log.add(msg)
-				ngroup.append(int(npergroup[iref]))
-			if(precn <= termprec):  terminate = 1
-		else:
-			ngroup = 0
-		terminate = mpi_bcast(terminate, 1, MPI_INT, 0, MPI_COMM_WORLD)
-		terminate = int(terminate[0])
-		ngroup = wrap_mpi_bcast(ngroup,main_node)
-
-		if runtype=="REFINEMENT":
-			for im in xrange(nima):
-				data[im].set_attr('xform.projection', trans[assignment[im]][im])
-				pixer[0][im] = pixer[assignment[im]][im]
-			pixer = pixer[0]
-			if(center == -1):
-				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)				
-				if myid == main_node:
-					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f"%(cs[0], cs[1], cs[2])
-					log.add(msg)
-				cs = mpi_bcast(cs, 3, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-				cs = [-float(cs[0]), -float(cs[1]), -float(cs[2])]
-				rotate_3D_shift(data, cs)
-			#output pixel errors
-			recvbuf = mpi_gatherv(pixer, nima, MPI_FLOAT, recvcount, disps, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-			mpi_barrier(MPI_COMM_WORLD)
-			if(myid == main_node):
-				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
-				lhist = 20
-				region, histo = hist_list(recvbuf, lhist)
-				if(region[0] < 0.0):  region[0] = 0.0
-				msg = "      Histogram of pixel errors\n      ERROR       number of particles"
-				log.add(msg)
-				for lhx in xrange(lhist):
-					msg = " %10.3f      %7d"%(region[lhx], histo[lhx])
-					log.add(msg)
-				del region, histo
-			del recvbuf
-		fscc = [None]*numref
-		if fourvar and runtype=="REFINEMENT":
-			sumvol = model_blank(nx, nx, nx)
-		start_time = time()
-
-		if( not focus ):
-			for im in xrange(nima):  data[im] = fft(data[im])
-		highres = []
-		lowpass_tmp = []
-		tmpref =[]
-		for iref in xrange(numref):
-			#  3D stuff
-			from time import localtime, strftime
-			if Tracker["constants"]["3d-interpolation"]=="trl":
-				chunk_id   = 0
-				niter      = 10
-				upweighted = False
-				compensate = False
-				verbose    =  0
-				sign       = 1 
-				volref0    = recons3d_n_trl_MPI_one_node(data, CTF, snr, sign, npad, sym, iref, niter, verbose, upweighted, compensate, chunk_id)
-				chunk_id   = 1
-				volref1    = recons3d_n_trl_MPI_one_node(data, CTF, snr, sign, npad, sym, iref, niter, verbose, upweighted, compensate, chunk_id)
-				if myid == main_node:
-					fscc[iref] = fsc(volref0, volref1)
-					volref = volref1+volref0
-					del volref1
-					del volref0
-				#chunk_id   = -1
-				#volref = recons3d_n_trl_MPI_one_node(data, CTF, snr, sign, npad, sym, iref, niter, verbose, upweighted, compensate, chunk_id)
-			else:
-				if(CTF): volref, fscc[iref] = rec3D_two_chunks_MPI(data, snr, sym, mask3D,\
-					os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)), myid, main_node, index=iref, npad=npad, finfo=frec)
-				else:    volref, fscc[iref] = rec3D_MPI_noCTF(data, sym,mask3D,\
-					os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)), myid, main_node, index=iref, npad=npad, finfo=frec)
-			if(myid == 0):
-				log.add( "Time to compute 3D: %d" % (time()-start_time) );start_time = time()
-				volref.write_image(os.path.join(outdir, "vol%04d.hdf"%( total_iter)), iref)
-				tmpref.append(volref)			
-				if fourvar and runtype=="REFINEMENT": sumvol += volref
-			#set_filter_parameters_from_adjusted_fsc(Tracker["constants"]["total_stack"],ngroup[iref],Tracker)
-			if myid ==main_node:
-				res = 0.5
-				for ifreq in xrange(len(fscc[iref][0])-1,0,-1):
-					if fscc[iref][1][ifreq] > 0.5 : # always use .5 as cutoff
-						res = fscc[iref][0][ifreq]
-						break
-
-				Tracker["lowpass"] = min(0.45, res)
-				#Tracker["lowpass"] = max(0.11, res)
-				Tracker["falloff"] = 0.1
-				log.add(" low pass filter is %f    %f   %d"%(Tracker["lowpass"], Tracker["falloff"], ngroup[iref]))
-			else:
-				Tracker["lowpass"] = 0.0
-				Tracker["lowpass"] = 0.0
-				res = 0.0
-			res = bcast_number_to_all(res, main_node)
-			highres.append(int(res*Tracker["nxinit"]+ 0.5))
-			if myid ==main_node:
-				log.add("%d highres                   %f"%(iref, highres[iref]))
-			Tracker["lowpass"] = bcast_number_to_all(Tracker["lowpass"], main_node)
-			Tracker["falloff"] = bcast_number_to_all(Tracker["falloff"], main_node)
-			lowpass_tmp.append(Tracker["lowpass"])
-		Tracker["lowpass"] = min(lowpass_tmp)
-		if myid ==main_node:
-			log.add(" the adopted  low pass filter is %f    %f   "%(Tracker["lowpass"], Tracker["falloff"]))
-		for iref in xrange(numref):
-			
-			if myid ==main_node:
-				volref =tmpref[iref]
-				if Tracker["mask3D"]: 
-				
-					mask3D = get_im(Tracker["mask3D"])
-					stat = Util.infomask(volref, mask3D, False)
-					volref -= stat[0]
-					Util.mul_scalar(volref, 1.0/stat[1])
-					
-				if(Tracker["constants"]["PWadjustment"]):
-				
-					rt = read_text_file(Tracker["PW_dict"][Tracker["constants"]["nxinit"]])
-					ro = rops_table(volref)
-					for i in xrange(1,len(ro)):  ro[i] = (rt[i]/ro[i])**Tracker["constants"]["upscale"]
-					volref =filt_table(volref,ro)
-							
-				if (Tracker["constants"]["low_pass_filter"]==-1.):  volref = filt_tanl(volref, Tracker["lowpass"], Tracker["falloff"])                                       # low pass from resolution 
-				else:                                               volref = filt_tanl(volref, min(Tracker["constants"]["low_pass_filter"]/Tracker["shrinkage"],0.45), Tracker["falloff"]) # user define filter
-			
-	
-				if Tracker["mask3D"]: Util.mul_img(volref, mask3D)
-				volref.write_image( os.path.join(outdir,"volf%04d.hdf"%(total_iter)), iref)
-				del volref
-				
-		"""
-		if runtype=="REFINEMENT":
-			if fourvar:
-				varf = varf3d_MPI(data, os.path.join(outdir, "ssnr%04d"%total_iter), None,sumvol,last_ring, 1.0, 1, CTF, 1, sym, myid)
-				if myid == main_node:   
-					varf = 1.0/varf
-					varf.write_image( os.path.join(outdir,"varf%04d.hdf"%total_iter) )
-		"""
-		#if(myid == main_node):
-		"""
-			frcs={}
-			for iref in xrange(numref):
-				frc=read_text_file(os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)),-1)
-				frcs[iref]=frc
-			refdata = [None]*7
-			refdata[0] = numref
-			refdata[1] = outdir
-			refdata[2] = None #frequency_low_pass
-			refdata[3] = total_iter
-			refdata[4] = None
-			refdata[5] = mask3D
-			refdata[6] = Tracker["low_pass_filter"]#(runtype=="REFINEMENT") # whether to align on 50S, this only happens at refinement step
-		"""
-		mpi_barrier(MPI_COMM_WORLD)
-		if terminate == 0: # headers are only updated when the program is going to terminate
-			start_time = time()
-			if nrefine!=0: par_str = ['xform.projection', 'ID', 'group']
-			else: par_str = ['group', 'ID' ]
-			"""
-	        	if myid == main_node:
-				from utilities import file_type
-	        		if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
-	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-	        		else:
-	        			from utilities import recv_attr_dict
-	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-	        	else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
-			"""
-			if(myid == 0):log.add( "Time to write headers: %d\n" % (time()-start_time) );start_time = time()
-		else:
-			final_list = get_sorting_params_refine(Tracker, data, total_nima)
-			group_list, ali3d_params_list = parsing_sorting_params(final_list)
-			if myid ==main_node:
-				group_list_saved_file =os.path.join(outdir, "list2.txt")
-				write_text_file(group_list,group_list_saved_file)
-			mpi_barrier(MPI_COMM_WORLD)
-			Tracker["this_partition"]=group_list
-			break
-	if terminate != 1:
-		final_list = get_sorting_params_refine(Tracker,data, total_nima)
-		group_list, ali3d_params_list = parsing_sorting_params(final_list)  
-		if myid ==main_node:
-			group_list_saved_file =os.path.join(outdir, "list2.txt")
-			write_text_file(group_list,group_list_saved_file)
-		mpi_barrier(MPI_COMM_WORLD)
-		Tracker["this_partition"]=group_list
-	### program finishes
-	if myid ==main_node:  log.add(" mref_ali3d_EQ_Kmeans finishes !")
-		
-######
- 
-def mref_ali3d_EQ_Kmeans_circular(ref_list, outdir, particle_list_file, Tracker):
-	from utilities      import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
-	from utilities      import  bcast_list_to_all, get_image, get_input_from_string, get_im
-	from utilities      import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, model_blank, wrap_mpi_bcast, write_text_file
-	from filter         import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
-	from utilities      import rotate_3D_shift,estimate_3D_center_MPI, get_shrink_data_huang, get_im
-	####-------
-	from utilities      import get_attr_stack, get_sorting_attr_stack, get_sorting_params, get_sorting_params_refine
-	from utilities      import parsing_sorting_params, fill_in_mpi_list, wrap_mpi_bcast, get_groups_from_partition
-	from utilities      import remove_small_groups, set_filter_parameters_from_adjusted_fsc
-	###-----------
-	from alignment      import Numrinit, prepare_refrings, proj_ali_incore
-	from random         import randint, random
-	from filter         import filt_ctf
-	from utilities      import print_begin_msg, print_end_msg, print_msg, read_text_file
-	from projection     import prep_vol, prgs, prgl, project, prgq, gen_rings_ctf
-	from morphology     import binarize, get_shrink_3dmask
-	from statistics		import fsc
-
-	import os
-	import types
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, mpi_gatherv, mpi_scatterv, MPI_INT, MPI_SUM
-	from applications   import MPI_start_end
-	from reconstruction import rec3D_two_chunks_MPI, rec3D_MPI_noCTF
-	from fundamentals   import fftip, rops_table, fft
-	mpi_comm = MPI_COMM_WORLD
-	#####  reconstruction parameters, no need to change.
-	fourvar   = False
-	snr       = 1.0
-	debug     = False
-	ref_a     = "S"
-	npad      = 2
-	#####################################################
-	from logger import Logger,BaseLogger_Files
-	log       = Logger()
-	log   =Logger(BaseLogger_Files())
-	log.prefix=outdir+"/"
-	myid           = Tracker["constants"]["myid"]
-	main_node      = Tracker["constants"]["main_node"]
-	number_of_proc = Tracker["constants"]["nproc"]
-	shrinkage      = Tracker["shrinkage"]
-	### input parameters
-	maxit          = Tracker["constants"]["maxit"]
-	ou             = Tracker["constants"]["radius"]
-	ir             = Tracker["constants"]["ir"]
-	rs             = Tracker["constants"]["rs"]
-	xr             = Tracker["constants"]["xr"]
-	yr             = Tracker["constants"]["yr"]
-	ts             = Tracker["constants"]["ts"]
-	delta          = Tracker["constants"]["delta"]
-	an             = Tracker["constants"]["an"]
-	center         = Tracker["constants"]["center"]
-	nassign        = Tracker["constants"]["nassign"]
-	nrefine        = Tracker["constants"]["nrefine"]
-	CTF            = Tracker["constants"]["CTF"]
-	sym            = Tracker["constants"]["sym"]
-	termprec       = Tracker["constants"]["stoprnct"]
-	if myid == main_node:
-		weight         = Tracker["constants"]["weight"]
-		m = len(weight)-1
-		#s= sum(weight)
-	else:
-		weight         = 0.0
-		m              = 0
-	weight = wrap_mpi_bcast(weight, main_node, mpi_comm)
-	if myid ==main_node:
-		print weight
-	m = bcast_number_to_all(m, main_node)
-	if Tracker["constants"]["mask3D"]:
-		maskfile            = Tracker["mask3D"]
-	else:
-		maskfile            = None
-	if Tracker["constants"]["focus3Dmask"]: focus = Tracker["constants"]["focus3Dmask"]
-	else:                                   focus = None
-	partstack           = Tracker["constants"]["partstack"]
-	user_func_name      = Tracker["constants"]["user_func"]
-	Tracker["lowpass"]  = Tracker["low_pass_filter"]
-	Tracker["falloff"]  = .1
-	if Tracker["constants"]["PWadjustment"]: Tracker["PWadjustment"] = Tracker["PW_dict"][Tracker["constants"]["nxinit"]]
-	else:                                    Tracker["PWadjustment"] = None	
-	####################################################
-	from time import sleep
-	#Tracker["applyctf"] = True # 
-	data, old_shifts = get_shrink_data_huang(Tracker, Tracker["nxinit"], particle_list_file, partstack, myid,main_node,number_of_proc,preshift=True)
-	if myid ==main_node:
-		list_of_particles = read_text_file(particle_list_file)
-		total_nima        =len(list_of_particles)
-	else:
-		total_nima = 0
-		list_of_particles = 0
-	total_nima            = bcast_number_to_all(total_nima,main_node)
-	list_of_particles     = wrap_mpi_bcast(list_of_particles, main_node)
-	
-	if myid == main_node:
-		if os.path.exists(outdir):  nx = 1
-		else:  nx = 0
-	else:  nx = 0
-	ny = bcast_number_to_all(nx, source_node = main_node)
-	#image_start, image_end = MPI_start_end(total_data,number_of_proc, myid)
-	
-	if ny == 1:  ERROR('Output directory exists, please change the name and restart the program', "mref_ali3d_iter", 1,myid)
-	mpi_barrier(MPI_COMM_WORLD)
-	if myid == main_node:	
-		os.mkdir(outdir)
-		import global_def
-		global_def.LOGFILE =  os.path.join(outdir, global_def.LOGFILE)
-		log.add("Equal K-means  ")
-	mpi_barrier(MPI_COMM_WORLD)
-	from time import time	
-	if debug:
-		from time import sleep
-		while not os.path.exists(outdir):
-			print  "Node ",myid,"  waiting..."
-			sleep(5)
-		finfo = open(os.path.join(outdir, "progress%04d"%myid), 'w')
-		frec  = open( os.path.join(outdir, "recons%04d"%myid), "w" )
-	else:
-		finfo = None
-		frec  = None
-	xrng        = get_input_from_string(xr)
-	if  yr == "-1":  yrng = xrng
-	else          :  yrng = get_input_from_string(yr)
-	step        = get_input_from_string(ts)
-	delta       = get_input_from_string(delta)
-	lstp = min( len(xrng), len(yrng), len(step), len(delta) )
-	if (an == "-1"):
-		an = []
-		for i in xrange(len(xrng)):   an.append(-1)
-	else:
-		from  alignment	    import proj_ali_incore_local
-		an      = get_input_from_string(an)
-
-	first_ring  = int(ir)
-	rstep       = int(rs)
-	last_ring   = int(int(ou)*shrinkage+.5)
-	center      = int(center)
-	numref  = len(ref_list)
-	nx      = ref_list[0].get_xsize()
-	if last_ring < 0:last_ring = nx//2 - 2
-	import user_functions
-	user_func = user_functions.factory[user_func_name]
-	if (myid == main_node):
-		#import user_functions
-		#user_func = user_functions.factory[user_func_name]
-		log.add("mref_ali3d_MPI")
-		log.add("Input stack                               : %s"%(Tracker["constants"]["stack"]))
-		#log.add("Reference volumes                         : %s"%(ref_vol))	
-		log.add("Number of reference volumes               : %i"%(numref))
-		log.add("Output directory                          : %s"%(outdir))
-		log.add("User function                             : %s"%(user_func_name))
-		if(focus != None):  \
-		log.add("Maskfile 3D for focused clustering        : %s"%(focus))
-		log.add("Overall 3D mask applied in user function  : %s"%(maskfile))
-		log.add("Inner radius                              : %i"%(first_ring))
-		log.add("Outer radius                              : %i"%(last_ring))
-		log.add("Ring step                                 : %i"%(rstep))
-		log.add("X search range                            : %s"%(xrng))
-		log.add("Y search range                            : %s"%(yrng))
-		log.add("Translational step                        : %s"%(step))
-		log.add("Angular step                              : %s"%(delta))
-		log.add("Angular search range                      : %s"%(an))
-		log.add("Number of assignments in each iteration   : %i"%(nassign))
-		log.add("Number of alignments in each iteration    : %i"%(nrefine))
-		log.add("Number of iterations                      : %i"%(lstp*maxit) )
-		log.add("Center type                               : %i"%(center))
-		log.add("CTF correction                            : %s"%(CTF))
-		log.add("Symmetry group                            : %s"%(sym))
-		log.add("Percentage of change for termination      : %f"%(termprec))
-		log.add("User function                             : %s"%(user_func_name))
-		log.add("total number of particles                 : %d"%len(Tracker["this_data_list"]))
-		log.add("shrinkage is                              : %f"%shrinkage)
-		log.add("the particle id files for get_shrink_dat is %s"%particle_list_file) 
-	if(maskfile):
-		if(type(maskfile) is types.StringType): mask3D = get_shrink_3dmask(Tracker["nxinit"],maskfile) 
-		else: 	                                mask3D = maskfile
-	else        :  mask3D = model_circle(last_ring, nx, nx, nx)
-	numr     = Numrinit(first_ring, last_ring, rstep, "F")
-	mask2D   = model_circle(last_ring, nx, nx)
-	if(first_ring > 1):  mask2D -= model_circle(first_ring,nx,nx)
-	nima       = len(data) # local number of particles
-	
-	'''
-	if(myid == main_node):	
-		total_nima = EMUtil.get_image_count(stack)
-		list_of_particles = range(total_nima)
-	
-	else:
-		total_nima =0
-
-	total_nima = bcast_number_to_all(total_nima, source_node = main_node)
-
-	if(myid != main_node):
-		list_of_particles = [-1]*total_nima
-
-	list_of_particles = bcast_list_to_all(list_of_particles, myid,  source_node = main_node)
-
-	image_start, image_end = MPI_start_end(total_nima, number_of_proc, myid)
-	# create a list of images for each node
-	list_of_particles = list_of_particles[image_start: image_end]
-	nima = len(list_of_particles)
-	'''
-	if debug:
-		finfo.write( "Image_start, image_end: %d %d\n" %(image_start,image_end))
-		finfo.flush()
-	start_time = time()
-	#  Here the assumption is that input are always volumes.  It should be most likely be changed so optionally these are group assignments.
-	#  Initialize Particle ID and set group number to non-existant -1
-	for im in xrange(nima):
-		data[im].set_attr_dict({'group':-1})
-	if(myid == 0):
-		log.add( "Time to read data: %d" % (time()-start_time) );start_time = time()
-
-	if myid == main_node:
-		refdata = [None]*7
-		for  iref in xrange(numref):
-			ref_list[iref].write_image(os.path.join(outdir, "vol0000.hdf"), iref)
-		#refdata[0] = 
-		#user_func(refdata)
-	refdata        =[None]*4
-	res = 0.5
-	for i in xrange(len(Tracker["global_fsc"][0])-1,0,-1):
-		if Tracker["global_fsc"][1][i] > 0.5:
-				res=fsc_in[0][i]
-				break
-	highres = []
-	for  iref in xrange(numref): highres.append(int(res*Tracker["nxinit"] + 0.5))
-	Tracker["lowpass"] = min(0.45, res-0.05)
-	Tracker["lowpass"] = max(0.11, res)
-	Tracker["falloff"] = 0.1
-	##-----------------------------------------------
-	if myid == main_node:  ### 3-D mask, low pass filter, and power spectrum adjustment
-		for iref in xrange(numref):
-		
-			#set_filter_parameters_from_adjusted_fsc(Tracker["constants"]["total_stack"],Tracker["number_of_ref_class"][iref],Tracker)
-			log.add("%d  low pass filter   %f %f  %d"%(iref,Tracker["lowpass"],Tracker["falloff"],Tracker["number_of_ref_class"][iref]))
-			log.add("%d highres                   %f"%(iref, highres[iref]))
-			
-			if Tracker["mask3D"]:
-				mask3D = get_im(Tracker["mask3D"])
-				stat = Util.infomask(ref_list[iref], mask3D, False)
-				ref_list[iref] -= stat[0]
-				Util.mul_scalar(ref_list[iref], 1.0/stat[1])
-				
-			if(Tracker["constants"]["PWadjustment"] !=""):
-				rt = read_text_file(Tracker["PW_dict"][Tracker["constants"]["nxinit"]])
-				ro = rops_table(ref_list[iref])
-				for i in xrange(1,len(ro)):  ro[i] = (rt[i]/ro[i])**Tracker["constants"]["upscale"]
-				ref_list[iref] =filt_table(ref_list[iref],ro)
-				
-			if (Tracker["constants"]["low_pass_filter"]==-1.):  ref_list[iref] = filt_tanl(ref_list[iref], Tracker["lowpass"], Tracker["falloff"])                                       # low pass from resolution 
-			else:                                               ref_list[iref] = filt_tanl(ref_list[iref], min(Tracker["constants"]["low_pass_filter"]/Tracker["shrinkage"],0.45), Tracker["falloff"]) # user define filter
-							
-
-			if Tracker["mask3D"]: Util.mul_img(ref_list[iref], mask3D)
-			ref_list[iref].write_image(os.path.join(outdir,"volf0000.hdf"),iref)
-			
-	mpi_barrier( MPI_COMM_WORLD )
-	if CTF:
-		#if(data[0].get_attr_default("ctf_applied",0) > 0):  ERROR("mref_ali3d_MPI does not work for CTF-applied data", "mref_ali3d_MPI", 1, myid)
-		from reconstruction import rec3D_MPI
-	else:
-		from reconstruction import rec3D_MPI_noCTF
-	if debug:
-		finfo.write( '%d loaded  \n' % len(data) )
-		finfo.flush()
-	#  this is needed for gathering of pixel errors
-	disps = []
-	recvcount = []
-	for im in xrange(number_of_proc):
-		if( im == main_node ):  disps.append(0)
-		else:                   disps.append(disps[im-1] + recvcount[im-1])
-		ib, ie = MPI_start_end(total_nima, number_of_proc, im)
-		recvcount.append( ie - ib )
-	total_iter = 0
-	tr_dummy = Transform({"type":"spider"})
-
-	if(focus != None):
-		if(myid == main_node):
-			focus = get_shrink_3dmask(Tracker["nxinit"], focus)
-		else:
-			focus =  model_blank(Tracker["nxinit"], Tracker["nxinit"], Tracker["nxinit"])
-		bcast_EMData_to_all(focus, myid, main_node)
-		st = Util.infomask(focus, None, True)
-		if( st[0] == 0.0 ):  ERROR("sxrsort3d","incorrect focused mask, after binarize all values zero",1, myid)
-		focus = prep_vol(focus, 1, 1)
-
-	Niter = int(lstp*maxit*(nassign + nrefine) )
-	for Iter in xrange(Niter):
-		N_step = (Iter%(lstp*(nassign+nrefine)))/(nassign+nrefine)
-		if Iter%(nassign+nrefine) < nassign:
-			runtype = "ASSIGNMENT"
-		else:
-			runtype = "REFINEMENT"
-
-		total_iter += 1
-		if(myid == main_node):
-			log.add("\n%s ITERATION #%3d,  inner iteration #%3d\nDelta = %4.1f, an = %5.2f, xrange = %5.2f, yrange = %5.2f, step = %5.2f  \
-			"%(runtype, total_iter, Iter, delta[N_step], an[N_step], xrng[N_step],yrng[N_step],step[N_step]))
-			start_ime = time()
-		peaks =  [ [ -1.0e23 for im in xrange(nima) ] for iref in xrange(numref) ]
-		if runtype=="REFINEMENT":
- 			trans = [ [ tr_dummy for im in xrange(nima) ] for iref in xrange(numref) ]
-			pixer = [ [  0.0     for im in xrange(nima) ] for iref in xrange(numref) ]
-			if(an[N_step] > 0):
-				from utilities    import even_angles
-				ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
-				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
-				list_of_reference_angles = \
-				generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
-				del ref_angles
-			else:  list_of_reference_angles = [[1.0,1.0]]
-		cs = [0.0]*3
-		from fundamentals import fft
-		if( not focus ):
-			for im in xrange(nima):  data[im] = fft(data[im])
-
-		for iref in xrange(numref):
-			if(myid == main_node):	volft = get_im(os.path.join(outdir, "volf%04d.hdf"%(total_iter-1)), iref)
-			else: 					volft =  model_blank(nx, nx, nx)
-			bcast_EMData_to_all(volft, myid, main_node)
-			volft = prep_vol(volft, 1, 1)
-			if CTF:
-				previous_defocus=-1.0
-				if runtype=="REFINEMENT":
-					start_time = time()
-					prjref = prgq( volft, kb, nx, delta[N_step], ref_a, sym, MPI=True)
-					if(myid == 0): log.add( "Calculation of projections: %d" % (time()-start_time) );start_time = time()
-					del volft, kb
-			else:
-				if runtype=="REFINEMENT":
-					start_time = time()
-					refrings = prepare_refrings( volft, kb, nx, delta[N_step], ref_a, sym, numr)
-					if(myid == 0): log.add( "Initial time to prepare rings: %d" % (time()-start_time) );start_time = time()
-					del volft, kb
-			start_time = time()
-			for im in xrange(nima):
-				if(CTF):
-					ctf = data[im].get_attr("ctf")
-					if runtype=="REFINEMENT":
-						if(ctf.defocus != previous_defocus):
-							previous_defocus = ctf.defocus
-							rstart_time = time()
-							refrings = gen_rings_ctf( prjref, nx, ctf, numr)
-							if(myid == 0): log.add( "Repeated time to prepare rings: %d" % (time()-rstart_time) );rstart_time = time()
-
-				if runtype=="ASSIGNMENT":
-					phi,tht,psi,s2x,s2y = get_params_proj(data[im])
-					'''
-					if CTF:
-						ref = fft(filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y],1,False), ctf ))
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y],1)
-					if(focus != None):  mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]),1)  #  Should be precalculated!!
-					peak = ref.cmp("ccc",data[im],{"mask":mask2D, "negative":0})
-					'''
-					#  Standard distance
-					#  Ref is in reciprocal space
-					if CTF:
-						ref = filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False), ctf )
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False)
-					from filter import filt_tophatl
-					from math import sqrt
-					ref = filt_tophatl(ref, float(highres[iref])/(ref.get_ysize()))
-					ref.set_attr("is_complex",0)
-					ref.set_value_at(0,0,0.0)
-					nrmref = sqrt(Util.innerproduct(ref, ref, None))
-					if(focus):
-						mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]), 1)
-						tempx = fft(data[im]*mask2D)
-						tempx.set_attr("is_complex",0)
-						peak = Util.innerproduct(ref, tempx, None)
-					else:
-						data[im].set_attr("is_complex",0)
-						peak = Util.innerproduct(ref, data[im], None)
-						data[im].set_attr("is_complex",1)
-					peak /= nrmref
-
-					'''
-					#  FSC distance
-					#  Ref is in reciprocal space
-					if CTF:
-						ref = filt_ctf( prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False), ctf )
-					else:
-						ref = prgl( volft, [phi,tht,psi,-s2x,-s2y], 1, False)
-					if(focus):
-						mask2D = binarize( prgl( focus, [phi,tht,psi,-s2x,-s2y]), 1)
-						tempx = fsc(ref, fft(data[im]*mask2D))[1]
-					else:
-						tempx = fsc(ref, data[im])[1]
-					peak = sum(tempx[1:highres[iref]])/highres[iref]
-					'''
-
-
-
-					if not(finfo is None):
-						finfo.write( "ID, iref, peak: %6d %d %8.5f\n" % (list_of_particles[im],iref,peak) )
-				else:
-					if(an[N_step] == -1):
-						peak, pixel_error = proj_ali_incore(data[im], refrings, numr, xrng[N_step], yrng[N_step], step[N_step])
-					else:
-						peak, pixel_error = proj_ali_incore_local(data[im], refrings, list_of_reference_angles, numr, \
-																	xrng[N_step], yrng[N_step], step[N_step], an[N_step],sym=sym)
-					if not(finfo is None):
-						phi,tht,psi,s2x,s2y = get_params_proj(data[im])
-						finfo.write( "ID, iref, peak,t rans: %6d %d %f %f %f %f %f %f\n"%(list_of_particles[im],iref,peak,phi,tht,psi,s2x,s2y) )
-						finfo.flush()
-
-				peaks[iref][im] = peak
-				if runtype=="REFINEMENT":
-					pixer[iref][im] = pixel_error
-					trans[iref][im] = data[im].get_attr( "xform.projection" )
-			if(myid == 0):log.add( "Time to process particles for reference %3d: %d" % (iref, time()-start_time) );start_time = time()
-		#newpeaks = [nima*[0.0]]*numref
-		### add circular conditions
-		# m = len(weight)//2
-		#for im in xrange(nima):
-		#	for iref in xrange(numref):
-		#		for j in xrange(-m, m):
-		#			newpeaks[iref][im] += peaks[(iref+j)%numref][im]*weight[j+m]
-		#peaks = newpeaks	
-		if runtype=="ASSIGNMENT":  del volft, ref #kb, ref
-		else:
-			if CTF: del prjref
-			del refrings
-			if(an[N_step] > 0): del list_of_reference_angles
-		#  send peak values to the main node, do the assignments, and bring them back
-		from numpy import float32, empty, inner, abs
-		if( myid == 0 ):
-			dtot = empty( (numref, total_nima), dtype = float32)
-		for  iref in xrange(numref):
-			recvbuf = mpi_gatherv(peaks[iref], nima, MPI_FLOAT, recvcount, disps, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-			if( myid == 0 ): dtot[iref] = recvbuf
-		del recvbuf
-		#  The while loop over even angles delta should start here.
-		#  prepare reference directions
-		from utilities import even_angles, getvec
-		refa = even_angles(60.0)
-		numrefang = len(refa)
-		refanorm = empty( (numrefang, 3), dtype = float32)
-		for i in xrange(numrefang):
-			tmp = getvec(refa[i][0], refa[i][1])
-			for j in xrange(3):
-				refanorm[i][j] = tmp[j]
-		del  refa, tmp
-		transv = empty( (nima, 3), dtype = float32)
-		if runtype=="ASSIGNMENT":
-			for im in xrange(nima):
-				trns = data[im].get_attr("xform.projection")
-				for j in xrange(3):
-					transv[im][j] = trns.at(2,j)
-		else:
-			# For REFINEMENT we have a problem, as the exact angle is known only after the next step of assigning projections.
-			# So, we will assume it is the one with max peak
-			for im in xrange(nima):
-				qt = -1.0e23
-				it = -1
-				for iref in xrange(numref):
-					pt = peaks[iref][im]
-					if(pt > qt):
-						qt = pt
-						it = iref
-				for j in xrange(3):
-					transv[im][j] = trans[it][im].at(2,j)
-		#  We have all vectors, now create a list of assignments of images to references
-		refassign = [-1]*nima
-		for im in xrange(nima):
-			refassign[im] = abs(inner(refanorm,transv[im])).argmax()
-		assigntorefa = mpi_gatherv(refassign, nima, MPI_INT, recvcount, disps, MPI_INT, main_node, MPI_COMM_WORLD)
-		assigntorefa = map(int, assigntorefa)
-		del refassign, refanorm, transv
-		"""
-		#  Trying to use ISAC code for EQ-Kmeans  PAP 03/21/2015
-		if myid == main_node:
-
-			for imrefa in xrange(numrefang):
-				from utilities import findall
-				N = findall(imrefa, assigntorefa)
-				current_nima = len(N)
-				if( current_nima >= numref and report_error == 0):
-					tasi = [[] for iref in xrange(numref)]
-					maxasi = current_nima//numref
-					nt = current_nima
-					kt = numref
-					K = range(numref)
-
-					d = empty( (numref, current_nima), dtype = float32)
-					for ima in xrange(current_nima):
-						for iref in xrange(numref):  d[iref][ima] = dtot[iref][N[ima]]
-
-			e b = empty( (numref, total_nima), dtype = float32)
-			for ima in xrange(total_nima):
-				for iref in xrange(numref):  d[iref][ima] = dtot[iref][N[ima]]
-			id_list_long = Util.assign_groups(str(d.__array_interface__['data'][0]), numref, nima) # string with memory address is passed as parameters
-			del d
-			id_list = [[] for i in xrange(numref)]
-			maxasi = total_nima/numref
-			for i in xrange(maxasi*numref):
-				id_list[i/maxasi].append(id_list_long[i])
-			for i in xrange(total_nima%maxasi):
-				id_list[id_list_long[-1]].append(id_list_long[maxasi*numref+i])
-			for iref in xrange(numref):
-				id_list[iref].sort()
-
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in id_list[iref]: assignment[im] = iref
-		else:
-			assignment = [0]*total_nima
-		mpi_barrier(MPI_COMM_WORLD)
-		#belongsto = mpi_bcast(belongsto, nima, MPI_INT, main_node, MPI_COMM_WORLD)
-		#belongsto = map(int, belongsto)
-		"""
-		if myid == main_node:
-			SA = False
-			asi = [[] for iref in xrange(numref)]
-			report_error = 0
-			for imrefa in xrange(numrefang):
-				from utilities import findall
-				N = findall(imrefa, assigntorefa)
-				current_nima = len(N)
-				if( current_nima >= numref and report_error == 0):
-					tasi = [[] for iref in xrange(numref)]
-					maxasi = current_nima//numref
-					nt = current_nima
-					kt = numref
-					K = range(numref)
-
-					d = empty( (numref, current_nima), dtype = float32)
-					for ima in xrange(current_nima):
-						for iref in xrange(numref):  d[iref][ima] = dtot[iref][N[ima]]
-
-					while nt > 0 and kt > 0:
-						l = d.argmax()
-						group = l//current_nima
-						ima   = l-current_nima*group
-						if SA:
-							J = [0.0]*numref
-							sJ = 0
-							Jc = [0.0]*numref
-							for iref in xrange(numref):
-								J[iref] = exp(d[iref][ima]/T)
-								sJ += J[iref]
-							for iref in xrange(numref):
-								J[iref] /= sJ
-							Jc[0] = J[0]
-							for iref in xrange(1, numref):
-								Jc[iref] = Jc[iref-1]+J[iref]
-							sss = random()
-							for group in xrange(numref):
-								if( sss <= Jc[group]): break
-						tasi[group].append(N[ima])
-						N[ima] = -1
-						for iref in xrange(numref):  d[iref][ima] = -1.e10
-						nt -= 1
-						masi = len(tasi[group])
-						if masi == maxasi:
-							for im in xrange(current_nima):  d[group][im] = -1.e10
-							kt -= 1
-					else:
-						for ima in xrange(current_nima):
-							if N[ima] > -1:
-								qm = -1.e10
-								for iref in xrange(numref):
-									qt = dtot[iref][N[ima]]
-									if( qt > qm ):
-										qm = qt
-										group = iref
-								tasi[group].append(N[ima])
-					del d, N, K
-					if  SA:  del J, Jc
-					for iref in xrange(numref):
-						asi[iref] += tasi[iref]
-					del tasi
-				else:
-					report_error = 1
-			#  This should be deleted only once we know that the number of images is sufficiently large, see below.
-			del dtot
-		else:
-			assignment = []
-			report_error = 0
-		report_error = bcast_number_to_all(report_error, source_node = main_node)
-		if report_error == 1:  ERROR('Number of images within a group too small', "mref_ali3d_MPI", 1, myid)
-		if myid == main_node:
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in xrange(len(asi[iref])):
-					assignment[asi[iref][im]] = iref
-			del asi
-		
-		"""
-		if myid == main_node:
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in xrange(len(asi[iref])):
-					assignment[asi[iref][im]] = iref
-			del asi
-		"""
-
-		'''
-		if myid == main_node:
-			SA = False
-			maxasi = total_nima//numref
-			asi = [[] for iref in xrange(numref)]
-			nt = total_nima
-			kt = numref
-			K = range(numref)
-			N = range(total_nima)
-
-			while nt > 0 and kt > 1:
-				l = d.argmax()
-				group = l//total_nima
-				ima   = l-total_nima*group
-				if SA:
-					J = [0.0]*numref
-					sJ = 0
-					Jc = [0.0]*numref
-					for iref in xrange(numref):
-						J[iref] = exp(d[iref][ima]/T)
-						sJ += J[iref]
-					for iref in xrange(numref):
-						J[iref] /= sJ
-					Jc[0] = J[0]
-					for iref in xrange(1, numref):
-						Jc[iref] = Jc[iref-1]+J[iref]
-					sss = random()
-					for group in xrange(numref):
-						if( sss <= Jc[group]): break
-				asi[group].append(N[ima])
-				for iref in xrange(numref):  d[iref][ima] = -1.e10
-				nt -= 1
-				masi = len(asi[group])
-				if masi == maxasi:
-					for im in xrange(total_nima):  d[group][im] = -1.e10
-					kt -= 1
-			else:
-				mas = [len(asi[iref]) for iref in xrange(numref)]
-				group = mas.index(min(mas))
-				del mas
-				for im in xrange(total_nima):
-					kt = 0
-					go = True
-					while(go and kt < numref):
-						if d[kt][im] > -1.e10:
-							asi[group].append(im)
-							go = False
-						kt += 1
-
-			assignment = [0]*total_nima
-			for iref in xrange(numref):
-				for im in xrange(len(asi[iref])):
-					assignment[asi[iref][im]] = iref
-
-			del asi, d, N, K
-			if  SA:  del J, Jc
-
-
-		else:
-			assignment = []
-		'''
-		assignment = mpi_scatterv(assignment, recvcount, disps, MPI_INT, recvcount[myid], MPI_INT, main_node, MPI_COMM_WORLD)
-		assignment = map(int, assignment)
-		#  compute number of particles that changed assignment and how many are in which group
-		nchng = 0
-		npergroup = [0]*numref
-		for im in xrange(nima):
-			iref = data[im].get_attr('group')
-			npergroup[assignment[im]] += 1
-			if( iref != assignment[im]): nchng += 1
-			data[im].set_attr('group', assignment[im])
-		nchng = mpi_reduce(nchng, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-		npergroup = mpi_reduce(npergroup, numref, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD)
-		npergroup = map(int, npergroup)
-		terminate = 0
-		if( myid == 0 ):
-			ngroup=[]
-			nchng = int(nchng[0])
-			precn = 100*float(nchng)/float(total_nima)
-			msg = " Number of particles that changed assignments %7d, percentage of total: %5.1f"%(nchng, precn)
-			log.add(msg)
-			msg = " Group       number of particles"
-			log.add(msg)
-			for iref in xrange(numref):
-				msg = " %5d       %7d"%(iref+1, npergroup[iref])
-				log.add(msg)
-				ngroup.append(int(npergroup[iref]))
-			if(precn <= termprec):  terminate = 1
-		else:
-			ngroup = 0
-		terminate = mpi_bcast(terminate, 1, MPI_INT, 0, MPI_COMM_WORLD)
-		terminate = int(terminate[0])
-		ngroup = wrap_mpi_bcast(ngroup,main_node)
-
-		if runtype=="REFINEMENT":
-			for im in xrange(nima):
-				data[im].set_attr('xform.projection', trans[assignment[im]][im])
-				pixer[0][im] = pixer[assignment[im]][im]
-			pixer = pixer[0]
-			if(center == -1):
-				cs[0], cs[1], cs[2], dummy, dummy = estimate_3D_center_MPI(data, total_nima, myid, number_of_proc, main_node)				
-				if myid == main_node:
-					msg = " Average center x = %10.3f        Center y = %10.3f        Center z = %10.3f"%(cs[0], cs[1], cs[2])
-					log.add(msg)
-				cs = mpi_bcast(cs, 3, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-				cs = [-float(cs[0]), -float(cs[1]), -float(cs[2])]
-				rotate_3D_shift(data, cs)
-			#output pixel errors
-			recvbuf = mpi_gatherv(pixer, nima, MPI_FLOAT, recvcount, disps, MPI_FLOAT, main_node, MPI_COMM_WORLD)
-			mpi_barrier(MPI_COMM_WORLD)
-			if(myid == main_node):
-				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
-				lhist = 20
-				region, histo = hist_list(recvbuf, lhist)
-				if(region[0] < 0.0):  region[0] = 0.0
-				msg = "      Histogram of pixel errors\n      ERROR       number of particles"
-				log.add(msg)
-				for lhx in xrange(lhist):
-					msg = " %10.3f      %7d"%(region[lhx], histo[lhx])
-					log.add(msg)
-				del region, histo
-			del recvbuf
-		fscc = [None]*numref
-		if fourvar and runtype=="REFINEMENT":
-			sumvol = model_blank(nx, nx, nx)
-		start_time = time()
-
-		if( not focus ):
-			for im in xrange(nima):  data[im] = fft(data[im])
-		highres     = []
-		lowpass_tmp = []
-		tmpref      = []
-		for iref in xrange(numref):
-			#  3D stuff
-			from time import localtime, strftime
-			if(CTF): volref, fscc[iref] = rec3D_two_chunks_MPI(data, snr, sym, mask3D,\
-			 	os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)), myid, main_node, index=iref, npad=npad, finfo=frec)
-			else:    volref, fscc[iref] = rec3D_MPI_noCTF(data, sym,mask3D,\
-			 	os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)), myid, main_node, index=iref, npad=npad, finfo=frec)
-			if(myid == 0):
-				log.add( "Time to compute 3D: %d" % (time()-start_time) );start_time = time()
-				volref.write_image(os.path.join(outdir, "vol%04d.hdf"%( total_iter)), iref)
-				tmpref.append(volref)			
-				if fourvar and runtype=="REFINEMENT": sumvol += volref
-			#set_filter_parameters_from_adjusted_fsc(Tracker["constants"]["total_stack"],ngroup[iref],Tracker)
-			if myid ==main_node:
-				res = 0.5
-				for ifreq in xrange(len(fscc[iref][0])-1,0,-1):
-					if fscc[iref][1][ifreq] > 0.5 : # always use .5 as cutoff
-						res = fscc[iref][0][ifreq]
-						break
-
-				Tracker["lowpass"] = min(0.45, res)
-				#Tracker["lowpass"] = max(0.11, res)
-				Tracker["falloff"] = 0.1
-				log.add(" low pass filter is %f    %f   %d"%(Tracker["lowpass"], Tracker["falloff"], ngroup[iref]))
-			else:
-				Tracker["lowpass"] = 0.0
-				Tracker["lowpass"] = 0.0
-				res = 0.0
-			res = bcast_number_to_all(res, main_node)
-			highres.append(int(res*Tracker["nxinit"]+ 0.5))
-			if myid ==main_node:
-				log.add("%d highres                   %f"%(iref, highres[iref]))
-			Tracker["lowpass"] = bcast_number_to_all(Tracker["lowpass"], main_node)
-			Tracker["falloff"] = bcast_number_to_all(Tracker["falloff"], main_node)
-			lowpass_tmp.append(Tracker["lowpass"])
-		Tracker["lowpass"] = min(lowpass_tmp)
-		if myid ==main_node:
-			log.add(" the adopted  low pass filter is %f    %f   "%(Tracker["lowpass"], Tracker["falloff"]))
-		for iref in xrange(numref):
-			if myid ==main_node:
-				volref = model_blank(nx,nx,nx)
-				for j in xrange(-m, m+1):
-					#if iref +j <0: k = numref+iref+j
-					#else: k = (iref+j)%numref
-					
-					volref += tmpref[(j+iref)%numref]*weight[abs(j)] # weight the reference volumes 
-			
-				#volref = tmpref[iref]
-				if Tracker["mask3D"]: 
-					mask3D = get_im(Tracker["mask3D"])
-					stat = Util.infomask(volref, mask3D, False)
-					volref -= stat[0]
-					Util.mul_scalar(volref, 1.0/stat[1])
-					
-				if(Tracker["constants"]["PWadjustment"]):
-				
-					rt = read_text_file(Tracker["PW_dict"][Tracker["constants"]["nxinit"]])
-					ro = rops_table(volref)
-					for i in xrange(1,len(ro)):  ro[i] = (rt[i]/ro[i])**Tracker["constants"]["upscale"]
-					volref =filt_table(volref,ro)
-							
-				if (Tracker["constants"]["low_pass_filter"]== -1.):  volref = filt_tanl(volref, Tracker["lowpass"], Tracker["falloff"])                                       # low pass from resolution 
-				else:                                                volref = filt_tanl(volref, min(Tracker["constants"]["low_pass_filter"]/Tracker["shrinkage"],0.45), Tracker["falloff"]) # user define filter
-				if Tracker["mask3D"]: Util.mul_img(volref, mask3D)
-				volref.write_image( os.path.join(outdir,"volf%04d.hdf"%(total_iter)), iref)
-				del volref
-				
-		"""
-		if runtype=="REFINEMENT":
-			if fourvar:
-				varf = varf3d_MPI(data, os.path.join(outdir, "ssnr%04d"%total_iter), None,sumvol,last_ring, 1.0, 1, CTF, 1, sym, myid)
-				if myid == main_node:   
-					varf = 1.0/varf
-					varf.write_image( os.path.join(outdir,"varf%04d.hdf"%total_iter) )
-		"""
-		#if(myid == main_node):
-		"""
-			frcs={}
-			for iref in xrange(numref):
-				frc=read_text_file(os.path.join(outdir, "resolution_%02d_%04d"%(iref, total_iter)),-1)
-				frcs[iref]=frc
-			refdata = [None]*7
-			refdata[0] = numref
-			refdata[1] = outdir
-			refdata[2] = None #frequency_low_pass
-			refdata[3] = total_iter
-			refdata[4] = None
-			refdata[5] = mask3D
-			refdata[6] = Tracker["low_pass_filter"]#(runtype=="REFINEMENT") # whether to align on 50S, this only happens at refinement step
-		"""
-		mpi_barrier(MPI_COMM_WORLD)
-		if terminate == 0: # headers are only updated when the program is going to terminate
-			start_time = time()
-			if nrefine!=0: par_str = ['xform.projection', 'ID', 'group']
-			else: par_str = ['group', 'ID' ]
-			"""
-	        	if myid == main_node:
-				from utilities import file_type
-	        		if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
-	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-	        		else:
-	        			from utilities import recv_attr_dict
-	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
-	        	else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
-			"""
-			if(myid == 0):log.add( "Time to write headers: %d\n" % (time()-start_time) );start_time = time()
-		else:
-			final_list = get_sorting_params_refine(Tracker, data, total_nima)
-			group_list, ali3d_params_list = parsing_sorting_params(final_list)
-			if myid ==main_node:
-				group_list_saved_file =os.path.join(outdir, "list2.txt")
-				write_text_file(group_list,group_list_saved_file)
-			mpi_barrier(MPI_COMM_WORLD)
-			Tracker["this_partition"]=group_list
-			break
-	if terminate != 1:
-		final_list = get_sorting_params_refine(Tracker,data, total_nima)
-		group_list, ali3d_params_list = parsing_sorting_params(final_list)  
-		if myid ==main_node:
-			group_list_saved_file =os.path.join(outdir, "list2.txt")
-			write_text_file(group_list,group_list_saved_file)
-		mpi_barrier(MPI_COMM_WORLD)
-		Tracker["this_partition"] = group_list
-	### program finishes
-	if myid ==main_node:  log.add(" mref_ali3d_EQ_Kmeans finishes !")
-		
-######
- 
- 
-
-			
-			
-			

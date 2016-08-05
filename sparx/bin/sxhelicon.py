@@ -90,7 +90,7 @@ def main():
 			
 		if options.dp < 0 or options.dphi < 0:
 			# read helical symmetry parameters from symdoc
-			from utilities import read_text_row
+			from EMAN2.utilities import read_text_row
 			hparams=read_text_row(options.symdoc)
 			dp  = hparams[0][0]
 			dphi = hparams[0][1]
@@ -101,7 +101,7 @@ def main():
 		rminp = int((float(options.rmin)/options.apix) + 0.5)
 		rmaxp = int((float(options.rmax)/options.apix) + 0.5)
 
-		from utilities import get_input_from_string, get_im
+		from EMAN2.utilities import get_input_from_string, get_im
 
 		searchxshiftp = int( (options.searchxshift/options.apix) + 0.5)
 		xwobblep = int( (options.xwobble/options.apix) + 0.5)
@@ -120,13 +120,13 @@ def main():
 			sys.exit()
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from EMAN2.utilities import disable_bdb_cache
 			disable_bdb_cache()
 
 
 		if len(args) < 4:  mask = None
 		else:              mask = args[3]
-		from applications import ehelix_MPI
+		from EMAN2.applications import ehelix_MPI
 		global_def.BATCH = True
 		ehelix_MPI(args[0], args[1], args[2], options.seg_ny, options.delta, options.phiwobble, options.psi_max,\
 		 searchxshiftp, xwobblep, ywobble, ystep, options.apix, dp, dphi, options.fract, rmaxp, rminp, not options.nopsisearch,\

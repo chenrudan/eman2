@@ -34,14 +34,14 @@
 
 import os
 import global_def
-from   global_def     import *
-from   user_functions import *
-from   optparse       import OptionParser
+from global_def import *
+from EMAN2.user_functions import *
+from optparse import OptionParser
 import sys
 
 def write_montage_file(stack, montage_file, N, gx, gy, bg, scale, number, begin_zero):
 
-	from utilities import model_blank
+	from EMAN2.utilities import model_blank
 
 	font = [ "0011100010001010000011000001100000110000011000001100000101000100011100",
 	         "0001000001100001010001001000000100000010000001000000100000010001111111",
@@ -124,7 +124,7 @@ def main():
 		print "Please run '" + progname + " -h' for detailed options"
 	else:
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from EMAN2.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		
 		global_def.BATCH = True

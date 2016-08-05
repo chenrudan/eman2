@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from   global_def import *
-from   optparse import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 
 
@@ -77,13 +77,13 @@ def main():
 			sys.argv = mpi_init(len(sys.argv), sys.argv)
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from EMAN2.utilities import disable_bdb_cache
 			disable_bdb_cache()
 
 		
 		global_def.BATCH = True
 		if options.fourvar:
-			from development import nlocal_ali3d_MPI
+			from EMAN2.development import nlocal_ali3d_MPI
 			nlocal_ali3d_MPI(args[0], args[1], mask, options.ou, options.delta, options.ts, options.center, options.maxit,
 			options.CTF, options.snr, options.sym, options.chunk, options.function, options.fourvar,
 			options.npad, options.debug)
@@ -94,7 +94,7 @@ def main():
 				options.CTF, options.snr, options.sym, options.chunk, options.function, options.fourvar,
 				options.npad, options.debug)
 		else:
-			from applications import local_ali3d
+			from EMAN2.applications import local_ali3d
 			local_ali3d(args[0], args[1], mask, options.ou, options.delta, options.ts, options.center, options.maxit,
 			options.CTF, options.snr, options.sym, options.chunk, options.function, options.fourvar,
 			options.npad, options.debug, options.MPI)

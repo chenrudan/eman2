@@ -164,7 +164,7 @@ def main():
 			if len(args) != 1:
 				print  "Incorrect number of parameters"
 				sys.exit()
-			from applications import imgstat_hfsc
+			from EMAN2.applications import imgstat_hfsc
 			imgstat_hfsc( args[0], options.hfsc, options.filament_attr)
 			sys.exit()
 		elif len(options.filinfo) > 0:
@@ -187,7 +187,7 @@ def main():
 					ibeg = i
 					filcur = fis
 				i += 1
-			from utilities import write_text_row
+			from EMAN2.utilities import write_text_row
 			write_text_row(inf, options.filinfo)
 			sys.exit()
 		
@@ -200,9 +200,9 @@ def main():
 			if(abs(float(rise) - dpp)>1.0e-3):
 				print "  dpp has to be integer multiplicity of the pixel size"
 				sys.exit()
-			from utilities import get_im
+			from EMAN2.utilities import get_im
 			v = get_im(args[0])
-			from applications import stack_disks
+			from EMAN2.applications import stack_disks
 			ref_ny = options.ref_ny
 			if ref_ny < 0:
 				ref_ny = options.ref_nx
@@ -214,14 +214,14 @@ def main():
 			if len(args) != 1:
 				print  "Incorrect number of parameters"
 				sys.exit()
-			from development import consistency_params	
+			from EMAN2.development import consistency_params	
 			consistency_params(args[0], options.consistency, options.dphi, options.dp, options.apix,phithr=options.phithr, ythr=options.ythr, THR=options.segthr)
 			sys.exit()
 
 		rminp = int((float(options.rmin)/options.apix) + 0.5)
 		rmaxp = int((float(options.rmax)/options.apix) + 0.5)
 		
-		from utilities import get_input_from_string, get_im
+		from EMAN2.utilities import get_input_from_string, get_im
 
 		xr = get_input_from_string(options.xr)
 		txs = get_input_from_string(options.txs)
@@ -252,7 +252,7 @@ def main():
 			if options.dp < 0:
 				print "Helical symmetry paramter rise --dp should not be negative"
 				sys.exit()
-			from applications import predict_helical_params
+			from EMAN2.applications import predict_helical_params
 			predict_helical_params(args[0], options.dp, options.dphi, options.apix, options.predict_helical)
 			sys.exit()
 
@@ -263,7 +263,7 @@ def main():
 			if options.dp < 0:
 				print "Helical symmetry paramter rise --dp should not be negative"
 				sys.exit()
-			from utilities import get_im, sym_vol
+			from EMAN2.utilities import get_im, sym_vol
 			vol = get_im(args[0])
 			vol = sym_vol(vol, options.sym)
 			hvol = vol.helicise(options.apix, options.dp, options.dphi, options.fract, rmaxp, rminp)
@@ -350,7 +350,7 @@ def main():
 				sys.exit()
 			if len(args) < 4:  mask = None
 			else:               mask = args[3]
-			from applications import volalixshift_MPI
+			from EMAN2.applications import volalixshift_MPI
 			global_def.BATCH = True
 			volalixshift_MPI(args[0], args[1], args[2], searchxshiftp, options.apix, options.dp, options.dphi, options.fract, rmaxp, rminp, mask, options.maxit, options.CTF, options.snr, options.sym,  options.function, options.npad, options.debug, nearbyp)
 			global_def.BATCH = False
@@ -363,10 +363,10 @@ def main():
 			else:               mask = args[3]
 			global_def.BATCH = True
 			if(options.sym[:1] == "d" or options.sym[:1] == "D" ):
-				from development import diskaliD_MPI
+				from EMAN2.development import diskaliD_MPI
 				diskaliD_MPI(args[0], args[1], args[2], mask, options.dp, options.dphi, options.apix, options.function, zstepp, options.fract, rmaxp, rminp, options.CTF, options.maxit, options.sym)
 			else:
-				from applications import diskali_MPI
+				from EMAN2.applications import diskali_MPI
 				diskali_MPI(args[0], args[1], args[2], mask, options.dp, options.dphi, options.apix, options.function, zstepp, options.fract, rmaxp, rminp, options.CTF, options.maxit, options.sym)
 			global_def.BATCH = False
 		
@@ -379,7 +379,7 @@ def main():
 			
 			if options.dp < 0 or options.dphi < 0:
 				# read helical symmetry parameters from symdoc
-				from utilities import read_text_row
+				from EMAN2.utilities import read_text_row
 				hparams=read_text_row(options.symdoc)
 				dp = hparams[0][0]
 				dphi = hparams[0][1]
@@ -387,7 +387,7 @@ def main():
 				dp   = options.dp
 				dphi = options.dphi
 			
-			from applications import symsearch_MPI
+			from EMAN2.applications import symsearch_MPI
 			if len(args) < 3:	
 				mask = None
 			else:
@@ -397,7 +397,7 @@ def main():
 			global_def.BATCH = False
 			
 		elif len(options.gendisk)> 0:
-			from applications import gendisks_MPI
+			from EMAN2.applications import gendisks_MPI
 			global_def.BATCH = True
 			if len(args) == 1:  mask3d = None
 			else:               mask3d = args[1]

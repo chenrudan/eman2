@@ -1,7 +1,7 @@
 #!/bin/env python
 
-from EMAN2  import *
-from sparx  import *
+from EMAN2 import *
+from EMAN2.sparx import *
 
 n = 128
 a = threshold(test_image(size=(n,n))) # a= model_circle(32,n,n)

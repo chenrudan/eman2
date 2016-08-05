@@ -28,17 +28,17 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 
-from utilities       import *
-from filter          import *
-from projection      import *
-from fundamentals    import *
-from statistics      import *
-from alignment       import *
-from morphology      import *
-from reconstruction  import *
-from applications    import *
-from user_functions  import *
-from global_def      import *
-from pixel_error     import *
-from development     import *
-from multi_shc       import *
+from EMAN2.utilities import *
+from EMAN2.filter import *
+from EMAN2.projection import *
+from EMAN2.fundamentals import *
+from EMAN2.statistics import *
+from EMAN2.alignment import *
+from EMAN2.morphology import *
+from reconstruction import *
+from EMAN2.applications import *
+from EMAN2.user_functions import *
+from global_def import *
+from EMAN2.pixel_error import *
+from EMAN2.development import *
+from EMAN2.multi_shc import *

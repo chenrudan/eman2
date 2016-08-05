@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from   global_def import *
-from   optparse import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 def main():
 	
@@ -50,9 +50,9 @@ def main():
 		print "Please run '" + progname + " -h' for detailed options"
 	else:
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from EMAN2.utilities import disable_bdb_cache
 			disable_bdb_cache()
-		from  applications  import  HAC_averages
+		from EMAN2.applications import HAC_averages
 		global_def.BATCH = True
 		HAC_averages(args[0], args[1], args[2], options.K)
 		global_def.BATCH = False

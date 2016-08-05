@@ -35,46 +35,37 @@ import glob
 
 from optparse import OptionParser, SUPPRESS_HELP
 from EMAN2 import *
-from EMAN2db import *
-from EMAN2jsondb import *
-from sparx import *
-from applications import MPI_start_end
+from EMAN2.EMAN2db import *
+from EMAN2.EMAN2jsondb import *
+from EMAN2.sparx import *
 
 def check_options(options, progname):
-
-	error_status = None
 	if options.coordinates_format.lower() not in ["sparx", "eman1", "eman2", "spider"]:
-		error_status = ("Invalid option value: --coordinates_format=%s. Please run %s -h for help." % (options.coordinates_format, progname), getframeinfo(currentframe()))
-	if_error_then_all_processes_exit_program(error_status)
-
-	error_status = None
+		ERROR("Invalid option value: --coordinates_format=%s. Please run %s -h for help." % (options.coordinates_format, progname), "sxwindow", 1)
+		exit()
+	
 	if options.import_ctf:
 		if os.path.exists(options.import_ctf) == False:
-			error_status = ("Specified CTER CTF File is not found. Please check --import_ctf option. Run %s -h for help." % (progname), getframeinfo(currentframe()))
+			ERROR("Specified CTER CTF File is not found. Please check --import_ctf option. Run %s -h for help." % (progname), "sxwindow", 1)
+			exit()
 	else:
 		# assert (not options.import_ctf)
 		if options.limit_ctf:
-			error_status = ("--limit_ctf option requires valid CTER CTF File (--import_ctf). Please run %s -h for help." % (progname), getframeinfo(currentframe()))
-	if_error_then_all_processes_exit_program(error_status)
-
-	error_status = None
+			ERROR("--limit_ctf option requires valid CTER CTF File (--import_ctf). Please run %s -h for help." % (progname), "sxwindow", 1)
+			exit()
+	
 	if (options.resample_ratio <= 0.0 or options.resample_ratio > 1.0):
-		error_status = ("Invalid option value: --resample_ratio=%s. Please run %s -h for help." % (options.resample_ratio, progname), getframeinfo(currentframe()))
-	if_error_then_all_processes_exit_program(error_status)
-
+		# assert (not options.import_ctf)
+		ERROR("Invalid option value: --resample_ratio=%s. Please run %s -h for help." % (options.resample_ratio, progname), "sxwindow", 1)
+		exit()
 	
 def main():
 	progname = os.path.basename(sys.argv[0])
-	usage = progname + """  input_micrograph_list_file  input_micrograph_pattern  input_coordinates_pattern  output_directory  --coordinates_format  --box_size=box_size  --invert  --import_ctf=ctf_file  --limit_ctf  --resample_ratio=resample_ratio  --defocus_error=defocus_error  --astigmatism_error=astigmatism_error
+	usage = progname + """  input_micrograph_pattern  input_coordinates_pattern  output_directory  --coordinates_format  --box_size=box_size  --invert  --import_ctf=ctf_file  --limit_ctf  --resample_ratio=resample_ratio  --defocus_error=defocus_error  --astigmatism_error=astigmatism_error
 	
-Window particles from micrographs in input list file. The coordinates of the particles should be given as input.
-Please specify name pattern of input micrographs and coordinates files with a wild card (*). Use the wild card to indicate the place of micrograph ID (e.g. serial number, time stamp, and etc). 
-The name patterns must be enclosed by single quotes (') or double quotes ("). (Note: sxgui.py automatically adds single quotes (')). 
-BDB files can not be selected as input micrographs.
-	
-	sxwindow.py  mic_list.txt  ./mic*.hdf  info/mic*_info.json  particles  --coordinates_format=eman2  --box_size=64  --invert  --import_ctf=outdir_cter/partres/partres.txt
-	
-If micrograph list file name is not provided, all files matched with the micrograph name pattern will be processed.
+Window particles from a micrograph. The coordinates of the particles should be given as input.
+Specify name pattern of input micrographs and coordinates files with wild card (*) enclosed by single quotes (') or double quotes (") 
+(Note: sxgui.py automatically adds single quotes (')). Use the wild card (*) to specify the place of micrograph ID (e.g. serial number, time stamp, and etc). 
 	
 	sxwindow.py  ./mic*.hdf  info/mic*_info.json  particles  --coordinates_format=eman2  --box_size=64  --invert  --import_ctf=outdir_cter/partres/partres.txt
 	
@@ -88,139 +79,102 @@ If micrograph list file name is not provided, all files matched with the microgr
 	parser.add_option("--resample_ratio",      type="float",         default=1.0,       help="ratio of new to old image size (or old to new pixel size) for resampling: Valid range is 0.0 < resample_ratio <= 1.0. (default 1.0)")
 	parser.add_option("--defocus_error",       type="float",         default=1000000.0, help="defocus errror limit: exclude micrographs whose relative defocus error as estimated by sxcter is larger than defocus_error percent. the error is computed as (std dev defocus)/defocus*100%. (default 1000000.0)" )
 	parser.add_option("--astigmatism_error",   type="float",         default=360.0,     help="astigmatism error limit: Set to zero astigmatism for micrographs whose astigmatism angular error as estimated by sxcter is larger than astigmatism_error degrees. (default 360.0)")
-
-	### detect if program is running under MPI
-	RUNNING_UNDER_MPI = "OMPI_COMM_WORLD_SIZE" in os.environ
-	
-	main_node = 0
-	
-	if RUNNING_UNDER_MPI:
-		from mpi import mpi_init
-		from mpi import MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size, mpi_barrier, mpi_reduce, MPI_INT, MPI_SUM
-		
-		
-		mpi_init(0, [])
-		myid = mpi_comm_rank(MPI_COMM_WORLD)
-		number_of_processes = mpi_comm_size(MPI_COMM_WORLD)
-	else:
-		number_of_processes = 1
-		myid = 0
 	
 	(options, args) = parser.parse_args(sys.argv[1:])
 	
-	mic_list_file_path = None
-	mic_pattern = None
-	coords_pattern = None
-	error_status = None
-	while True:
-		if len(args) < 3 or len(args) > 4:
-			error_status = ("Please check usage for number of arguments.\n Usage: " + usage + "\n" + "Please run %s -h for help." % (progname), getframeinfo(currentframe()))
-			break
+	# Check invalid conditions of arugments
+	if len(args) != 3:
+		print("usage: " + usage)
+		print("Please run %s -h for help." % (progname))
+		return 1
+	# assert (len(args) == 3)
+	
+	mic_pattern = args[0]
+	if mic_pattern.find("*") == -1:
+		ERROR("Input micrograph file name pattern must contain wild card (*). Please check input_micrograph_pattern argument. Run %s -h for help." % (progname), "sxwindow", 1)
+		exit()
+	
+	coords_pattern = args[1]
+	if coords_pattern.find("*") == -1:
+		ERROR("Input coordinates file name pattern must contain wild card (*). Please check input_coordinates_pattern argument. Run %s -h for help." % (progname), "sxwindow", 1)
+		exit()
 		
-		if len(args) == 3:
-			mic_pattern = args[0]
-			coords_pattern = args[1]
-			out_dir = args[2]
-		else: # assert(len(args) == 4)
-			mic_list_file_path = args[0]
-			mic_pattern = args[1]
-			coords_pattern = args[2]
-			out_dir = args[3]
-		
-		if mic_list_file_path != None:
-			if os.path.splitext(mic_list_file_path)[1] != ".txt":
-				error_status = ("Extension of input micrograph list file must be \".txt\". Please check input_micrograph_list_file argument. Run %s -h for help." % (progname), getframeinfo(currentframe()))
-				break
-		
-		if mic_pattern[:len("bdb:")].lower() == "bdb":
-			error_status = ("BDB file can not be selected as input micrographs. Please convert the format, and restart the program. Run %s -h for help." % (progname), getframeinfo(currentframe()))
-			break
-		
-		if mic_pattern.find("*") == -1:
-			error_status = ("Input micrograph file name pattern must contain wild card (*). Please check input_micrograph_pattern argument. Run %s -h for help." % (progname), getframeinfo(currentframe()))
-			break
-		
-		if coords_pattern.find("*") == -1:
-			error_status = ("Input coordinates file name pattern must contain wild card (*). Please check input_coordinates_pattern argument. Run %s -h for help." % (progname), getframeinfo(currentframe()))
-			break
-		
-		if myid == main_node:
-			if os.path.exists(out_dir):
-				error_status = ("Output directory exists. Please change the name and restart the program.", getframeinfo(currentframe()))
-				break
-
-		break
-	if_error_then_all_processes_exit_program(error_status)
+	out_dir = args[2]
+	if os.path.exists(out_dir):
+		ERROR("Output directory exists. Please change the name and restart the program.", "sxwindow", 1)
+		exit()
+	# assert (not os.path.exists(out_dir))
 	
 	# Check invalid conditions of options
 	check_options(options, progname)
 	
-	mic_name_list = None
-	error_status = None
-	if myid == main_node:
-		if mic_list_file_path != None:
-			print("Loading micrograph list from %s file ..." % (mic_list_file_path))
-			mic_name_list = read_text_file(mic_list_file_path)
-			if len(mic_name_list) == 0:
-				print("Directory of first micrograph entry is " % (os.path.dirname(mic_name_list[0])))
-		else: # assert (mic_list_file_path == None)
-			print("Generating micrograph list in %s directory..." % (os.path.dirname(mic_pattern)))
-			mic_name_list = glob.glob(mic_pattern)
-		if len(mic_name_list) == 0:
-			error_status = ("No micrograph file is found. Please check input_micrograph_pattern and/or input_micrograph_list_file argument. Run %s -h for help." % (progname), getframeinfo(currentframe()))
-		else:
-			print("Found %d microgarphs" % len(mic_name_list))
-			
-	if_error_then_all_processes_exit_program(error_status)
-	if RUNNING_UNDER_MPI:
-		mic_name_list = wrap_mpi_bcast(mic_name_list, main_node)
+	# Build list of micrograph names
+	mic_name_list = glob.glob(mic_pattern)
+	print("Detected micrograph files  : %6d ..." % (len(mic_name_list)))
+	if len(mic_name_list) == 0:
+		ERROR("No mcicrograph file is found. Please check input_micrograph_pattern argument. Run %s -h for help." % (progname), "sxwindow", 1)
+		exit()
 	
-	coords_name_list = None
-	error_status = None
-	if myid == main_node:
-		coords_name_list = glob.glob(coords_pattern)
-		if len(coords_name_list) == 0:
-			error_status = ("No coordinates file is found. Please check input_coordinates_pattern argument. Run %s -h for help." % (progname), getframeinfo(currentframe()))
-	if_error_then_all_processes_exit_program(error_status)
-	if RUNNING_UNDER_MPI:
-		coords_name_list = wrap_mpi_bcast(coords_name_list, main_node)
-	
-##################################################################################################################################################################################################################	
-##################################################################################################################################################################################################################	
-##################################################################################################################################################################################################################	
+	# Check input_coordinates_pattern argument
+	coords_name_list = glob.glob(coords_pattern)
+	print("Detected coordinates files : %6d ..." % (len(coords_name_list)))
+	if len(coords_name_list) == 0:
+		ERROR("No coordinates file is found. Please check input_coordinates_pattern argument. Run %s -h for help." % (progname), "sxwindow", 1)
+		exit()
+	del coords_name_list # Do not need this anymore
 
-	# all processes must have access to indices
-	if options.import_ctf:
-		i_enum = -1
-		i_enum += 1; idx_cter_def          = i_enum # defocus [um]; index must be same as ctf object format
-		i_enum += 1; idx_cter_cs           = i_enum # Cs [mm]; index must be same as ctf object format
-		i_enum += 1; idx_cter_vol          = i_enum # voltage[kV]; index must be same as ctf object format
-		i_enum += 1; idx_cter_apix         = i_enum # pixel size [A]; index must be same as ctf object format
-		i_enum += 1; idx_cter_bfactor      = i_enum # B-factor [A^2]; index must be same as ctf object format
-		i_enum += 1; idx_cter_ac           = i_enum # amplitude contrast [%]; index must be same as ctf object format
-		i_enum += 1; idx_cter_astig_amp    = i_enum # astigmatism amplitude [um]; index must be same as ctf object format
-		i_enum += 1; idx_cter_astig_ang    = i_enum # astigmatism angle [degree]; index must be same as ctf object format
-		i_enum += 1; idx_cter_sd_def       = i_enum # std dev of defocus [um]
-		i_enum += 1; idx_cter_sd_astig_amp = i_enum # std dev of ast amp [A]
-		i_enum += 1; idx_cter_sd_astig_ang = i_enum # std dev of ast angle [degree]
-		i_enum += 1; idx_cter_cv_def       = i_enum # coefficient of variation of defocus [%]
-		i_enum += 1; idx_cter_cv_astig_amp = i_enum # coefficient of variation of ast amp [%]
-		i_enum += 1; idx_cter_spectra_diff = i_enum # average of differences between with- and without-astig. experimental 1D spectra at extrema
-		i_enum += 1; idx_cter_error_def    = i_enum # frequency at which signal drops by 50% due to estimated error of defocus alone [1/A]
-		i_enum += 1; idx_cter_error_astig  = i_enum # frequency at which signal drops by 50% due to estimated error of defocus and astigmatism [1/A]
-		i_enum += 1; idx_cter_error_ctf    = i_enum # limit frequency by CTF error [1/A]
-		i_enum += 1; idx_cter_mic_name     = i_enum # micrograph name
-		i_enum += 1; n_idx_cter            = i_enum
+	# Create list of micrograph serial ID
+	# Break micrograph name pattern into prefix and surffix to find the head index of the micrograph serial id
+	mic_tokens = mic_pattern.split('*')
+	# assert (len(mic_tokens) == 2)
+	serial_id_head_index = len(mic_tokens[0])
+	serial_id_list = []
+	# Loop through micrograph names
+	for mic_name in mic_name_list:
+		# Find the tail index of the serial id and extract serial id from the micrograph name
+		serial_id_tail_index = mic_name.index(mic_tokens[1])
+		serial_id = mic_name[serial_id_head_index:serial_id_tail_index]
+		serial_id_list.append(serial_id)
+	# assert (len(serial_id_list) == len(mic_name))
+	del mic_name_list # Do not need this anymore
 	
+	# Load CTFs if necessary
+	if options.import_ctf:
+		# assert (os.path.exists(options.import_ctf))
+		ctf_list = read_text_row(options.import_ctf)
+		print("Detected CTF entries : %6d ..." % (len(ctf_list)))
+		if len(ctf_list) == 0:
+			ERROR("No CTF entry is found in %s. Please check --import_ctf option. Run %s -h for help." % (options.import_ctf, progname), "sxwindow", 1)
+			exit()
+		
+		ctf_dict={}
+		n_reject_defocus_error = 0
+		ctf_error_limit = [options.defocus_error/100.0, options.astigmatism_error]
+		for ctf_params in ctf_list:
+			# assert (len(ctf_params) == 14)
+			# mic_basename is name of micrograph minus the path and extension
+			mic_basename = os.path.splitext(os.path.basename(ctf_params[-1]))[0]  # ctf_params[13:Micrograph name]
+			if(ctf_params[8] / ctf_params[0] > ctf_error_limit[0]): # ctf_params[8:std dev of defocus, 0:defocus] 
+				print("Defocus error %f exceeds the threshold. Micrograph %s is rejected." % (ctf_params[8] / ctf_params[0], mic_basename))
+				n_reject_defocus_error += 1
+			else:
+				if(ctf_params[10] > ctf_error_limit[1]): # ctf_params[10:std dev of ast angle] 
+					ctf_params[6] = 0.0 # ctf_params[6:astigmatism amplitude]
+					ctf_params[7] = 0.0 # ctf_params[7:astigmatism angle]
+				ctf_dict[mic_basename] = ctf_params
+		print("Rejected micrographs by defocus error  : %6d ..." % (n_reject_defocus_error))
+		del ctf_list # Do not need this anymore
 	
 	# Prepare loop variables
-	mic_basename_pattern = os.path.basename(mic_pattern)              # file pattern without path
-	mic_baseroot_pattern = os.path.splitext(mic_basename_pattern)[0]  # file pattern without path and extension
+	mic_basename_pattern = os.path.splitext(os.path.basename(mic_pattern))[0]
 	coords_format = options.coordinates_format.lower()
 	box_size = options.box_size
 	box_half = box_size // 2
 	mask2d = model_circle(box_size//2, box_size, box_size) # Create circular 2D mask to Util.infomask of particle images
 	resample_ratio = options.resample_ratio
+	if options.import_ctf:
+		if options.limit_ctf:
+			cutoff_histogram = []  #@ming compute the histogram for micrographs cut of by ctf_params limit.
 	
 	n_mic_process = 0
 	n_mic_reject_no_coords = 0
@@ -228,152 +182,41 @@ If micrograph list file name is not provided, all files matched with the microgr
 	n_global_coords_detect = 0
 	n_global_coords_process = 0
 	n_global_coords_reject_out_of_boundary = 0
-	
-	serial_id_list = []
-	error_status = None
-	## not a real while, an if with the opportunity to use break when errors need to be reported
-	while myid == main_node:
-		# 
-		# NOTE: 2016/05/24 Toshio Moriya
-		# Now, ignores the path in mic_pattern and entries of mic_name_list to create serial ID
-		# Only the basename (file name) in micrograph path must be match
-		# 
-		# Create list of micrograph serial ID
-		# Break micrograph name pattern into prefix and suffix to find the head index of the micrograph serial id
-		# 
-		mic_basename_tokens = mic_basename_pattern.split('*')
-		# assert (len(mic_basename_tokens) == 2)
-		serial_id_head_index = len(mic_basename_tokens[0])
-		# Loop through micrograph names
-		for mic_name in mic_name_list:
-			# Find the tail index of the serial id and extract serial id from the micrograph name
-			mic_basename = os.path.basename(mic_name)
-			serial_id_tail_index = mic_basename.index(mic_basename_tokens[1])
-			serial_id = mic_basename[serial_id_head_index:serial_id_tail_index]
-			serial_id_list.append(serial_id)
-		# assert (len(serial_id_list) == len(mic_name))
-		del mic_name_list # Do not need this anymore
-		
-		# Load CTFs if necessary
-		if options.import_ctf:
-			
-			ctf_list = read_text_row(options.import_ctf)
-			# print("Detected CTF entries : %6d ..." % (len(ctf_list)))
-			
-			if len(ctf_list) == 0:
-				error_status = ("No CTF entry is found in %s. Please check --import_ctf option. Run %s -h for help." % (options.import_ctf, progname), getframeinfo(currentframe()))
-				break
-			
-			if (len(ctf_list[0]) != n_idx_cter):
-				error_status = ("Number of columns (%d) must be %d in %s. The format might be old. Please run sxcter.py again." % (len(ctf_list[0]), n_idx_cter, options.import_ctf), getframeinfo(currentframe()))
-				break
-			
-			ctf_dict={}
-			n_reject_defocus_error = 0
-			ctf_error_limit = [options.defocus_error/100.0, options.astigmatism_error]
-			for ctf_params in ctf_list:
-				assert(len(ctf_params) == n_idx_cter)
-				# mic_baseroot is name of micrograph minus the path and extension
-				mic_baseroot = os.path.splitext(os.path.basename(ctf_params[idx_cter_mic_name]))[0]
-				if(ctf_params[idx_cter_sd_def] / ctf_params[idx_cter_def] > ctf_error_limit[0]):
-					print("Defocus error %f exceeds the threshold. Micrograph %s is rejected." % (ctf_params[idx_cter_sd_def] / ctf_params[idx_cter_def], mic_baseroot))
-					n_reject_defocus_error += 1
-				else:
-					if(ctf_params[idx_cter_sd_astig_ang] > ctf_error_limit[1]):
-						ctf_params[idx_cter_astig_amp] = 0.0
-						ctf_params[idx_cter_astig_ang] = 0.0
-					ctf_dict[mic_baseroot] = ctf_params
-			del ctf_list # Do not need this anymore
-		
-		break
-		
-	if_error_then_all_processes_exit_program(error_status)
-
-	if options.import_ctf:
-		if options.limit_ctf:
-			cutoff_histogram = []  #@ming compute the histogram for micrographs cut of by ctf_params limit.
-	
-##################################################################################################################################################################################################################	
-##################################################################################################################################################################################################################	
-##################################################################################################################################################################################################################	
-	
-	restricted_serial_id_list = []
-	if myid == main_node:
-		# Loop over serial IDs of micrographs
-		for serial_id in serial_id_list:
-			# mic_baseroot is name of micrograph minus the path and extension
-			mic_baseroot = mic_baseroot_pattern.replace("*", serial_id)
-			mic_name = mic_pattern.replace("*", serial_id)
-			coords_name = coords_pattern.replace("*", serial_id)
-			
-			########### # CHECKS: BEGIN
-			if coords_name not in coords_name_list:
-				print("    Cannot read %s. Skipping %s ..." % (coords_name, mic_baseroot))
-				n_mic_reject_no_coords += 1
-				continue
-			
-			# IF mic is in CTER results
-			if options.import_ctf:
-				if mic_baseroot not in ctf_dict:
-					print("    Is not listed in CTER results. Skipping %s ..." % (mic_baseroot))
-					n_mic_reject_no_cter_entry += 1
-					continue
-				else:
-					ctf_params = ctf_dict[mic_baseroot]
-			# CHECKS: END
-			
-			n_mic_process += 1
-			
-			restricted_serial_id_list.append(serial_id)
-		# restricted_serial_id_list = restricted_serial_id_list[:128]  ## for testing against the nonMPI version
-
-	
-	if myid != main_node:
-		if options.import_ctf:
-			ctf_dict = None
-
-	error_status = None
-	if len(restricted_serial_id_list) < number_of_processes:
-		error_status = ('Number of processes (%d) supplied by --np in mpirun cannot be greater than %d (number of micrographs that satisfy all criteria to be processed) ' % (number_of_processes, len(restricted_serial_id_list)), getframeinfo(currentframe()))
-	if_error_then_all_processes_exit_program(error_status)
-
-	## keep a copy of the original output directory where the final bdb will be created
-	original_out_dir = out_dir
-	if RUNNING_UNDER_MPI:
-		mpi_barrier(MPI_COMM_WORLD)
-		restricted_serial_id_list = wrap_mpi_bcast(restricted_serial_id_list, main_node)
-		mic_start, mic_end = MPI_start_end(len(restricted_serial_id_list), number_of_processes, myid)
-		restricted_serial_id_list_not_sliced = restricted_serial_id_list
-		restricted_serial_id_list = restricted_serial_id_list[mic_start:mic_end]
-	
-		if options.import_ctf:
-			ctf_dict = wrap_mpi_bcast(ctf_dict, main_node)
-
-		# generate subdirectories of out_dir, one for each process
-		out_dir = os.path.join(out_dir,"%03d"%myid)
-	
-	if myid == main_node:
-		print("Micrographs processed by main process (including percent complete):")
-
-	len_processed_by_main_node_divided_by_100 = len(restricted_serial_id_list)/100.0
-
-##################################################################################################################################################################################################################	
-##################################################################################################################################################################################################################	
-##################################################################################################################################################################################################################	
-#####  Starting main parallel execution
-
-	for my_idx, serial_id in enumerate(restricted_serial_id_list):
-		mic_baseroot = mic_baseroot_pattern.replace("*", serial_id)
+	# Loop over serial IDs of micrographs
+	for serial_id in serial_id_list:
+		# mic_basename is name of micrograph minus the path and extension
+		# Here, assuming micrograph and coordinates have the same file basename
+		mic_basename = mic_basename_pattern.replace("*", serial_id)
 		mic_name = mic_pattern.replace("*", serial_id)
 		coords_name = coords_pattern.replace("*", serial_id)
-
-		if myid == main_node:
-			print(mic_name, " ---> % 2.2f%%"%(my_idx/len_processed_by_main_node_divided_by_100))
-		mic_img = get_im(mic_name)
-
+		
+		# CHECKS: BEGIN
+		# assert (os.path.exists(mic_name))
+		
+		# IF coordinates file exists
+		if not os.path.exists(coords_name):
+			print("    Cannot read %s. Skipping %s ..." % (coords_name, mic_basename))
+			n_mic_reject_no_coords += 1
+			continue
+		
+		# IF mic is in CTER results
+		if options.import_ctf:
+			if mic_basename not in ctf_dict:
+				print("    Is not listed in CTER results. Skipping %s ..." % (mic_basename))
+				n_mic_reject_no_cter_entry += 1
+				continue
+			else:
+				ctf_params = ctf_dict[mic_basename]
+		# CHECKS: END
+		
+		n_mic_process += 1
+		
+		print(" ")
+		print("Processing micrograph %s ... Path: %s ... Coordinates file %s" % (mic_basename, mic_name, coords_name))
+		
 		# Read coordinates according to the specified format and 
 		# make the coordinates the center of particle image 
-		if coords_format == "sparx":
+		if coords_format == "sparx" :
 			coords_list = read_text_row(coords_name)
 		elif coords_format == "eman1":
 			coords_list = read_text_row(coords_name)
@@ -387,12 +230,14 @@ If micrograph list file name is not provided, all files matched with the microgr
 			coords_list = read_text_row(coords_name)
 			for i in xrange(len(coords_list)):
 				coords_list[i] = [coords_list[i][2], coords_list[i][3]]
-			# else: assert (False) # Unreachable code
+		# else: assert (False) # Unreachable code
+		
+		# Load micrograph from the file
+		mic_img = get_im(mic_name)
 		
 		# Calculate the new pixel size
 		if options.import_ctf:
-			ctf_params = ctf_dict[mic_baseroot]
-			pixel_size_origin = ctf_params[idx_cter_apix]
+			pixel_size_origin = ctf_params[3] # ctf_params[3:pixel size]
 			
 			if resample_ratio < 1.0:
 				# assert (resample_ratio > 0.0)
@@ -403,7 +248,7 @@ If micrograph list file name is not provided, all files matched with the microgr
 				new_pixel_size = pixel_size_origin
 		
 			# Set ctf along with new pixel size in resampled micrograph
-			ctf_params[idx_cter_apix] = new_pixel_size
+			ctf_params[3] = new_pixel_size
 		else:
 			# assert (not options.import_ctf)
 			if resample_ratio < 1.0:
@@ -417,7 +262,7 @@ If micrograph list file name is not provided, all files matched with the microgr
 		if options.limit_ctf:
 			# assert (options.import_ctf)
 			# Cut off frequency components higher than CTF limit 
-			q1, q2 = ctflimit(box_size, ctf_params[idx_cter_def], ctf_params[idx_cter_cs], ctf_params[idx_cter_vol], new_pixel_size)
+			q1, q2 = ctflimit(box_size, ctf_params[0], ctf_params[1], ctf_params[2], new_pixel_size) # ctf_params[0:defocus, 1:Cs, 2:voltage]
 			
 			# This is absolute frequency of CTF limit in scale of original micrograph
 			if resample_ratio < 1.0:
@@ -447,17 +292,19 @@ If micrograph list file name is not provided, all files matched with the microgr
 			mic_img += 2 * mic_stats[0]
 		
 		if options.import_ctf:
-			from utilities import generate_ctf
-			ctf_obj = generate_ctf(ctf_params) # indexes 0 to 7 (idx_cter_def to idx_cter_astig_ang) must be same in cter format & ctf object format.
+			from EMAN2.utilities import generate_ctf
+			ctf_obj = generate_ctf(ctf_params)
 		
 		# Prepare loop variables
 		nx = mic_img.get_xsize() 
 		ny = mic_img.get_ysize()
 		x0 = nx//2
 		y0 = ny//2
-
+		print(" ")
+		print("Micrograph size := (%6d, %6d)." % (nx, ny))
+		
 		n_coords_reject_out_of_boundary = 0
-		local_stack_name  = "bdb:%s#" % out_dir + mic_baseroot + '_ptcls'
+		local_stack_name  = "bdb:%s#" % out_dir + mic_basename + '_ptcls'
 		local_particle_id = 0 # can be different from coordinates_id
 		# Loop over coordinates
 		for coords_id in xrange(len(coords_list)):
@@ -475,7 +322,7 @@ If micrograph list file name is not provided, all files matched with the microgr
 			if( (0 <= x - box_half) and ( x + box_half <= nx ) and (0 <= y - box_half) and ( y + box_half <= ny ) ):
 				particle_img = Util.window(mic_img, box_size, box_size, 1, x-x0, y-y0)
 			else:
-				print("In %s, coordinates ID = %04d (x = %4d, y = %4d, box_size = %4d) is out of micrograph bound, skipping ..." % (mic_baseroot, coords_id, x, y, box_size))
+				print("Coordinates ID = %04d (x = %4d, y = %4d, box_size = %4d) is out of micrograph bound, skipping ..." % (coords_id, x, y, box_size))
 				n_coords_reject_out_of_boundary += 1
 				continue
 			
@@ -518,7 +365,6 @@ If micrograph list file name is not provided, all files matched with the microgr
 			# 	particle_img.set_attr("apix_y",pixel_size_origin)
 			# 	particle_img.set_attr("apix_z",pixel_size_origin)	
 			
-			# print("local_stack_name, local_particle_id", local_stack_name, local_particle_id)
 			particle_img.write_image(local_stack_name, local_particle_id)
 			local_particle_id += 1
 		
@@ -526,106 +372,44 @@ If micrograph list file name is not provided, all files matched with the microgr
 		n_global_coords_process += local_particle_id
 		n_global_coords_reject_out_of_boundary += n_coords_reject_out_of_boundary
 		
-#		# MRK_DEBUG: Toshio Moriya 2016/05/03
-#		# Following codes are for debugging bdb. Delete in future
-#		result = db_check_dict(local_stack_name)
-#		print('# MRK_DEBUG: result = db_check_dict(local_stack_name): %s' % (result))
-#		result = db_list_dicts('bdb:%s' % out_dir)
-#		print('# MRK_DEBUG: result = db_list_dicts(out_dir): %s' % (result))
-#		result = db_get_image_info(local_stack_name)
-#		print('# MRK_DEBUG: result = db_get_image_info(local_stack_name)', result)
-		
-		# Release the data base of local stack from this process
-		# so that the subprocess can access to the data base
-		db_close_dict(local_stack_name)
-		
-#		# MRK_DEBUG: Toshio Moriya 2016/05/03
-#		# Following codes are for debugging bdb. Delete in future
-#		cmd_line = "e2iminfo.py %s" % (local_stack_name)
-#		print('# MRK_DEBUG: Executing the command: %s' % (cmd_line))
-#		cmdexecute(cmd_line)
-		
-#		# MRK_DEBUG: Toshio Moriya 2016/05/03
-#		# Following codes are for debugging bdb. Delete in future
-#		cmd_line = "e2iminfo.py bdb:%s#data" % (out_dir)
-#		print('# MRK_DEBUG: Executing the command: %s' % (cmd_line))
-#		cmdexecute(cmd_line)
-		
-	if RUNNING_UNDER_MPI:
-		if options.import_ctf:
-			if options.limit_ctf:
-				cutoff_histogram = wrap_mpi_gatherv(cutoff_histogram, main_node)
-
-	if myid == main_node:
-		if options.limit_ctf:
-			# Print out the summary of CTF-limit filtering
-			print(" ")
-			print("Global summary of CTF-limit filtering (--limit_ctf) ...")
-			print("Percentage of filtered micrographs: %8.2f\n" % (len(cutoff_histogram) * 100.0 / len(restricted_serial_id_list_not_sliced)))
-
-			n_bins = 10
-			if len(cutoff_histogram) >= n_bins:
-				from statistics import hist_list
-				cutoff_region, cutoff_counts = hist_list(cutoff_histogram, n_bins)
-				print("      Histogram of cut-off frequency")
-				print("      cut-off       counts")
-				for bin_id in xrange(n_bins):
-					print(" %14.7f     %7d" % (cutoff_region[bin_id], cutoff_counts[bin_id]))
-			else:
-				print("The number of filtered micrographs (%d) is less than the number of bins (%d). No histogram is produced." % (len(cutoff_histogram), n_bins))
+		# Print out the summary of this micrograph
+		print(" ")
+		print("Micrograph summary of coordinates ...")
+		print("Detected                        : %6d" % (len(coords_list)))
+		print("Processed                       : %6d" % (local_particle_id))
+		print("Rejected by out of boundary     : %6d" % (n_coords_reject_out_of_boundary))
 	
-	n_mic_process = mpi_reduce(n_mic_process, 1, MPI_INT, MPI_SUM, main_node, MPI_COMM_WORLD)
-	n_mic_reject_no_coords = mpi_reduce(n_mic_reject_no_coords, 1, MPI_INT, MPI_SUM, main_node, MPI_COMM_WORLD)
-	n_mic_reject_no_cter_entry = mpi_reduce(n_mic_reject_no_cter_entry, 1, MPI_INT, MPI_SUM, main_node, MPI_COMM_WORLD)
-	n_global_coords_detect = mpi_reduce(n_global_coords_detect, 1, MPI_INT, MPI_SUM, main_node, MPI_COMM_WORLD)
-	n_global_coords_process = mpi_reduce(n_global_coords_process, 1, MPI_INT, MPI_SUM, main_node, MPI_COMM_WORLD)
-	n_global_coords_reject_out_of_boundary = mpi_reduce(n_global_coords_reject_out_of_boundary, 1, MPI_INT, MPI_SUM, main_node, MPI_COMM_WORLD)
+	if options.limit_ctf:
+		# Print out the summary of CTF-limit filtering
+		print(" ")
+		print("Global summary of CTF-limit filtering (--limit_ctf) ...")
+		print("Percentage of filtered micrographs: %8.2f\n" % (len(cutoff_histogram) * 100.0 / len(serial_id_list)))
+		
+		n_bins = 10
+		if len(cutoff_histogram) >= n_bins:
+			from EMAN2.statistics import hist_list
+			cutoff_region, cutoff_counts = hist_list(cutoff_histogram, n_bins)
+			print("      Histogram of cut-off frequency")
+			print("      cut-off       counts")
+			for bin_id in xrange(n_bins):
+				print(" %14.7f     %7d" % (cutoff_region[bin_id], cutoff_counts[bin_id]))
+		else:
+			print("The number of filtered micrographs (%d) is less than the number of bins (%d). No histogram is produced." % (len(cutoff_histogram), n_bins))
 	
 	# Print out the summary of all micrographs
-	if main_node == myid:
-		print(" ")
-		print("Global summary of micrographs ...")
-		print("Detected                        : %6d" % (len(restricted_serial_id_list_not_sliced)))
-		print("Processed                       : %6d" % (n_mic_process))
-		print("Rejected by no coordinates file : %6d" % (n_mic_reject_no_coords))
-		print("Rejected by no CTER entry       : %6d" % (n_mic_reject_no_cter_entry))
-		print(" ")
-		print("Global summary of coordinates ...")
-		print("Detected                        : %6d" % (n_global_coords_detect))
-		print("Processed                       : %6d" % (n_global_coords_process))
-		print("Rejected by out of boundary     : %6d" % (n_global_coords_reject_out_of_boundary))
-		# print(" ")
-		# print("DONE!!!")
+	print(" ")
+	print("Global summary of micrographs ...")
+	print("Detected                        : %6d" % (len(serial_id_list)))
+	print("Processed                       : %6d" % (n_mic_process))
+	print("Rejected by no coordinates file : %6d" % (n_mic_reject_no_coords))
+	print("Rejected by no CTER entry       : %6d" % (n_mic_reject_no_cter_entry))
+	print(" ")
+	print("Global summary of coordinates ...")
+	print("Detected                        : %6d" % (n_global_coords_detect))
+	print("Processed                       : %6d" % (n_global_coords_process))
+	print("Rejected by out of boundary     : %6d" % (n_global_coords_reject_out_of_boundary))
+	print(" ")
+	print("DONE!!!")
 	
-	mpi_barrier(MPI_COMM_WORLD)
-	
-	if main_node == myid:
-	
-		import time
-		time.sleep(1)
-		print("\n Creating bdb:%s/data\n"%original_out_dir)
-		for proc_i in range(number_of_processes):
-			mic_start, mic_end = MPI_start_end(len(restricted_serial_id_list_not_sliced), number_of_processes, proc_i)
-			for serial_id in restricted_serial_id_list_not_sliced[mic_start:mic_end]:
-				e2bdb_command = "e2bdb.py "
-				mic_baseroot = mic_baseroot_pattern.replace("*", serial_id)
-				if RUNNING_UNDER_MPI:
-					e2bdb_command += "bdb:" + os.path.join(original_out_dir,"%03d/"%proc_i) + mic_baseroot + "_ptcls "
-				else:
-					e2bdb_command += "bdb:" + os.path.join(original_out_dir, mic_baseroot + "_ptcls ") 
-				
-				e2bdb_command += " --appendvstack=bdb:%s/data  1>/dev/null"%original_out_dir
-				cmdexecute(e2bdb_command, printing_on_success = False)
-				
-		print("Done!\n")
-				
-	if RUNNING_UNDER_MPI:
-		mpi_barrier(MPI_COMM_WORLD)
-		from mpi import mpi_finalize
-		mpi_finalize()
-
-	sys.stdout.flush()
-	sys.exit(0)
-
 if __name__=="__main__":
 	main()

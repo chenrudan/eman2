@@ -32,9 +32,9 @@
 #
 
 import global_def
-from   global_def import *
+from global_def import *
 
-from   optparse import OptionParser
+from optparse import OptionParser
 def main():
 
 	import os,sys
@@ -57,10 +57,10 @@ def main():
 
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
-	from utilities import get_im
-	from morphology import adaptive_mask, binarize
+	from EMAN2.utilities import get_im
+	from EMAN2.morphology import adaptive_mask, binarize
 	v = get_im( args[0] )
 	m = adaptive_mask( v , 2.0, 2)
 	bm = binarize( m, 0.5 )
@@ -68,8 +68,8 @@ def main():
 
 	adaptive_mask( v , 2.0, 2, 9, 3).write_image( args[2] )
 	if(options.variance != None):
-		from fundamentals import rot_avg_image
-		from morphology import square_root
+		from EMAN2.fundamentals import rot_avg_image
+		from EMAN2.morphology import square_root
 		trovc = rot_avg_image(get_im(options.variance))
 		nc = trovc.get_xsize()//2
 		trovc /= trovc[nc,nc,nc]
