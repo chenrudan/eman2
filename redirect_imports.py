@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Author: Michael Bell,jmbell@bcm.edu 
+# Date: 8/5/2016
+
 import os
 import errno
 import shutil
