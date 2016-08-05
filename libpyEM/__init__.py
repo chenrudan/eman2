@@ -55,6 +55,8 @@ import threading
 
 HOMEDB=None
 
+os.environ["EMAN2DIR"] = os.path.dirname(os.path.abspath(__file__))
+
 # Without this, in many countries Qt will set things so "," is used as a decimal
 # separator by sscanf and other functions, which breaks CTF reading and some other things
 try:
