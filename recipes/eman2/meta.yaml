@@ -4,7 +4,7 @@ package:
     version: 3.0.0
 
 source:
-  path: {{HOME}}/src/eman2-conda
+  path: {{HOME}}/src/eman2-conda_refactor
 
 build:
   number: 69
@@ -26,6 +26,7 @@ requirements:
         - libpng
         - python <3
     run:
+        - mpi4py
         - python <3
         - numpy
         - matplotlib
