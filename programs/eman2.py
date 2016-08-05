@@ -50,7 +50,6 @@ If you are just getting started with EMAN2, here are some tips:
 
 from EMAN2 import *
 from e2version import EMANVERSION,DATESTAMP
-from EMAN2.qtgui.emapplication import EMApp
 import os, json, re, glob, signal
 import subprocess
 
@@ -65,6 +64,5 @@ except:
 	raw_input("Please press <enter> to exit")
 	exit()	
 
-app = EMApp()
 QtGui.QMessageBox.warning(None,"Welcome to EMAN2!","<b><big>"+helpstring.replace("\n","<br>")+"</big></b>")
 
