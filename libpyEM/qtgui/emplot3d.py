@@ -42,7 +42,7 @@ from emglobjects import EM3DModel, Camera2, EMViewportDepthTools2, draw_volume_b
 from emimageutil import EMTransformPanel
 from emlights import *
 from emimage3d import EMImage3DWidget
-from libpyGLUtils2 import *
+from EMAN2.libpyGLUtils2 import *
 from math import *
 from time import *
 from valslider import ValSlider

@@ -34,7 +34,7 @@
 from EMAN2 import *
 from emglobjects import get_default_gl_colors
 from emitem3d import EMItem3D, EMItem3DInspector, drawBoundingBox
-from libpyGLUtils2 import GLUtil
+from EMAN2.libpyGLUtils2 import GLUtil
 import os
 import sys
 
