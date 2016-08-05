@@ -38,6 +38,8 @@ def main():
 		newroot = root.replace(olddir,newdir)
 		mkdir_p(newroot)
 
+
+
 		for f in files:
 			if os.path.isfile("{}/{}".format(root,f)):
 				if f[-3:] == ".py":
@@ -71,7 +73,7 @@ def fix_imports(lines):
 								old = l.strip()
 								new = get_new_import(old)
 								newlines[i] = l.replace(old,new)
-	return "\n".join(newlines)+"\n"
+	return "\n".join(newlines)
 
 def insert(s,i,x):
 	return s[:x]+i+s[x:]
