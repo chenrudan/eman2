@@ -29,11 +29,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 2111-1307 USA
 
+from EMAN2 import *
 import os
 import sys
 import time
-
+import copy
 import numpy as np
+
 from EMAN2jsondb import JSTask,jsonclasses
 
 
@@ -144,7 +146,7 @@ def main():
 	if options.verbose:
 		print "\n\n(e2tvrecon.py) INITIALIZING PARALLELISM\n\n"
 		
-	from EMAN2.EMAN2PAR import EMTaskCustomer
+	from EMAN2PAR import EMTaskCustomer
 	etc=EMTaskCustomer(options.parallel)
 
 	tasks=[]

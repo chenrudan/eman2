@@ -40,7 +40,7 @@ from PyQt4.QtCore import Qt
 #from OpenGL import GL,GLU,GLUT
 from emapplication import EMApp
 import os
-from EMAN2.EMAN2db import *
+from EMAN2db import *
 from valslider import *
 import traceback
 

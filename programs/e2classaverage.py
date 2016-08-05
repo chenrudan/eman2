@@ -32,9 +32,13 @@
 #
 #
 
+from EMAN2 import *
+import math
+from copy import deepcopy
 import os
-import random
 import sys
+import random
+from random import choice
 import traceback
 
 READ_HEADER_ONLY = True
@@ -141,7 +145,7 @@ def main():
 
 	# Initialize parallelism
 	if options.parallel :
-		from EMAN2.EMAN2PAR import EMTaskCustomer
+		from EMAN2PAR import EMTaskCustomer
 		etc=EMTaskCustomer(options.parallel)
 		pclist=[options.input]
 		if options.ref: pclist.append(options.ref)

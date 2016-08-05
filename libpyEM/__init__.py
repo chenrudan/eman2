@@ -30,22 +30,26 @@
 #
 #
 
-import argparse
-import cPickle
-import copy
-import glob
 import os
-import re
+import sys
+from math import *
+from sys import exit
+import time
 import shelve
+import re
+import cPickle
+import zlib
 import socket
 import subprocess
-import time
-import zlib
-from sys import exit
-
-from e2version import *
-
+from EMAN2_cppwrap import *
+from pyemtbx.imagetypes import *
 from pyemtbx.box import *
+from e2version import *
+import EMAN2db
+import EMAN2jsondb
+import argparse, copy
+import glob
+import threading
 
 #from sparx import *
 
@@ -65,8 +69,8 @@ except: pass
 # behavior appropriately
 #try:
 #import EMAN2db
-from EMAN2.EMAN2db import db_open_dict, db_remove_dict, db_check_dict,db_parse_path, e2gethome, e2getcwd
-
+from EMAN2db import EMAN2DB,db_open_dict,db_close_dict,db_remove_dict,db_list_dicts,db_check_dict,db_parse_path,db_convert_path,db_get_image_info,e2gethome, e2getcwd
+from EMAN2jsondb import JSDict,js_open_dict,js_close_dict,js_remove_dict,js_list_dicts,js_check_dict,js_one_key
 #except:
 #	HOMEDB=None
 
@@ -843,6 +847,7 @@ def kill_process(pid):
 	platform independent way of killing a process
 	'''
 	import os
+	import platform
 	platform_string = get_platform()
 	if platform_string == "Windows":
 		# taken from http://www.python.org/doc/faq/windows/#how-do-i-emulate-os-kill-in-windows
@@ -879,6 +884,7 @@ def process_running(pid):
 	'''
 	Platform independent way of checking if a process is running, based on the pid
 	'''
+	import platform
 	import os
 	platform_string = get_platform()
 	if platform_string == "Windows":
@@ -903,6 +909,7 @@ def memory_stats():
 	Returns [total memory in GB,available memory in GB]
 	if any errors occur while trying to retrieve either of these values their retun value is -1
 	'''
+	import platform
 	platform_string = get_platform()
 	mem_total = -1
 	mem_avail = -1
@@ -958,6 +965,7 @@ def num_cpus():
 	'''
 	Returns the number of cpus available on the current platform
 	'''
+	import platform
 	platform_string = get_platform()
 	if platform_string == "Linux":
 		try:
@@ -1732,7 +1740,7 @@ def test_image_3d(type=0,size=(128,128,128)):
 # get a font renderer
 def get_3d_font_renderer():
 	try:
-		from EMAN2.libpyGLUtils2 import EMFTGL
+		from libpyGLUtils2 import EMFTGL
 		font_renderer = EMFTGL()
 		font_renderer.set_face_size(32)
 		font_renderer.set_using_display_lists(True)

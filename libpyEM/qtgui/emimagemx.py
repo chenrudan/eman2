@@ -51,7 +51,7 @@ from weakref import WeakKeyDictionary
 from pickle import dumps,loads
 from PyQt4.QtGui import QImage
 from PyQt4.QtCore import QTimer
-from EMAN2.libpyGLUtils2 import *
+from libpyGLUtils2 import *
 
 from emglobjects import EMOpenGLFlagsAndTools,EMGLProjectionViewMatrices,EMBasicOpenGLObjects,init_glut
 from emapplication import EMGLWidget, get_application, EMApp
