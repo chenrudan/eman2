@@ -9,17 +9,18 @@ import shutil
 
 progs_contain = ["em","EM","libpy","EMAN","eman","e2"]
 
-stdlib27 = """'abc,anydbm,argparse,array,asynchat,asyncore,atexit,base64,BaseHTTPServer,
-bisect,bz2,calendar,cgitb,cmd,codecs,collections,commands,compileall,ConfigParser,contextlib,Cookie,
-copy,cPickle,cProfile,cStringIO,csv,datetime,dbhash,dbm,decimal,difflib,dircache,dis,doctest,dumbdbm,
-EasyDialogs,errno,exceptions,filecmp,fileinput,fnmatch,fractions,functools,gc,gdbm,getopt,getpass,
-gettext,glob,grp,gzip,hashlib,heapq,hmac,imaplib,inspect,itertools,json,linecache,locale,logging,
-mailbox,math,mhlib,mmap,multiprocessing,operator,optparse,os,pdb,pickle,pipes,pkgutil,platform,plistlib,
-pprint,profile,pstats,pwd,pyclbr,pydoc,Queue,random,re,readline,resource,rlcompleter,robotparser,sched,
-select,shelve,shlex,shutil,signal,SimpleXMLRPCServer,site,sitecustomize,smtpd,smtplib,socket,SocketServer,
-sqlite3,string,StringIO,struct,subprocess,sys,sysconfig,tabnanny,tarfile,tempfile,textwrap,threading,time,
-timeit,trace,traceback,unittest,urllib,urllib2,urlparse,usercustomize,uuid,warnings,weakref,webbrowser,
-whichdb,xml,xmlrpclib,zipfile,zipimport,zlib,builtins,__builtin__'"""# standard library (might have missed a few)
+stdlib27 = """abc,anydbm,argparse,array,asynchat,asyncore,atexit,base64,BaseHTTPServer,
+bisect,bz2,calendar,cgitb,cmd,codecs,collections,commands,compileall,ConfigParser,contextlib,
+Cookie,copy,cPickle,cProfile,cStringIO,csv,datetime,dbhash,dbm,decimal,difflib,dircache,dis,
+doctest,dumbdbm,EasyDialogs,errno,exceptions,filecmp,fileinput,fnmatch,fractions,functools,
+gc,gdbm,getopt,getpass,gettext,glob,grp,gzip,hashlib,heapq,hmac,imaplib,inspect,itertools,
+json,linecache,locale,logging,mailbox,math,mhlib,mmap,multiprocessing,operator,optparse,os,
+pdb,pickle,pipes,pkgutil,platform,plistlib,pprint,profile,pstats,pwd,pyclbr,pydoc,Queue,
+random,re,readline,resource,rlcompleter,robotparser,sched,select,shelve,shlex,shutil,signal,
+SimpleXMLRPCServer,site,sitecustomize,smtpd,smtplib,socket,SocketServer,sqlite3,string,
+StringIO,struct,subprocess,sys,sysconfig,tabnanny,tarfile,tempfile,textwrap,threading,time,
+timeit,trace,traceback,unittest,urllib,urllib2,urlparse,usercustomize,uuid,warnings,weakref,
+webbrowser,whichdb,xml,xmlrpclib,zipfile,zipimport,zlib,builtins,__builtin__""" # standard library (might have missed a few)
 stdlib27 = stdlib27.replace("\n","").split(",") # clean up and generate list
 
 bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]

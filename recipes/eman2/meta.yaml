@@ -1,13 +1,13 @@
 package:
     name: eman2
     #version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
-    version: 2.2
+    version: 3.0.0
 
 source:
-  path: {{HOME}}/workspace/EMAN2
+  path: {{HOME}}/src/eman2-conda
 
 build:
-  number: 68
+  number: 69
 
 requirements:
     build:
@@ -55,4 +55,3 @@ extra:
     - Steve Ludtke
     - James Michael Bell
     - Vernon Williams
-
