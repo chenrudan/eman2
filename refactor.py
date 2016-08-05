@@ -59,17 +59,18 @@ def mkdir_p(path):
 		else: raise
 
 def fix_imports(lines):
-	for l in lines.split("\n"):
+	newlines = lines.split("\n")
+	for i,l in enumerate(newlines):
 		if l != "" and l.strip() != "": # we don't care about blank lines
 			if l.strip()[0] != "#": # we don't want whole line comments
 				if "import " in l and l.strip()[0] != "#": # is this an import statement?
 					if any(s in l for s in progs_contain):  # is this an EMAN2 program
 						if '"""' not in l and "=" not in l and "print" not in l: # import statements don't contain = or multiline comments.
-							if len(l) < 500: #They're also relatively short.
+							if len(l) < 500: #They're also *relatively* short.
 								old = l.strip()
 								new = get_new_import(old)
-								l.replace(old,new)
-	return lines.join("\n")+"\n"
+								newlines[i] = l.replace(old,new)
+	return "\n".join(newlines)+"\n"
 
 def insert(s,i,x):
 	return s[:x]+i+s[x:]
