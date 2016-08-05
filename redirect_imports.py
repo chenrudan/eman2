@@ -4,18 +4,47 @@ import os
 import errno
 import shutil
 
+global progs_contain
+progs_contain = ["em","EM","libpy","EMAN","eman","e2"]
+
+global bindir_files
+bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
+
+#homedir = os.getenv("HOME")
+#bindir_files = [i.replace(".py","") for i in os.listdir(homedir+"/src/eman2-conda/programs")]
+
+def main():
+	olddir = os.getcwd()
+	newdir = "../{}_refactor".format(os.path.basename(olddir))
+
+	global bindir_files
+	bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
+
+	for root,dirs,files in os.walk(olddir,topdown=True):
+		print("\n\nCWD: {}\n\n".format(root))
+
+		newroot = root.replace(olddir,newdir)
+		mkdir_p(newroot)
+
+		for f in files:
+			if os.path.isfile("{}/{}".format(root,f)):
+				if f[-3:] == ".py":
+					with open("{}/{}".format(root,f),'r') as inf:
+						file_content = inf.read()
+					file_content = fix_imports(file_content)
+					with open("{}/{}".format(newroot,f),'w') as outf:
+						outf.write(file_content)
+				else:
+					try: shutil.copy("{}/{}".format(root,f),"{}/{}".format(newroot,f))
+					except: pass
+
+	print("Results stored in: {}".format(newdir))
+
 def mkdir_p(path):
 	try: os.makedirs(path)
 	except OSError as exc:
 		if exc.errno == errno.EEXIST and os.path.isdir(path): pass
 		else: raise
-
-progs_contain = ["em","EM","libpy","EMAN","eman","e2"]
-
-homedir = os.getenv("HOME")
-bindir_files = [i.replace(".py","") for i in os.listdir(homedir+"/src/eman2-conda/programs")]
-
-
 
 def fix_imports(lines):
 	for l in lines.split("\n"):
@@ -70,25 +99,6 @@ def get_new_import(imp):
 	print("\t{}".format(newimp))
 	return newimp
 
-olddir = os.getcwd()
-newdir = "../{}_refactor".format(os.path.basename(olddir))
 
-for root,dirs,files in os.walk(olddir,topdown=True):
-	print("\n\nCWD: {}\n\n".format(root))
-
-	newroot = root.replace(olddir,newdir)
-	mkdir_p(newroot)
-
-	for f in files:
-		if os.path.isfile("{}/{}".format(root,f)):
-			if f[-3:] == ".py":
-				with open("{}/{}".format(root,f),'r') as inf:
-					file_content = inf.read()
-				file_content = fix_imports(file_content)
-				with open("{}/{}".format(newroot,f),'w') as outf:
-					outf.write(file_content)
-			else:
-				try: shutil.copy("{}/{}".format(root,f),"{}/{}".format(newroot,f))
-				except: pass
-
-print("RESULT IN {}".format(newdir))
+if __name__ == "__main__":
+	main()
