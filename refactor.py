@@ -26,7 +26,7 @@ bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
 
 def main():
 	olddir = os.getcwd()
-	newdir = "../{}_refactored".format(os.path.basename(olddir))
+	newdir = "../{}_refactor".format(os.path.basename(olddir))
 
 	global bindir_files
 	bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
