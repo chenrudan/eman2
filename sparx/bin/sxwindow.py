@@ -35,7 +35,7 @@ import glob
 
 from optparse import OptionParser, SUPPRESS_HELP
 from EMAN2 import *
-from EMAN2.EMAN2db import *
+from EMAN2db import *
 from EMAN2jsondb import *
 from sparx import *
 from applications import MPI_start_end

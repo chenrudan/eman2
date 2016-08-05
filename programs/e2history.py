@@ -37,8 +37,8 @@
 
 import shelve
 import sys,os,time
-from EMAN2 import base_name, EMArgumentParser, EMAN2db
-import EMAN2.EMAN2db
+from EMAN2 import base_name, EMArgumentParser
+import EMAN2db
 
 # also defined in EMAN2, but we don't want to have to import it
 
@@ -86,8 +86,8 @@ class HistoryForm:
  	def get_history_table(self):
  		from emdatastorage import ParamDef
  		try:
-			import EMAN2.EMAN2db
-			db= EMAN2db.EMAN2DB.open_db()
+			import EMAN2db
+			db=EMAN2db.EMAN2DB.open_db()
 			db.open_dict("history")
 		except:
 			db=None
@@ -194,8 +194,8 @@ def time_diff(secs):
 def print_to_std_out(all):
 
 	try:
-		import EMAN2.EMAN2db
-		db= EMAN2db.EMAN2DB.open_db()
+		import EMAN2db
+		db=EMAN2db.EMAN2DB.open_db()
 		db.open_dict("history")
 	except:
 		db=None

@@ -30,7 +30,7 @@
 #
 
 from EMAN2 import *
-from EMAN2.EMAN2db import db_open_dict, db_close_dict, db_check_dict, db_list_dicts
+from EMAN2db import db_open_dict, db_close_dict, db_check_dict, db_list_dicts
 from OpenGL import GL,GLUT
 from math import *
 import os

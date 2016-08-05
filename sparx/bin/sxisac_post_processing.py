@@ -272,7 +272,7 @@ def main(args):
 
 		new_class_average_images[class_avg_img_iter].set_attr_dict(class_average_images[class_avg_img_iter].get_attr_dict())
 		new_class_average_images[class_avg_img_iter].write_image(size_adjusted_class_averages_file_name[:-4] + "_%04d"%(image_start + class_avg_img_iter)   +".hdf",0)
-			from EMAN2.EMAN2db import db_open_dict
+			from EMAN2db import db_open_dict
 
 ### end: 4. Output the new averages using the newly aligned images
 ########################################################################################################################

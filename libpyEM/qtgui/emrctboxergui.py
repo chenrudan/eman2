@@ -30,14 +30,12 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
 #
 #
-import os
-
-from PyQt4 import QtCore, QtGui
-
 from EMAN2 import get_image_directory, dump_processors_list
-from EMAN2.EMAN2jsondb import js_open_dict
+from PyQt4 import QtCore, QtGui
 from emrctstrategy import Strategy2IMGMan, Strategy2IMGPair
-
+from EMAN2jsondb import js_open_dict
+from EMAN2 import *
+import os
 
 class ControlPannel(QtGui.QWidget):
 	'''This controls the RCT boxer. Normally this will not need to be midified. If a new pair pciking strategy is to be implmented, then

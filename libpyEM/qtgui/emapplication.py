@@ -36,9 +36,9 @@ from PyQt4.QtCore import Qt
 import sys
 from emimageutil import EMParentWin
 from ..__init__ import remove_directories_from_name, get_image_directory,get_3d_font_renderer, E2end,get_platform
-from EMAN2 import EMAN2db
+from .. import EMAN2db
 import weakref
-from EMAN2.libpyGLUtils2 import *
+from ..libpyGLUtils2 import *
 
 try: from PyQt4 import QtWebKit
 except: pass

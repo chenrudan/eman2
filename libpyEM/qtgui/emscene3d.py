@@ -39,7 +39,7 @@ from emglobjects import get_default_gl_colors
 from emitem3d import EMItem3D, EMItem3DInspector
 from empdbitem3d import *
 from emshapeitem3d import *
-from EMAN2.libpyGLUtils2 import GLUtil
+from libpyGLUtils2 import GLUtil
 import math
 import os
 import pickle
