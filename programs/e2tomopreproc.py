@@ -29,13 +29,10 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  2111-1307 USA
 
 
-from optparse import OptionParser
-
-from EMAN2 import *
-from EMAN2jsondb import JSTask,jsonclasses
-
 import sys
-from sys import argv
+
+from EMAN2jsondb import JSTask
+
 
 from shutil import copyfile
 
@@ -309,7 +306,7 @@ def main():
 				for img in imgs:
 					#task=None
 
-					#if options.maskbyangle:
+		from EMAN2.EMAN2PAR import EMTaskCustomer
 					outimage = img.replace('.mrc','_preproc.mrc')
 					task = TomoPreproc2DTask( img, options, angles[kk], outimage )
 					tasks.append(task)

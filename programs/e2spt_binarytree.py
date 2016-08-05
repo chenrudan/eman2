@@ -30,10 +30,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  2111-1307 USA
 
-from EMAN2 import *
 import os
 import sys
-from EMAN2jsondb import JSTask,jsonclasses
 from pprint import pprint
 
 
@@ -312,7 +310,7 @@ def main():
 			print "\n\n(e2spt_classaverage.py) INITIALIZING PARALLELISM!"
 			print "\n\n"
 
-			from EMAN2PAR import EMTaskCustomer
+			from EMAN2.EMAN2PAR import EMTaskCustomer
 			etc=EMTaskCustomer(options.parallel)
 
 			pclist=[options.input]
@@ -430,10 +428,8 @@ def binaryTreeRef(options,nptclForRef,nseed,etc):
 		#	print "Creating this seed file for this class", seedfile, ic
 		
 		print "Creating this seed file for this class", seedfile
-	
-	
-	from e2spt_classaverage import cmdpreproc
-	
+
+    cmpreproc( seedfile, options, False )
 	
 	preproc = 0
 	if options.mask or options.maskfile or options.normproc or options.threshold or options.clip or (options.shrink > 1) or options.lowpass or options.highpass or options.preprocess:		
@@ -533,7 +529,6 @@ def binaryTreeRef(options,nptclForRef,nseed,etc):
 			ret = makeAveragePairs(options,infile,outfile,results)
 			
 			if ret:
-				if preproc:
 					cmdpreproc( outfile, options, False )
 		
 		else:

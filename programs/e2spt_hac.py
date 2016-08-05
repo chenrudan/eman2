@@ -31,13 +31,13 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  2111-1307 USA
 
 
-from EMAN2 import *
-
 import os
 import sys
+
 from EMAN2jsondb import JSTask,jsonclasses
 
 from e2spt_classaverage import alignment
+
 
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -690,7 +690,7 @@ def allvsall(options):
 		
 		print "\n(e2spt_hac.py) (allvsall) Initializing parallelism"
 		if options.parallel:							# Initialize parallelism if being used
-			from EMAN2PAR import EMTaskCustomer
+			from EMAN2.EMAN2PAR import EMTaskCustomer
 			etc=EMTaskCustomer(options.parallel)
 			pclist=[options.input]
 			etc.precache(pclist)
@@ -1552,9 +1552,8 @@ def plotter(xaxis,yaxis,options,name,maxX,maxY,invert=1,sort=1):
 	matplotlib.use('Agg',warn=False)
 
 	import matplotlib.pyplot as plt
-	import pylab
-	
-	#plt.clf()
+
+    #plt.clf()
 	#plt.close('all')
 	
 	#import matplotlib

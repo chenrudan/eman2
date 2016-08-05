@@ -36,9 +36,12 @@
 # 1. Baldwin, P.R. and Penczek, P.A. 2007. The Transform Class in SPARX and EMAN2. J. Struct. Biol. 157, 250-261.
 # 2. http://blake.bcm.edu/emanwiki/EMAN2/Symmetry
 
-import sys, math, os, random
-from EMAN2 import *
+import math
+import os
+import sys
+
 from EMAN2jsondb import JSTask,jsonclasses
+
 deg2rad = math.pi / 180.0
 rad2deg = 180.0 / math.pi
 DEBUG = False
@@ -63,7 +66,7 @@ class EMParallelProject3D:
 		self.start=start
 		self.modeln=modeln
 
-		from EMAN2PAR import EMTaskCustomer
+		from EMAN2.EMAN2PAR import EMTaskCustomer
 		self.etc=EMTaskCustomer(options.parallel)
 		print "Precache ",fsp
 		self.etc.precache([fsp])

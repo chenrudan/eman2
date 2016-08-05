@@ -31,14 +31,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
 
-from sys import argv
 import os
-from EMAN2 import *
-from EMAN2jsondb import JSTask,jsonclasses
 
 from e2spt_classaverage import Align3DTask, align3Dfunc, get_results
 
-import subprocess
 
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -743,7 +739,7 @@ def main():
 				print "\n\n(e2spt_classaverage.py) INITIALIZING PARALLELISM!"
 				print "\n\n"
 
-				from EMAN2PAR import EMTaskCustomer
+				from EMAN2.EMAN2PAR import EMTaskCustomer
 				etc=EMTaskCustomer(options.parallel)
 
 				pclist=[options.input]

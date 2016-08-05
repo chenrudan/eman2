@@ -32,7 +32,7 @@
 #
 
 from EMAN2 import get_image_directory, Transform, Region, EMANVERSION, EMData, E2init, E2end, EMArgumentParser
-from EMAN2db import db_open_dict, db_check_dict, db_close_dict
+from EMAN2.EMAN2db import db_open_dict, db_check_dict, db_close_dict
 from math import *
 import sys
 import os
@@ -1961,11 +1961,10 @@ def windowallmic(dirid, micid, micsuffix, outdir, pixel_size, boxsize=256, minse
 		windowallmic(dirid='mic', micid='mic', micsuffix='hdf', outdir='out',  pixel_size=1.2, boxsize=200, minseg = 6, outstacknameall='bdb:adata', hcoords_suffix = "_boxes.txt", ptcl_dst=15, inv_contrast=False, new_pixel_size=1.84, rmax = 60.0, topdir='/Users/project')
 	'''
 	import os
-	from utilities      import print_begin_msg, print_end_msg, print_msg
+	from utilities      import print_begin_msg, print_msg
 	from sxhelixboxer	import windowmic
-	from EMAN2 	        import EMUtil, Util
-	
-	print_begin_msg("windowallmic\n")
+
+    print_begin_msg("windowallmic\n")
 	
 	if not(do_rotation):
 		do_gridding = False
@@ -2103,7 +2102,7 @@ def windowmic(outstacknameall, micpath, outdir, micname, hcoordsname, pixel_size
 	'''
 	from utilities    import pad, model_blank, read_text_row, get_im, print_msg
 	from fundamentals import ramp, resample
-	from filter	  	  import filt_gaussh,filt_tanl 
+	from filter	  	  import filt_tanl 
 	from pixel_error  import getnewhelixcoords
 	from EMAN2 	      import EMUtil, Util
 	from subprocess   import call

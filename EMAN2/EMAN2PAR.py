@@ -79,7 +79,7 @@ from struct import pack,unpack
 # If we can't import it then we probably won't be trying to use MPI
 try :
 	from mpi import *
-	from mpi_eman import *
+	from libpyEM.mpi_eman import *
 except : pass
 
 # if there is a problem with zlib just don't compress
