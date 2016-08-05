@@ -5,14 +5,25 @@ import errno
 import shutil
 
 progs_contain = ["em","EM","libpy","EMAN","eman","e2"]
-bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
 
-#homedir = os.getenv("HOME")
-#bindir_files = [i.replace(".py","") for i in os.listdir(homedir+"/src/eman2-conda/programs")]
+stdlib27 = """'abc,anydbm,argparse,array,asynchat,asyncore,atexit,base64,BaseHTTPServer,
+bisect,bz2,calendar,cgitb,cmd,codecs,collections,commands,compileall,ConfigParser,contextlib,Cookie,
+copy,cPickle,cProfile,cStringIO,csv,datetime,dbhash,dbm,decimal,difflib,dircache,dis,doctest,dumbdbm,
+EasyDialogs,errno,exceptions,filecmp,fileinput,fnmatch,fractions,functools,gc,gdbm,getopt,getpass,
+gettext,glob,grp,gzip,hashlib,heapq,hmac,imaplib,inspect,itertools,json,linecache,locale,logging,
+mailbox,math,mhlib,mmap,multiprocessing,operator,optparse,os,pdb,pickle,pipes,pkgutil,platform,plistlib,
+pprint,profile,pstats,pwd,pyclbr,pydoc,Queue,random,re,readline,resource,rlcompleter,robotparser,sched,
+select,shelve,shlex,shutil,signal,SimpleXMLRPCServer,site,sitecustomize,smtpd,smtplib,socket,SocketServer,
+sqlite3,string,StringIO,struct,subprocess,sys,sysconfig,tabnanny,tarfile,tempfile,textwrap,threading,time,
+timeit,trace,traceback,unittest,urllib,urllib2,urlparse,usercustomize,uuid,warnings,weakref,webbrowser,
+whichdb,xml,xmlrpclib,zipfile,zipimport,zlib,builtins,__builtin__'"""# standard library (might have missed a few)
+stdlib27 = stdlib27.replace("\n","").split(",") # clean up and generate list
+
+bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
 
 def main():
 	olddir = os.getcwd()
-	newdir = "../{}_refactor".format(os.path.basename(olddir))
+	newdir = "../{}_refactored".format(os.path.basename(olddir))
 
 	global bindir_files
 	bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
@@ -36,6 +47,7 @@ def main():
 					except: pass
 
 	print("Results stored in: {}".format(newdir))
+
 
 def mkdir_p(path):
 	try: os.makedirs(path)
@@ -61,7 +73,6 @@ def insert(s,i,x):
 
 def get_new_import(imp):
 	#oldimp = oldimp.split("#")[0]
-	print(imp)
 
 	if "try:" in imp: oldimp = imp.replace("try: ","") # remove "try: " from try/except import lines
 	else: oldimp = imp
@@ -72,20 +83,25 @@ def get_new_import(imp):
 	else:
 		if oldimp.find("from") == 0: # case 1: from
 			if oldimp != "from EMAN2 import *":
-				if "from EMAN2 import" in oldimp:
-					newimp = oldimp
-				else:
-					if oldimp.split(" ")[1] in bindir_files:
-						newimp = oldimp # program in bin, so import doesn't need to be altered
+				if not any(["from {}".format(s) in oldimp for s in stdlib27]):
+					if "from EMAN2 import" in oldimp:
+						newimp = oldimp
 					else:
-						newimp = insert(oldimp,"EMAN2.",len("from ")) # replace "from module" with "from EMAN2.module"
+						if oldimp.split(" ")[1] in bindir_files:
+							newimp = oldimp # program in bin, so import doesn't need to be altered
+						else:
+							newimp = insert(oldimp,"EMAN2.",len("from ")) # replace "from module" with "from EMAN2.module"
+				else:
+					newimp = oldimp
 			else: newimp = oldimp
 		elif oldimp.find("import") == 0: # case 2: import
 			if oldimp == "import EMAN2": # we just use the existing import
 				newimp = oldimp
+			elif any(["import {}".format(s) in oldimp for s in stdlib27]):
+				newimp = oldimp # if it's important from stdlib, we don't want to change it
 			else:
 				if oldimp.split(" ")[1] in bindir_files:
-					newimp = oldimp
+					newimp = oldimp # we don't need to change how we import programs in the bin directory
 				elif " as " in oldimp:
 					newimp = insert(oldimp,"EMAN2.",len("import ")) # replace "import module as x" with "import EMAN2.module as x"
 				else:
@@ -93,7 +109,7 @@ def get_new_import(imp):
 		else: newimp = oldimp # otherwise
 	if "try" in imp: newimp = "try: " + newimp # add "try" back to try/except imports
 
-	print("\t{}".format(newimp))
+	print("{:60}\n{:60}\n".format(imp,newimp))
 	return newimp
 
 
