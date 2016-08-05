@@ -7,7 +7,7 @@ import os
 import errno
 import shutil
 
-progs_contain = ["em","EM","libpy","EMAN","eman","e2"]
+progs_contain = ["em","EM","","EMAN","eman","e2"]
 
 stdlib27 = """abc,anydbm,argparse,array,asynchat,asyncore,atexit,base64,BaseHTTPServer,
 bisect,bz2,calendar,cgitb,cmd,codecs,collections,commands,compileall,ConfigParser,contextlib,
@@ -114,7 +114,7 @@ def get_new_import(imp):
 				else:
 					newimp = "import EMAN2.{module} as {module}".format(module=oldimp.replace("import ","")) # replace "import module" with "import EMAN2.module"
 		else: newimp = oldimp # otherwise
-	if "try" in imp: newimp = "try: " + newimp # add "try" back to try/except imports
+	if "try:" in imp: newimp = "try: " + newimp # add "try" back to try/except imports
 
 	print("{:60}\n{:60}\n".format(imp,newimp))
 	return newimp
