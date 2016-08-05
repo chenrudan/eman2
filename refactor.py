@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Author: Michael Bell,jmbell@bcm.edu 
+# Author: Michael Bell,jmbell@bcm.edu
 # Date: 8/5/2016
 
 import os
@@ -41,7 +41,7 @@ def main():
 
 		for f in files:
 			if os.path.isfile("{}/{}".format(root,f)):
-				if f[-3:] == ".py":
+				if f[-3:] == ".py" and root not in ["doc","images","fonts","recipes"]:
 					with open("{}/{}".format(root,f),'r') as inf:
 						file_content = inf.read()
 					file_content = fix_imports(file_content)
