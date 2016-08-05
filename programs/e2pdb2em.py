@@ -42,7 +42,7 @@
 
 
 from EMAN2 import *
-from sparx import *
+from EMAN2.sparx import *
 from math import *
 from global_def import *
 import os

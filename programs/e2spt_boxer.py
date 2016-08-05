@@ -39,14 +39,14 @@ import weakref
 import threading
 import math
 from EMAN2 import *
-from emapplication import get_application, EMApp
-from emimage2d import EMImage2DWidget
-from emimagemx import EMImageMXWidget
-from emimage3d import EMImage3DWidget
-from emscene3d import EMScene3D
-from emdataitem3d import EMDataItem3D, EMIsosurface
-from emshape import EMShape
-from valslider import *
+from EMAN2.emapplication import get_application, EMApp
+from EMAN2.emimage2d import EMImage2DWidget
+from EMAN2.emimagemx import EMImageMXWidget
+from EMAN2.emimage3d import EMImage3DWidget
+from EMAN2.emscene3d import EMScene3D
+from EMAN2.emdataitem3d import EMDataItem3D, EMIsosurface
+from EMAN2.emshape import EMShape
+from EMAN2.valslider import *
 from sys import argv
 
 def main():

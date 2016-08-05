@@ -1,6 +1,6 @@
 #!/bin/env python
 from EMAN2 import *
-from sparx  import *
+from EMAN2.sparx import *
 from time import time
 mode = "F"
 a = model_circle(30,300,300)

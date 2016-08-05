@@ -32,13 +32,13 @@
 #
 
 import	global_def
-from	global_def 	import *
-from	EMAN2 		import EMUtil, parsemodopt, EMAN2Ctf
-from    EMAN2jsondb import js_open_dict
+from global_def import *
+from EMAN2 import EMUtil, parsemodopt, EMAN2Ctf
+from EMAN2.EMAN2jsondb import js_open_dict
 
-from	utilities 	import *
-from    statistics import mono
-import  os
+from EMAN2.utilities import *
+from EMAN2.statistics import mono
+import os
 
 
 
@@ -46,7 +46,7 @@ import  os
  rotate_shift_params(paramsin, transf) has been moved to utilities
 """
 
-from utilities import rotate_shift_params
+from EMAN2.utilities import rotate_shift_params
 
 """
 	Traveling salesman problem solved using Simulated Annealing.
@@ -195,7 +195,7 @@ def tsp(lccc):
 
 
 def pca(cov):
-	from numpy import  linalg, argsort
+	from numpy import linalg, argsort
 	""" assume one sample per column """
 	values, vecs = linalg.eigh(cov)
 	perm = argsort(-values)  # sort in descending order
@@ -209,8 +209,8 @@ def main():
 	import random
 	import pyemtbx.options
 	import time
-	from   random   import random, seed, randint
-	from   optparse import OptionParser
+	from random import random, seed, randint
+	from optparse import OptionParser
 
 	progname = os.path.basename(sys.argv[0])
 	usage = progname + """ [options] <inputfile> <outputfile>
@@ -338,7 +338,7 @@ def main():
 		instack = args[0]
 		outstack = args[1]
 		nima = EMUtil.get_image_count(instack)
-		from filter import filt_ctf
+		from EMAN2.filter import filt_ctf
 		for i in xrange(nima):
 			img = EMData()
 			img.read_image(instack, i)
@@ -390,13 +390,13 @@ def main():
 		if nargs != 2:
 			ERROR("must provide name of input and output file!", "change size", 1)
 			return
-		from utilities import get_im
+		from EMAN2.utilities import get_im
 		instack = args[0]
 		outstack = args[1]
 		sub_rate = float(options.ratio)
 			
 		nima = EMUtil.get_image_count(instack)
-		from fundamentals import resample
+		from EMAN2.fundamentals import resample
 		for i in xrange(nima):
 			resample(get_im(instack, i), sub_rate).write_image(outstack, i)
 
@@ -405,13 +405,13 @@ def main():
 		if nargs != 3:
 			ERROR("Three files needed on input!", "isacgroup", 1)
 			return
-		from utilities import get_im
+		from EMAN2.utilities import get_im
 		instack = args[0]
 		m=get_im(args[1],int(options.isacgroup)).get_attr("members")
 		l = []
 		for k in m:
 			l.append(int(get_im(args[0],k).get_attr(options.params)))
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 		write_text_file(l, args[2])
 
 	elif options.isacselect:
@@ -419,13 +419,13 @@ def main():
 		if nargs != 2:
 			ERROR("Two files needed on input!", "isacgroup", 1)
 			return
-		from utilities import get_im
+		from EMAN2.utilities import get_im
 		nima = EMUtil.get_image_count(args[0])
 		m = []
 		for k in xrange(nima):
 			m += get_im(args[0],k).get_attr("members")
 		m.sort()
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 		write_text_file(m, args[1])
 
 	elif options.pw:
@@ -433,8 +433,8 @@ def main():
 		if nargs < 2:
 			ERROR("must provide name of input and output file!", "pw", 1)
 			return
-		from utilities import get_im, write_text_file
-		from fundamentals import rops_table
+		from EMAN2.utilities import get_im, write_text_file
+		from EMAN2.fundamentals import rops_table
 		d = get_im(args[0])
 		ndim = d.get_ndim()
 		if ndim ==3:
@@ -450,7 +450,7 @@ def main():
 			else:
 				if( (wn<nx) or (wn<ny) ):  ERROR("window size cannot be smaller than the image size","pw",1)
 			n = EMUtil.get_image_count(args[0])
-			from utilities import model_blank, model_circle, pad
+			from EMAN2.utilities import model_blank, model_circle, pad
 			from EMAN2 import periodogram
 			p = model_blank(wn,wn)
 		
@@ -470,10 +470,10 @@ def main():
 			ERROR("filt_by_rops input target output fl aa (the last two are optional parameters of a low-pass filter)","adjpw",1)
 			return
 		img_stack = args[0]
-		from math         import sqrt
-		from fundamentals import rops_table, fft
-		from utilities    import read_text_file, get_im
-		from filter       import  filt_tanl, filt_table
+		from math import sqrt
+		from EMAN2.fundamentals import rops_table, fft
+		from EMAN2.utilities import read_text_file, get_im
+		from EMAN2.filter import filt_tanl, filt_table
 		if(  args[1][-3:] == 'txt'):
 			rops_dst = read_text_file( args[1] )
 		else:
@@ -509,8 +509,8 @@ def main():
 		if len(args) != 1:
 			ERROR("Only one input permitted","rotpw",1)
 			return
-		from utilities import write_text_file, get_im
-		from fundamentals import rops_table
+		from EMAN2.utilities import write_text_file, get_im
+		from EMAN2.fundamentals import rops_table
 		from math import log10
 		t = rops_table(get_im(args[0]))
 		x = range(len(t))
@@ -522,7 +522,7 @@ def main():
 		if len(args) != 2:
 			ERROR("Please provide names of input and output files with orientation parameters","transformparams",1)
 			return
-		from utilities import read_text_row, write_text_row
+		from EMAN2.utilities import read_text_row, write_text_row
 		transf = [0.0]*6
 		spl=options.transformparams.split(',')
 		for i in xrange(len(spl)):  transf[i] = float(spl[i])
@@ -610,9 +610,9 @@ def main():
 		if 'sigma_gauss_mic' in param_dict:
 			sigma_gauss_mic = float(param_dict['sigma_gauss_mic'])	
 			
-		from filter import filt_gaussl, filt_ctf
-		from utilities import drop_spider_doc, even_angles, model_gauss, delete_bdb, model_blank,pad,model_gauss_noise,set_params2D, set_params_proj
-		from projection import prep_vol,prgs
+		from EMAN2.filter import filt_gaussl, filt_ctf
+		from EMAN2.utilities import drop_spider_doc, even_angles, model_gauss, delete_bdb, model_blank,pad,model_gauss_noise,set_params2D, set_params_proj
+		from EMAN2.projection import prep_vol,prgs
 		seed(14567)
 		delta = 29
 		angles = even_angles(delta, 0.0, 89.9, 0.0, 359.9, "S")
@@ -620,7 +620,7 @@ def main():
 		
 		modelvol = []
 		nvlms = EMUtil.get_image_count(inpstr)
-		from utilities import get_im
+		from EMAN2.utilities import get_im
 		for k in xrange(nvlms):  modelvol.append(get_im(inpstr,k))
 		
 		nx = modelvol[0].get_xsize()
@@ -726,7 +726,7 @@ def main():
 
 	elif options.importctf != None:
 		print ' IMPORTCTF  '
-		from utilities import read_text_row,write_text_row
+		from EMAN2.utilities import read_text_row,write_text_row
 		from random import randint
 		import subprocess
 		grpfile = 'groupid%04d'%randint(1000,9999)
@@ -788,7 +788,7 @@ def main():
 		subprocess.call(cmd, shell=True)
 
 	elif options.scale > 0.0:
-		from utilities import read_text_row,write_text_row
+		from EMAN2.utilities import read_text_row,write_text_row
 		scale = options.scale
 		nargs = len(args)
 		if nargs != 2:
@@ -801,8 +801,8 @@ def main():
 		write_text_row(p, args[1])
 		
 	elif options.adaptive_mask:
-		from utilities import get_im
-		from morphology import adaptive_mask, binarize, erosion, dilation
+		from EMAN2.utilities import get_im
+		from EMAN2.morphology import adaptive_mask, binarize, erosion, dilation
 		nsigma             = options.nsigma
 		ndilation          = options.ndilation
 		kernel_size        = options.kernel_size
@@ -844,7 +844,7 @@ def main():
 				if stack_is_bdb: output_stack_name ="bdb:reduced_"+input_file_name_root[4:]
 				else:output_stack_name = "reduced_"+input_file_name_root+".hdf" # Only hdf file is output.
 			nimage = EMUtil.get_image_count(inputstack)
-			from fundamentals import window2d
+			from EMAN2.fundamentals import window2d
 			for i in xrange(nimage):
 				image = EMData()
 				image.read_image(inputstack,i)

@@ -31,11 +31,11 @@
 #
 #
 import global_def
-from   global_def import *
+from global_def import *
 import sys
-from   optparse import OptionParser
+from optparse import OptionParser
 import os
-from   utilities import get_image
+from EMAN2.utilities import get_image
 def main():
 
 	arglist = []
@@ -73,14 +73,14 @@ def main():
 		sys.argv = mpi_init(len(sys.argv), sys.argv)
 		
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 
 	if(options.list and options.group > -1):
 		ERROR("options group and list cannot be used together","recon3d_n",1)
 		sys.exit()
 
-	from applications import recons3d_f
+	from EMAN2.applications import recons3d_f
 
 	global_def.BATCH = True
 	recons3d_f(prj_stack, vol_stack, fsc_curve, mask, options.CTF, options.snr, options.sym, options.list, options.group, options.npad, options.verbose, options.MPI)

@@ -36,25 +36,25 @@ import sys
 import random
 
 import global_def
-from   global_def import *
+from global_def import *
 from optparse import OptionParser, SUPPRESS_HELP
 import ConfigParser
 from inspect import currentframe, getframeinfo
 
 # from __future__ import print_function
 from EMAN2 import *
-from sparx import *
-from logger import Logger, BaseLogger_Files
+from EMAN2.sparx import *
+from EMAN2.logger import Logger, BaseLogger_Files
 import global_def
 
-from mpi   import  *
-from math  import  *
+from mpi import *
+from math import *
 
-from utilities import send_string_to_all
+from EMAN2.utilities import send_string_to_all
 
-from applications import  ali2d_base
+from EMAN2.applications import ali2d_base
 
-from utilities import program_state_stack
+from EMAN2.utilities import program_state_stack
 
 NAME_OF_JSON_STATE_FILE = "my_state.json"
 NAME_OF_ORIGINAL_IMAGE_INDEX = "originalid"
@@ -122,10 +122,10 @@ def main(args):
 		sys.exit()
 	
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	
-	from isac import iter_isac
+	from EMAN2.isac import iter_isac
 	global_def.BATCH = True
 
 	global_def.BATCH = True
@@ -154,7 +154,7 @@ def main(args):
 	stop_after_candidates = options.stop_after_candidates
 	# program_state_stack.restart_location_title_from_command_line = options.restart_section
 	
-	from utilities import qw
+	from EMAN2.utilities import qw
 	program_state_stack.PROGRAM_STATE_VARIABLES = set(qw("""
 		isac_generation
 	"""))
@@ -261,7 +261,7 @@ def main(args):
 
 	if(myid == 0):
 		import subprocess
-		from logger import Logger, BaseLogger_Files
+		from EMAN2.logger import Logger, BaseLogger_Files
 		#  Create output directory
 		log2d = Logger(BaseLogger_Files())
 		log2d.prefix = os.path.join(init2dir)
@@ -317,8 +317,8 @@ def main(args):
 	nima = len(aligned_images)
 	newx = int(nx*shrink_ratio + 0.5)
 
-	from fundamentals import rot_shift2D, resample
-	from utilities import pad, combine_params2
+	from EMAN2.fundamentals import rot_shift2D, resample
+	from EMAN2.utilities import pad, combine_params2
 	if(shrink_ratio < 1.0):
 		if    newx > target_nx  :
 			msk = model_circle(target_radius, target_nx, target_nx)
@@ -442,7 +442,7 @@ def main(args):
 	if( myid == main_node ):
 		for i in range(number_of_images_in_stack):  aligned_images[i].write_image(stack_processed_by_ali2d_base__filename,i)
 		#  It has to be explicitly closed
-		from EMAN2db import db_open_dict
+		from EMAN2.EMAN2db import db_open_dict
 		DB = db_open_dict(stack_processed_by_ali2d_base__filename)
 		DB.close()
 

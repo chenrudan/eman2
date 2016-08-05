@@ -70,9 +70,9 @@ def main():
 		exit(-1)
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
-        from applications import header
+        from EMAN2.applications import header
 	header(args[0], options.params, options.zero, options.one, options.set, options.randomize, options.rand_alpha, options.fimport, options.fexport, \
 	options.fprint, options.backup, options.suffix, options.restore, options.delete, options.consecutive)
 

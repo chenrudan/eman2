@@ -36,10 +36,10 @@ import os
 import sys
 import time
 import numpy
-import pylab
+import EMAN2.pylab as pylab
 #from operator import itemgetter
 from matplotlib.ticker import MaxNLocator
-from pylab import figure, show	
+from EMAN2.pylab import figure, show	
 import matplotlib.pyplot as plt
 
 #import scipy.optimize			 
@@ -563,7 +563,7 @@ def fscplotter(fscs,options,apix=0.0):
 	#colors=["k","r","b","g","m","y","c"]
 	#colorsANDmarkers = [a+b for a,b in product(colors,markers)]
 	
-	import colorsys
+	import EMAN2.colorsys as colorsys
 	import itertools
 
 	

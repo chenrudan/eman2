@@ -32,9 +32,9 @@
 #
 
 from EMAN2 import *
-from EMAN2db import *
+from EMAN2.EMAN2db import *
 import unittest,os,sys
-import testlib
+import EMAN2.testlib as testlib
 from pyemtbx.exceptions import *
 from math import *
 from optparse import OptionParser

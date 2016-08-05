@@ -32,12 +32,12 @@
 #
 
 from EMAN2 import BoxingTools,gm_time_string,Transform, E2init, E2end, E2progress,db_open_dict,EMArgumentParser
-from EMAN2db import db_check_dict
-from EMAN2jsondb import *
+from EMAN2.EMAN2db import db_check_dict
+from EMAN2.EMAN2jsondb import *
 from pyemtbx.boxertools import CoarsenedFlattenedImageCache,FLCFImageCache
 from copy import deepcopy
 from EMAN2 import *
-from emboxerbase import *
+from EMAN2.emboxerbase import *
 import os
 
 def main():
@@ -71,17 +71,17 @@ class GUIBoxer(QtGui.QWidget):
 		"""The 'new' e2boxer interface.
 		"""
 		try:
-			from emimage2d import EMImage2DWidget
+			from EMAN2.emimage2d import EMImage2DWidget
 		except:
 			print "Cannot import EMAN image GUI objects (EMImage2DWidget)"
 			sys.exit(1)
 		try:
-			from emimagemx import EMImageMXWidget
+			from EMAN2.emimagemx import EMImageMXWidget
 		except:
 			print "Cannot import EMAN image GUI objects (EMImageMXWidget)"
 			sys.exit(1)
 		try:
-			from emplot2d import EMPlot2DWidget
+			from EMAN2.emplot2d import EMPlot2DWidget
 		except:
 			print "Cannot import EMAN plot GUI objects (is matplotlib installed?)"
 			sys.exit(1)

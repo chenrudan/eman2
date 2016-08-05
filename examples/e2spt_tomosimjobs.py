@@ -39,7 +39,7 @@ import heapq
 import operator
 import random
 import numpy
-import colorsys
+import EMAN2.colorsys as colorsys
 import os
 import math
 

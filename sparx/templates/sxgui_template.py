@@ -37,9 +37,9 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from subprocess import *
 from EMAN2 import *
-from sparx import *
-from EMAN2_cppwrap import *
-from functools import partial  # Use to connect event-source widget and event handler
+from EMAN2.sparx import *
+from EMAN2.EMAN2_cppwrap import *
+from functools import partial # Use to connect event-source widget and event handler
 
 # ========================================================================================
 class SXcmd_token:

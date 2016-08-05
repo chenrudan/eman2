@@ -35,7 +35,7 @@
 
 
 import os
-from applications  import  cpy
+from EMAN2.applications import cpy
 
 import global_def
 from global_def import *
@@ -50,7 +50,7 @@ def main():
 	(options, args) = parser.parse_args()
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	
 	# check length of arguments list. less than 2 is illegal

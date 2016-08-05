@@ -19,15 +19,15 @@
 #     std::allocator<std::pair<std::string const, double> > > already
 #     registered; second conversion method ignored. 
 
-import iotbx, cctbx
-from iotbx import pdb
-from cctbx import maptbx
-from cctbx import miller
-from cctbx import xray
-from cctbx import adptbx
+import EMAN2.iotbx, cctbx as iotbx, cctbx
+from EMAN2.iotbx import pdb
+from EMAN2.cctbx import maptbx
+from EMAN2.cctbx import miller
+from EMAN2.cctbx import xray
+from EMAN2.cctbx import adptbx
 from cctbx.array_family import flex
 
-from utilities import model_electron_density, drop_image
+from EMAN2.utilities import model_electron_density, drop_image
 import sys
 
 # 
@@ -127,7 +127,7 @@ if 1:
 
 # Convert the cctbx flex array to EMData.  Better done in C++, or
 # work with EMData after getting the `coords` above.
-from EMAN2_cppwrap import *
+from EMAN2.EMAN2_cppwrap import *
 ed = EMData()
 # .focus() is logical array size
 # .all() is the allocated size (padding etc.)
@@ -151,7 +151,7 @@ drop_image(ed, image_file_name)
 # $SPXROOT/cctbx/cctbx_sources/cctbx/cctbx/xray/structure.py
 
 from cctbx.array_family import flex
-from iotbx import pdb
+from EMAN2.iotbx import pdb
 import iotbx.pdb.interpretation
 
 pdb_file  = "model1_var2a.pdb"

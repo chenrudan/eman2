@@ -87,5 +87,8 @@ ENDIF(ENABLE_OPENGL)
 FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(FILES ${empythonlibs} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2)
 
-#ADD_SUBDIRECTORY(qtgui)
+#FILE(GLOB qtguifiles "${CMAKE_CURRENT_SOURCE_DIR}/qtgui/*.py")
+#FILE(GLOB exclusionlist "em3Dhelloworld.py")
+#LIST(REMOVE_ITEM qtguifiles ${exclusionlist})
+#INSTALL(FILES ${qtguifiles} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2)
 

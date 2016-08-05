@@ -31,8 +31,8 @@
 #
 #
 
-from EMAN2  import *
-from sparx  import *
+from EMAN2 import *
+from EMAN2.sparx import *
 import sparx.libpy
 
 # For convenience, import all functions into the top-level namespace. 

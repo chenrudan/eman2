@@ -33,7 +33,7 @@
 
 # $Id: e2proc2dmulti.py
 
-from EMAN2db import db_list_dicts
+from EMAN2.EMAN2db import db_list_dicts
 from EMAN2 import *
 import sys
 import os.path

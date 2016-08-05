@@ -36,7 +36,7 @@ from numpy import linalg as LA
 from numpy import array, dot
 
 from EMAN2 import *
-from sparx import *
+from EMAN2.sparx import *
 from mpi import *
 from math import sqrt
 from random import random

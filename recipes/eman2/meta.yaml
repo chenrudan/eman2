@@ -7,7 +7,7 @@ source:
   path: {{HOME}}/src/eman2-conda_refactor
 
 build:
-  number: 69
+  number: 71
 
 requirements:
     build:

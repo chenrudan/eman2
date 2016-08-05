@@ -35,9 +35,9 @@ import glob
 
 from optparse import OptionParser, SUPPRESS_HELP
 from EMAN2 import *
-from EMAN2db import *
-from EMAN2jsondb import *
-from sparx import *
+from EMAN2.EMAN2db import *
+from EMAN2.EMAN2jsondb import *
+from EMAN2.sparx import *
 
 def check_options(options, progname):
 	if options.coordinates_format.lower() not in ["sparx", "eman1", "eman2", "spider"]:
@@ -292,7 +292,7 @@ Specify name pattern of input micrographs and coordinates files with wild card (
 			mic_img += 2 * mic_stats[0]
 		
 		if options.import_ctf:
-			from utilities import generate_ctf
+			from EMAN2.utilities import generate_ctf
 			ctf_obj = generate_ctf(ctf_params)
 		
 		# Prepare loop variables
@@ -387,7 +387,7 @@ Specify name pattern of input micrographs and coordinates files with wild card (
 		
 		n_bins = 10
 		if len(cutoff_histogram) >= n_bins:
-			from statistics import hist_list
+			from EMAN2.statistics import hist_list
 			cutoff_region, cutoff_counts = hist_list(cutoff_histogram, n_bins)
 			print("      Histogram of cut-off frequency")
 			print("      cut-off       counts")

@@ -111,7 +111,7 @@ def amoeba(var, scale, func, ftolerance=1.e-4, xtolerance=1.e-4, itmax=500, data
 
 	   Example:
 	   
-	       import amoeba
+	       import EMAN2.amoeba as amoeba
 	       def afunc(var,data=None): return 1.0-var[0]*var[0]-var[1]*var[1]
 	       print amoeba.amoeba([0.25,0.25],[0.5,0.5],afunc)
 
@@ -322,7 +322,7 @@ def golden(func, args=(), brack=None, tol=1.e-4, full_output=0):
 
 	Uses analog of bisection method to decrease the bracketed interval.
 	"""
-	from utilities import bracketing
+	from EMAN2.utilities import bracketing
 	if brack is None:
 		xa,xb,xc,fa,fb,fc,funcalls = bracketing(func, args=args)
 	elif len(brack) == 2:
@@ -464,8 +464,8 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		7. binarize at ave+sigma and cross-correlate with a circle
 	        The function will return centered_image, and shifts
 	"""
-	from   utilities    import peak_search
-	from   fundamentals import fshift
+	from EMAN2.utilities import peak_search
+	from EMAN2.fundamentals import fshift
 	import types
 	if type(image_to_be_centered) == types.StringType: image_to_be_centered = get_im(image_to_be_centered)
 	if    center_method == 0 :  return  image_to_be_centered,0.,0.
@@ -477,10 +477,10 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		return fshift(image_to_be_centered, -cs[0], -cs[1]), cs[0], cs[1]
 
 	elif center_method == 7:
-		from fundamentals import ccf, cyclic_shift
-		from morphology   import binarize
-		from utilities    import model_blank
-		from EMAN2        import rsconvolution
+		from EMAN2.fundamentals import ccf, cyclic_shift
+		from EMAN2.morphology import binarize
+		from EMAN2.utilities import model_blank
+		from EMAN2 import rsconvolution
 		p = Util.infomask(image_to_be_centered,None,True)
 		cc = binarize(rsconvolution(binarize(image_to_be_centered,p[0]+p[1]),model_blank(5,5,1,1.0/(5.0*5.0))),0.5)	
 		c = ccf(cc, self_defined_reference)
@@ -506,7 +506,7 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		return cyclic_shift(image_to_be_centered, -shiftx, -shifty), shiftx, shifty
 
 	elif center_method == 5:
-		from fundamentals import rot_avg_image,ccf
+		from EMAN2.fundamentals import rot_avg_image,ccf
 		from math import sqrt
 		not_centered = True
 		tmp_image = image_to_be_centered.copy()
@@ -525,7 +525,7 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 		return centered_image, shiftx, shifty
 
 	elif center_method == 6:
-		from morphology import threshold_to_minval
+		from EMAN2.morphology import threshold_to_minval
 		nx = image_to_be_centered.get_xsize()
 		ny = image_to_be_centered.get_ysize()
 		r = nx//2-2
@@ -541,7 +541,7 @@ def center_2D(image_to_be_centered, center_method = 1, searching_range = -1, Gau
 	else :
 		nx = image_to_be_centered.get_xsize()
 		ny = image_to_be_centered.get_ysize()
-		from fundamentals import ccf	
+		from EMAN2.fundamentals import ccf	
 		if center_method == 2 :
 			reference = model_gauss(Gauss_radius_inner, nx, ny)
 		if center_method == 3 :
@@ -781,9 +781,9 @@ def even_angles(delta = 15.0, theta1=0.0, theta2=90.0, phi1=0.0, phi2=359.99, \
 		        it to generate cushion projections within an/2 of the border of unique zone
 	"""
 
-	from math      import pi, sqrt, cos, acos, tan, sin
-	from utilities import even_angles_cd
-	from string    import lower,split
+	from math import pi, sqrt, cos, acos, tan, sin
+	from EMAN2.utilities import even_angles_cd
+	from string import lower,split
 	angles = []
 	symmetryLower = symmetry.lower()
 	symmetry_string = split(symmetry)[0]
@@ -998,7 +998,7 @@ def eigen_images_get(stack, eigenstack, mask, num, avg):
 		and Get eigen images
 	"""
 	
-	from utilities import get_image
+	from EMAN2.utilities import get_image
 	
 	a = Analyzers.get('pca_large')
 	e = EMData()
@@ -1069,7 +1069,7 @@ def gauss_edge(sharp_edge_image, kernel_size = 7, gauss_standard_dev =3):
 		1. The sharp-edge image is convoluted with a gassian kernel
 		2. The convolution normalized
 	"""
-	from utilities import model_gauss
+	from EMAN2.utilities import model_gauss
 	from EMAN2 import rsconvolution
 	nz = sharp_edge_image.get_ndim()
 	if(nz == 3):   kern = model_gauss(gauss_standard_dev, kernel_size , kernel_size, kernel_size)
@@ -1227,9 +1227,9 @@ def info(image, mask=None, Comment=""):
 	return mean, sigma, imin, imax, nx, ny, nz
 
 def image_decimate(img, decimation=2, fit_to_fft=1,frequency_low=0, frequency_high=0):
-	from filter import filt_btwl
-	from fundamentals import smallprime, window2d
-	from utilities import get_image
+	from EMAN2.filter import filt_btwl
+	from EMAN2.fundamentals import smallprime, window2d
+	from EMAN2.utilities import get_image
 	"""
 		Window image to FFT-friendly size, apply Butterworth low pass filter,
 		and decimate 2D image 
@@ -1669,8 +1669,8 @@ def print_image_slice_3d(input, num=0,direction="z"):
 		
 
 def print_list_format(m, narray = 0):
-	from string 	import split
-	from math 	import sqrt
+	from string import split
+	from math import sqrt
 	import string
 	import types
 	"""
@@ -2275,7 +2275,7 @@ def estimate_3D_center_MPI(data, nima, myid, number_of_proc, main_node, mpi_comm
 	from numpy import linalg
 	from mpi import MPI_COMM_WORLD
 	from mpi import mpi_recv, mpi_send, MPI_FLOAT
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 
 	if mpi_comm == None:
 		mpi_comm = MPI_COMM_WORLD
@@ -2423,7 +2423,7 @@ def reduce_array_to_root(data, myid, main_node = 0, comm = -1):
 
 def reduce_EMData_to_root(data, myid, main_node = 0, comm = -1):
 	from numpy import shape, reshape
-	from mpi   import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD, mpi_barrier
 	
 	if comm == -1 or comm == None:  comm = MPI_COMM_WORLD
 
@@ -2456,7 +2456,7 @@ def bcast_compacted_EMData_all_to_all(list_of_em_objects, myid, comm=-1):
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
@@ -2559,7 +2559,7 @@ def bcast_compacted_EMData_all_to_all___original(list_of_em_objects, myid, comm=
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
@@ -2659,7 +2659,7 @@ def gather_compacted_EMData_to_root_with_header_info_for_each_image(number_of_al
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
@@ -2794,7 +2794,7 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 	header.
 
 	"""
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from EMAN2 import EMNumPy
 	from numpy import concatenate, shape, array, split
 	from mpi import mpi_comm_size, mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
@@ -2894,7 +2894,7 @@ def gather_compacted_EMData_to_root(number_of_all_em_objects_distributed_across_
 def bcast_EMData_to_all(tavg, myid, source_node = 0, comm = -1):
 	from EMAN2 import EMNumPy
 	from numpy import array, shape, reshape
-	from mpi   import mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
+	from mpi import mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
 
 	if comm == -1 or comm == None: comm = MPI_COMM_WORLD
 	tavg_data = EMNumPy.em2numpy(tavg)
@@ -2970,7 +2970,7 @@ def reduce_EMData_to_root(img, myid, main_node = 0, comm = -1):
 	# The latter is inconsistent with mpi_bcast() and difficult to implement efficiently
 
 	from numpy import reshape
-	from mpi   import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD
+	from mpi import mpi_reduce, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD
 	
 	if comm == -1: comm = MPI_COMM_WORLD
 	
@@ -3166,7 +3166,7 @@ def bcast_number_to_all(number_to_send, source_node = 0):
 	
 def bcast_list_to_all(list_to_send, myid, source_node = 0):
 	from mpi import mpi_bcast, MPI_COMM_WORLD, MPI_FLOAT, MPI_INT
-	import   types
+	import types
 	if(myid == source_node):
 		n = len(list_to_send)
 		# we will also assume all elements on the list are of the same type
@@ -3191,9 +3191,9 @@ def bcast_list_to_all(list_to_send, myid, source_node = 0):
 
 def recv_attr_dict(main_node, stack, data, list_params, image_start, image_end, number_of_proc, comm = -1):
 	import types
-	from  utilities import  get_arb_params, set_arb_params
-	from  mpi 	import mpi_recv
-	from  mpi 	import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
+	from EMAN2.utilities import get_arb_params, set_arb_params
+	from mpi import mpi_recv
+	from mpi import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
 
 	#   hdf version!
 	# This is done on the main node, so for images from the main node, simply write headers
@@ -3265,9 +3265,9 @@ def recv_attr_dict(main_node, stack, data, list_params, image_start, image_end, 
 
 def send_attr_dict(main_node, data, list_params, image_start, image_end, comm = -1):
 	import types
-	from utilities import get_arb_params
-	from mpi 	   import mpi_send
-	from mpi 	   import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
+	from EMAN2.utilities import get_arb_params
+	from mpi import mpi_send
+	from mpi import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
 
 	#  This function is called from a node other than the main node
 
@@ -3288,10 +3288,10 @@ def send_attr_dict(main_node, data, list_params, image_start, image_end, comm = 
 
 def recv_attr_dict_bdb(main_node, stack, data, list_params, image_start, image_end, number_of_proc, comm = -1):
 	import types
-	from  utilities import  get_arb_params, set_arb_params
-	from  mpi 	import mpi_recv
-	from  mpi 	import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import get_arb_params, set_arb_params
+	from mpi import mpi_recv
+	from mpi import MPI_FLOAT, MPI_INT, MPI_TAG_UB, MPI_COMM_WORLD
+	from EMAN2.EMAN2db import db_open_dict
 	#  bdb version!
 	# This is done on the main node, so for images from the main node, simply write headers
 
@@ -3476,8 +3476,8 @@ def write_headers(filename, data, lima):
 	    i.e., header from data[k] will be written into file number lima[k]
 	  WARNING: this function will open and close DB library!
 	"""
-	from utilities import file_type
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import file_type
+	from EMAN2.EMAN2db import db_open_dict
 
 	ftp = file_type(filename)
 	if ftp == "bdb":
@@ -3502,8 +3502,8 @@ def write_header(filename, data, lima):
 	    i.e., header from data will be written into file number lima
 	  WARNING: this function assums DB library is opened and will NOT close it!
 	"""
-	from utilities import file_type
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import file_type
+	from EMAN2.EMAN2db import db_open_dict
 
 	ftp = file_type(filename)
 	if ftp == "bdb":
@@ -3618,7 +3618,7 @@ def set_ctf(ima, p):
 	  order of parameters:
         [defocus, cs, voltage, apix, bfactor, ampcont, astigmatism amplitude, astigmatism angle]
 	"""
-	from utilities import generate_ctf
+	from EMAN2.utilities import generate_ctf
 	ctf = generate_ctf( p )
 	ima.set_attr( "ctf", ctf )
 
@@ -3626,7 +3626,7 @@ def delete_bdb(name):
 	"""
 	  Delete bdb stack
 	"""
-	from EMAN2db import db_open_dict, db_remove_dict
+	from EMAN2.EMAN2db import db_open_dict, db_remove_dict
 	a = db_open_dict(name)
 	db_remove_dict(name)
 
@@ -3666,7 +3666,7 @@ def getang(n):
 	return degrees(atan2(n[1],n[0]))%360.0, degrees(acos(n[2]))%360.0
 
 def getang3(p1,p2):
-	from utilities import getfvec
+	from EMAN2.utilities import getfvec
 	from math import acos, degrees
 	n1 = getfvec(p1[0],p1[1])
 	n2 = getfvec(p2[0],p2[1])
@@ -3704,7 +3704,7 @@ def getfvec( phi, tht ):
 	return (x,y,z)
 
 def nearest_ang( vecs, phi, tht ) :
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	vec = getvec( phi, tht )
 	return  Util.nearest_ang(vecs, vec[0],vec[1],vec[2])
 	"""
@@ -3748,7 +3748,7 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 	# In both cases mirrored should be treated the same way as straight as they carry the same structural information
 	lookup = range(len(projangles))
 	if( sym == "c1"):
-		from utilities import getvec
+		from EMAN2.utilities import getvec
 		refnormal = [None]*(len(projangles)*3)
 		for i in xrange(len(projangles)):
 			ref = getvec(projangles[i][0], projangles[i][1])
@@ -3768,7 +3768,7 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 			del lookup[k]
 
 	elif( sym[:1] == "d" ):
-		from utilities import get_symt, getvec
+		from EMAN2.utilities import get_symt, getvec
 		from EMAN2 import Vec2f, Transform
 		t = get_symt(sym)
 		phir = 360.0/int(sym[1:])
@@ -3807,7 +3807,7 @@ def nearestk_projangles(projangles, whichone = 0, howmany = 1, sym="c1"):
 			del tempan[best_j], lookup[best_j]
 
 	elif( sym[:1] == "c" ):
-		from utilities import get_symt, getvec
+		from EMAN2.utilities import get_symt, getvec
 		from EMAN2 import Vec2f, Transform
 		t = get_symt(sym)
 		phir = 360.0/int(sym[1:])
@@ -3939,7 +3939,7 @@ def assign_projangles_f(projangles, refangles, return_asg = False):
 
 
 def cone_ang( projangles, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	vec = getvec( phi, tht )
 
@@ -3954,7 +3954,7 @@ def cone_ang( projangles, phi, tht, ant ):
 	return la
 
 def cone_ang_f( projangles, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	# vec = getfvec( phi, tht )
 	vec = getfvec( phi, tht )
@@ -3970,7 +3970,7 @@ def cone_ang_f( projangles, phi, tht, ant ):
 	return la
 
 def cone_ang_f_with_index( projangles, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	# vec = getvec( phi, tht )
 	vec = getfvec( phi, tht )
@@ -3989,7 +3989,7 @@ def cone_ang_f_with_index( projangles, phi, tht, ant ):
 	return la, index
 
 def cone_ang_with_index( projangles, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	# vec = getvec( phi, tht )
 	vec = getfvec( phi, tht )
@@ -4009,7 +4009,7 @@ def cone_ang_with_index( projangles, phi, tht, ant ):
 	return la, index
 
 def cone_vectors( normvectors, phi, tht, ant ):
-	from utilities import getvec
+	from EMAN2.utilities import getvec
 	from math import cos, pi, degrees, radians
 	vec = getvec( phi, tht )
 
@@ -4023,11 +4023,11 @@ def cone_vectors( normvectors, phi, tht, ant ):
 	return la
 
 def disable_bdb_cache():
-	import EMAN2db
+	import EMAN2.EMAN2db as EMAN2db
 	EMAN2db.BDB_CACHE_DISABLE = True
 
 def enable_bdb_cache():
-	import EMAN2db
+	import EMAN2.EMAN2db as EMAN2db
 	EMAN2db.BDB_CACHE_DISABLE = False
 
 def rotation_between_anglesets(agls1, agls2):
@@ -4041,7 +4041,7 @@ def rotation_between_anglesets(agls1, agls2):
 	  Note: all angles have to be in spider convention.
 	  For details see: Appendix in Penczek, P., Marko, M., Buttle, K. and Frank, J.:  Double-tilt electron tomography.  Ultramicroscopy 60:393-410, 1995.
 	"""
-	from math  import sin, cos, pi, sqrt, atan2, acos, atan
+	from math import sin, cos, pi, sqrt, atan2, acos, atan
 	from numpy import array, linalg, matrix
 	import types
 
@@ -4550,7 +4550,7 @@ def group_proj_by_phitheta(proj_ang, symmetry = "c1", img_per_grp = 100, verbose
 
 def nearest_proj(proj_ang, img_per_grp=100, List=[]):
 	from math import exp, pi
-	from sets import Set
+	from EMAN2.sets import Set
 	from time import time
 	from random import randint
 
@@ -5054,7 +5054,7 @@ def eliminate_moons(my_volume, moon_elimination_params):
 	moon_elimination_params[1] - resolution in px/A
 	"""
 
-	from morphology import binarize
+	from EMAN2.morphology import binarize
 	histogram_threshold  =  my_volume.find_3d_threshold(moon_elimination_params[0], moon_elimination_params[1])*1.1
 	# clean11 88x88,  4.84 px/A 750 kDa
 
@@ -5069,7 +5069,7 @@ def eliminate_moons(my_volume, moon_elimination_params):
 		volume_difference.get_value_at(volume_difference.calc_min_index()) == 0:
 		return my_volume
 	else:
-		from utilities import gauss_edge
+		from EMAN2.utilities import gauss_edge
 		return gauss_edge(my_volume_binarized_with_no_moons) * my_volume
 
 		# from utilities   import model_blank
@@ -5082,7 +5082,7 @@ def combinations_of_n_taken_by_k(n, k):
 	return int(reduce(lambda x, y: x * y, (Fraction(n-i, i+1) for i in range(k)), 1))
 	
 def cmdexecute(cmd):
-	from   time import localtime, strftime
+	from time import localtime, strftime
 	import subprocess
 	outcome = subprocess.call(cmd, shell=True)
 	line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
@@ -5162,9 +5162,9 @@ def get_shrink_data_huang(Tracker, nxinit, partids, partstack, myid, main_node, 
 	# So, the lengths of partids and partstack are the same.
 	#  The read data is properly distributed among MPI threads.
 	# 10142015 --- preshift is set to True when doing 3-D sorting. 
-	from fundamentals import resample, fshift
-	from filter import filt_ctf
-	from applications import MPI_start_end
+	from EMAN2.fundamentals import resample, fshift
+	from EMAN2.filter import filt_ctf
+	from EMAN2.applications import MPI_start_end
 
 	if( myid == main_node ):
 		print "  "
@@ -5262,11 +5262,11 @@ def get_shrink_data(Tracker, nxinit, partids, partstack, bckgdata = None, myid =
 	
 	"""
 	#from fundamentals import resample
-	from utilities    import get_im, model_gauss_noise, set_params_proj, get_params_proj
-	from fundamentals import fdecimate, fshift, fft
-	from filter       import filt_ctf, filt_table
-	from applications import MPI_start_end
-	from math         import sqrt
+	from EMAN2.utilities import get_im, model_gauss_noise, set_params_proj, get_params_proj
+	from EMAN2.fundamentals import fdecimate, fshift, fft
+	from EMAN2.filter import filt_ctf, filt_table
+	from EMAN2.applications import MPI_start_end
+	from math import sqrt
 	
 
 	if( myid == main_node ):
@@ -5367,7 +5367,7 @@ def get_shrink_data(Tracker, nxinit, partids, partstack, bckgdata = None, myid =
 				st = Util.infomask(bckg, mask2D, False)
 				bckg -= st[0]
 				bckg /= st[1]
-				from morphology import cosinemask
+				from EMAN2.morphology import cosinemask
 				data[im] = cosinemask(data[im],radius = Tracker["constants"]["radius"], bckg = bckg)
 		else:
 			#  if no bckgnoise, do simple masking instead
@@ -5407,7 +5407,7 @@ def getindexdata(stack, partids, partstack, myid, nproc):
 	# So, the lengths of partids and partstack are the same.
 	#  The read data is properly distributed among MPI threads.
 	
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 
 	lpartids = read_text_file(partids)
 	ndata = len(lpartids)
@@ -5529,7 +5529,7 @@ def program_state_stack(full_current_state, frameinfo, file_name_of_saved_state=
 
 	from traceback import extract_stack
 	from mpi import mpi_comm_rank, mpi_bcast, MPI_COMM_WORLD, MPI_INT
-	from utilities import if_error_all_processes_quit_program
+	from EMAN2.utilities import if_error_all_processes_quit_program
 	import os
 
 	def get_current_stack_info():

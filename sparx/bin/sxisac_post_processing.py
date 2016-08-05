@@ -37,25 +37,25 @@ import random
 import datetime
 
 import global_def
-from   global_def import *
+from global_def import *
 from optparse import OptionParser, SUPPRESS_HELP
 import ConfigParser
 from inspect import currentframe, getframeinfo
 
 # from __future__ import print_function
 from EMAN2 import *
-from sparx import *
-from logger import Logger, BaseLogger_Files
+from EMAN2.sparx import *
+from EMAN2.logger import Logger, BaseLogger_Files
 import global_def
 
-from mpi   import  *
-from math  import  *
+from mpi import *
+from math import *
 
-from utilities import send_string_to_all
+from EMAN2.utilities import send_string_to_all
 
 def shrink_or_enlarge_or_stay_the_same(images, shrink_ratio, target_nx, target_radius, newx, nima):
-	from fundamentals import resample
-	from utilities import pad
+	from EMAN2.fundamentals import resample
+	from EMAN2.utilities import pad
 	# print "shrink_ratio, target_nx, target_radius, newx, nima", shrink_ratio, target_nx, target_radius, newx, nima
 	if(shrink_ratio < 1.0):
 		if newx > target_nx  :
@@ -140,7 +140,7 @@ def shrink_or_enlarge_or_stay_the_same(images, shrink_ratio, target_nx, target_r
 
 def main(args):
 	
-	from alignment import align2d
+	from EMAN2.alignment import align2d
 
 	progname = os.path.basename(sys.argv[0])
 	usage = ( progname + " stack_file isac_directory --radius=particle_radius")
@@ -164,7 +164,7 @@ def main(args):
 		sys.exit()
 	
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	
 	global_def.BATCH = True
@@ -292,7 +292,7 @@ def main(args):
 		ctf_app = bcast_number_to_all(ctf_app, source_node = main_node)
 		if ctf_app > 0:	ERROR("data cannot be ctf-applied", "ali2d_MPI", 1, myid)
 		phase_flip = True
-		from filter import filt_ctf
+		from EMAN2.filter import filt_ctf
 	else:
 		phase_flip = False
 
@@ -387,7 +387,7 @@ def main(args):
 		for i in range(len(new_class_average_images)):  new_class_average_images[i].write_image(size_adjusted_class_averages_file_name,i)
 		#  It has to be explicitly closed
 		if size_adjusted_class_averages_file_name[:4] == "bdb:":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			DB = db_open_dict(size_adjusted_class_averages_file_name)
 			DB.close()
 	mpi_barrier(MPI_COMM_WORLD)

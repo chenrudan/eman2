@@ -32,13 +32,13 @@
 #
 
 import	global_def
-from	global_def 	import *
-from	EMAN2 		import EMUtil, parsemodopt, EMAN2Ctf
-from    EMAN2jsondb import js_open_dict
+from global_def import *
+from EMAN2 import EMUtil, parsemodopt, EMAN2Ctf
+from EMAN2.EMAN2jsondb import js_open_dict
 
-from	utilities 	import *
-from    statistics import mono
-import  os
+from EMAN2.utilities import *
+from EMAN2.statistics import mono
+import os
 
 """
 	Traveling salesman problem solved using Simulated Annealing.
@@ -187,7 +187,7 @@ def tsp(lccc):
 
 
 def pca(cov):
-	from numpy import  linalg, argsort
+	from numpy import linalg, argsort
 	""" assume one sample per column """
 	values, vecs = linalg.eigh(cov)
 	perm = argsort(-values)  # sort in descending order
@@ -201,8 +201,8 @@ def main():
 	import random
 	import pyemtbx.options
 	import time
-	from   random   import random, seed, randint
-	from   optparse import OptionParser
+	from random import random, seed, randint
+	from optparse import OptionParser
 
 	progname = os.path.basename(sys.argv[0])
 	usage = progname + """ [options] <inputfile> <outputfile>
@@ -258,9 +258,9 @@ def main():
 		new_stack = args[1]
 
 
-		from utilities import model_circle
-		from statistics import ccc
-		from statistics import mono
+		from EMAN2.utilities import model_circle
+		from EMAN2.statistics import ccc
+		from EMAN2.statistics import mono
 		lend = EMUtil.get_image_count(stack)
 		lccc = [None]*(lend*(lend-1)/2)
 
@@ -295,12 +295,12 @@ def main():
 			print "must provide name of input and two output files!"
 			return
 
-		from utilities import get_params2D, model_circle
-		from fundamentals import rot_shift2D
-		from statistics import ccc
+		from EMAN2.utilities import get_params2D, model_circle
+		from EMAN2.fundamentals import rot_shift2D
+		from EMAN2.statistics import ccc
 		from time import time
-		from alignment import align2d, align2d_scf
-		from multi_shc import mult_transform 
+		from EMAN2.alignment import align2d, align2d_scf
+		from EMAN2.multi_shc import mult_transform 
 		
 		stack = args[0]
 		new_stack = args[1]
@@ -331,10 +331,10 @@ def main():
 			
 		initial = max(options.initial, 0)
 
-		from statistics import mono
+		from EMAN2.statistics import mono
 		lend = len(d)
 		lccc = [None]*(lend*(lend-1)/2)
-		from utilities import read_text_row
+		from EMAN2.utilities import read_text_row
 
 		if  options.pairwiseccc == None or not os.path.exists(options.pairwiseccc) :
 			st = time()
@@ -347,7 +347,7 @@ def main():
 				#print "  %4d   %10.1f"%(i,time()-st)
 
 			if(not os.path.exists(options.pairwiseccc)):
-				from utilities import write_text_row
+				from EMAN2.utilities import write_text_row
 				write_text_row([[initial,0,0,0,0]]+lccc,options.pairwiseccc)
 		elif(os.path.exists(options.pairwiseccc)):
 			lccc = read_text_row(options.pairwiseccc)
@@ -481,7 +481,7 @@ def main():
 
 		lmbd, eigvec = pca(cor)
 
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 
 		nvec=20
 		print  [lmbd[j] for j in xrange(nvec)]
@@ -567,12 +567,12 @@ def main():
 			print "must provide name of input and output file!"
 			return
 		
-		from utilities import get_params2D, model_circle
-		from fundamentals import rot_shift2D
-		from statistics import ccc
+		from EMAN2.utilities import get_params2D, model_circle
+		from EMAN2.fundamentals import rot_shift2D
+		from EMAN2.statistics import ccc
 		from time import time
-		from alignment import align2d
-		from multi_shc import mult_transform 
+		from EMAN2.alignment import align2d
+		from EMAN2.multi_shc import mult_transform 
 		
 		stack = args[0]
 		new_stack = args[1]

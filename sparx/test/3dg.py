@@ -31,8 +31,8 @@
 #
 #
 
-from EMAN2  import *
-from sparx  import *
+from EMAN2 import *
+from EMAN2.sparx import *
 
 def cut_pie(a, alpha = 45.0):
 	f = fft(a)

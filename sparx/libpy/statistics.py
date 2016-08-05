@@ -50,13 +50,13 @@ def avgvar(data, mode='a', interp='quadratic', i1=0, i2=0, use_odd=True, use_eve
 	var: the variance of the image series in real space
 
 	'''
-	from utilities    import model_blank
-	from alignment    import kbt
+	from EMAN2.utilities import model_blank
+	from EMAN2.alignment import kbt
 
 	inmem = True
 	if type(data) == type(""):
 		inmem = False
-		from utilities    import get_im	
+		from EMAN2.utilities import get_im	
 
 	img2D = True
 	if inmem:
@@ -71,11 +71,11 @@ def avgvar(data, mode='a', interp='quadratic', i1=0, i2=0, use_odd=True, use_eve
 
 	if mode == 'a':
 		if img2D:
-			from utilities import get_params2D
-			from fundamentals import rot_shift2D
+			from EMAN2.utilities import get_params2D
+			from EMAN2.fundamentals import rot_shift2D
 		else:
-			from utilities import get_params3D
-			from fundamentals import rot_shift3D
+			from EMAN2.utilities import get_params3D
+			from EMAN2.fundamentals import rot_shift3D
 
 	if inmem:
 		data_nima = len(data)
@@ -132,16 +132,16 @@ def avgvar_ctf(data, mode='a', interp='quadratic', i1=0, i2=0, use_odd=True, use
 	
 	'''
 	
-	from utilities    import model_blank, pad
-	from alignment    import kbt
-	from fundamentals import fft, fftip, window2d
-	from filter       import filt_ctf
-	from morphology   import ctf_img
+	from EMAN2.utilities import model_blank, pad
+	from EMAN2.alignment import kbt
+	from EMAN2.fundamentals import fft, fftip, window2d
+	from EMAN2.filter import filt_ctf
+	from EMAN2.morphology import ctf_img
 
 	inmem = True
 	if type(data) == type(""):
 		inmem = False
-		from utilities    import get_im	
+		from EMAN2.utilities import get_im	
 
 	if inmem:
 		img = data[0]
@@ -159,8 +159,8 @@ def avgvar_ctf(data, mode='a', interp='quadratic', i1=0, i2=0, use_odd=True, use
 		sys.exit()
 
 	if mode == 'a':
-		from utilities import get_params2D
-		from fundamentals import rot_shift2D
+		from EMAN2.utilities import get_params2D
+		from EMAN2.fundamentals import rot_shift2D
 
 	if inmem:
 		data_nima = len(data)
@@ -239,8 +239,8 @@ def add_oe_series(data, ali_params="xform.align2d"):
 	"""
 		Calculate odd and even sum of an image series using current alignment parameters
 	"""
-	from utilities    import model_blank, get_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D
 	n = len(data)
 	nx = data[0].get_xsize()
 	ny = data[0].get_ysize()
@@ -259,8 +259,8 @@ def add_ave_varf(data, mask = None, mode = "a", CTF = False, ctf_2_sum = None, a
 		mode - "a": use current alignment parameters
 		CTF  - if True, use CTF for calculations of both average and variance.
 	"""
-	from utilities    import    model_blank, get_params2D, info
-	from fundamentals import    rot_shift2D, fft, fftip
+	from EMAN2.utilities import model_blank, get_params2D, info
+	from EMAN2.fundamentals import rot_shift2D, fft, fftip
 
 	n = len(data)
 	nx = data[0].get_xsize()
@@ -270,8 +270,8 @@ def add_ave_varf(data, mask = None, mode = "a", CTF = False, ctf_2_sum = None, a
 	var  = EMData(nx, ny, 1, False)
 	
 	if CTF:
-		from morphology   import ctf_img
-		from filter       import filt_ctf, filt_table
+		from EMAN2.morphology import ctf_img
+		from EMAN2.filter import filt_ctf, filt_table
 		if data[0].get_attr_default('ctf_applied', 1) == 1:
 			ERROR("data cannot be ctf-applied", "add_ave_varf", 1)
 		if ctf_2_sum:  get_ctf2 = False
@@ -333,10 +333,10 @@ def add_ave_varf_MPI(myid, data, mask = None, mode = "a", CTF = False, ctf_2_sum
 		mode - "a": use current alignment parameters
 		CTF  - if True, use CTF for calculations of the sum.
 	"""
-	from utilities    import    model_blank, get_params2D
-	from fundamentals import    rot_shift2D, fft, fftip
-	from utilities    import    reduce_EMData_to_root
-	from mpi          import    mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D, fft, fftip
+	from EMAN2.utilities import reduce_EMData_to_root
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	
 	if comm == -1:
 		from mpi import MPI_COMM_WORLD
@@ -350,8 +350,8 @@ def add_ave_varf_MPI(myid, data, mask = None, mode = "a", CTF = False, ctf_2_sum
 	var  = EMData(nx, ny, 1, False)
 	
 	if CTF:
-		from filter       import filt_ctf
-		from morphology   import ctf_img
+		from EMAN2.filter import filt_ctf
+		from EMAN2.morphology import ctf_img
 		if data[0].get_attr_default('ctf_applied', 1) == 1:
 	 		ERROR("data cannot be ctf-applied", "add_ave_varf_MPI", 1)
 		if ctf_2_sum:  get_ctf2 = False
@@ -421,8 +421,8 @@ def sum_oe(data, mode = "a", CTF = False, ctf_2_sum = None):
 		In addition, calculate odd and even sums, these are not divided by the ctf^2
 		If ctf_2_sum not provided, sum of ctf^2 will be calculated and returned
 	"""
-	from utilities    import    model_blank, get_params2D
-	from fundamentals import    rot_shift2D, fft
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D, fft
 
 	n      = len(data)
 	nx     = data[0].get_xsize()
@@ -431,8 +431,8 @@ def sum_oe(data, mode = "a", CTF = False, ctf_2_sum = None):
 	ave2   = model_blank(nx, ny)
 
 	if CTF:
-		from morphology   import ctf_img
-		from filter       import filt_ctf
+		from EMAN2.morphology import ctf_img
+		from EMAN2.filter import filt_ctf
 		if data[0].get_attr_default('ctf_applied', 1) == 1:  ERROR("data cannot be ctf-applied", "sum_oe", 1)
 		if ctf_2_sum:  get_ctf2 = False
 		else:          get_ctf2 = True
@@ -469,7 +469,7 @@ def ave_var(data, mode = "a", listID=None):
 		with optional application of orientation parameters
 		data can be either in-core stack or a disk file
 	"""
-	from utilities import model_blank, get_im
+	from EMAN2.utilities import model_blank, get_im
 	if  type(data) == type(""): n = EMUtil.get_image_count(data)
 	else:                       n = len(data)
 	if listID == None:
@@ -481,12 +481,12 @@ def ave_var(data, mode = "a", listID=None):
 	if(mode == "a"):
 		if(nz > 1):
 			ali_params = "xform.align3d"
-			from fundamentals import rot_shift3D
-			from utilities import get_params3D
+			from EMAN2.fundamentals import rot_shift3D
+			from EMAN2.utilities import get_params3D
 		else:
 			ali_params = "xform.align2d"
-			from fundamentals import rot_shift2D
-			from utilities import get_params2D
+			from EMAN2.fundamentals import rot_shift2D
+			from EMAN2.utilities import get_params2D
 
 	ave = model_blank(nx,ny,nz)
 	var = model_blank(nx,ny,nz)
@@ -510,7 +510,7 @@ def add_oe(data):
 	"""
 		Calculate odd and even sum of an image series
 	"""
-	from utilities import model_blank
+	from EMAN2.utilities import model_blank
 	n = len(data)
 	nx = data[0].get_xsize()
 	ny = data[0].get_ysize()
@@ -527,8 +527,8 @@ def ave_series(data, pave = True):
 		Calculate average of a image series using current alignment parameters
 		data - real space image series
 	"""
-	from utilities    import model_blank, get_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D
 	n = len(data)
 	nx = data[0].get_xsize()
 	ny = data[0].get_ysize()
@@ -545,9 +545,9 @@ def ave_series_ctf(data, ctf2):
 		Calculate average of an image series using current alignment parameters and ctf
 		data - real space image series premultiplied by the CTF
 	"""
-	from utilities    import model_blank, get_params2D
-	from filter       import filt_table
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.filter import filt_table
+	from EMAN2.fundamentals import rot_shift2D
 	n = len(data)
 	nx = data[0].get_xsize()
 	ny = data[0].get_ysize()
@@ -564,8 +564,8 @@ def ave_var_series(data, kb):
 	"""
 		Calculate average and variance of an image series using current alignment parameters
 	"""
-	from fundamentals import rotshift2dg
-	from utilities    import model_blank
+	from EMAN2.fundamentals import rotshift2dg
+	from EMAN2.utilities import model_blank
 	n = len(data)
 	nx = data[0].get_xsize()
 	ny = data[0].get_ysize()
@@ -589,8 +589,8 @@ def ave_var_series_g(data, kb):
 		Calculate average and variance of a image series using current alignment parameters,
 		data contains images prepared for gridding
 	"""
-	from fundamentals import rtshgkb
-	from utilities    import model_blank
+	from EMAN2.fundamentals import rtshgkb
+	from EMAN2.utilities import model_blank
 	n = len(data)
 	ny = data[0].get_ysize()/2
 	nx = ny
@@ -614,8 +614,8 @@ def ave_oe_series_g(data, kb):
 		Calculate odd and even averages of a image series using current alignment parameters,
 		      data contains images prepared for gridding
 	"""
-	from fundamentals import rtshgkb
-	from utilities    import model_blank
+	from EMAN2.fundamentals import rtshgkb
+	from EMAN2.utilities import model_blank
 	n  = len(data)
 	ny = data[0].get_ysize()/2
 	nx = ny
@@ -652,8 +652,8 @@ def ave_oe_series(stack):
 	"""
 		Calculate odd and even averages of an image stack using current alignment parameters
 	"""
-	from utilities import model_blank, get_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D
 	n = EMUtil.get_image_count(stack)
 	ima = EMData()
 	ima.read_image(stack, 0, True)
@@ -675,8 +675,8 @@ def ave_oe_series_textfile(stack, textfile):
 	"""
 		Calculate odd and even averages of an image stack using alignment parameters in a text file
 	"""
-	from utilities import model_blank, read_text_file
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import model_blank, read_text_file
+	from EMAN2.fundamentals import rot_shift2D
 	
 	n = EMUtil.get_image_count(stack)
 	ima = EMData()
@@ -703,8 +703,8 @@ def ave_oe_series_indexed(stack, idx_ref):
 	"""
 		Calculate odd and even averages of an image series using current alignment parameters,
 	"""
-	from utilities import model_blank
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import model_blank
+	from EMAN2.fundamentals import rot_shift2D
 	
 	ntot = 0
 	n = EMUtil.get_image_count(stack)
@@ -730,8 +730,8 @@ def ave_var_series_one(data, skip, kb):
 	"""
 		Calculate average and variance of an image series using current alignment parameters
 	"""
-	from fundamentals import rotshift2dg
-	from utilities import model_blank
+	from EMAN2.fundamentals import rotshift2dg
+	from EMAN2.utilities import model_blank
 	n = len(data)
 	nx = data[0].get_xsize()
 	ny = data[0].get_ysize()
@@ -760,7 +760,7 @@ def add_series(stack, i1=0 ,i2=0):
 	  average and variance are output objects
 	  
 	"""
-	from utilities import model_blank, get_im
+	from EMAN2.utilities import model_blank, get_im
 
 	if(i2==0):
 		if  type(stack) == type(""): i2 = EMUtil.get_image_count(stack)-1
@@ -795,7 +795,7 @@ def add_series_class(stack, i1 = 0, i2 = 0):
 	  average and variance are output objects
 	  
 	"""
-	from utilities import model_blank, get_im
+	from EMAN2.utilities import model_blank, get_im
 	if(i2==0): i2 = EMUtil.get_image_count(stack)-1
 	e = get_im(stack, i1)
 	kc = e.get_attr('nclass')
@@ -847,7 +847,7 @@ def add_series_class_mem(data, assign, kc):
 	  average and variance are output objects
 	  
 	"""
-	from utilities import model_blank
+	from EMAN2.utilities import model_blank
 
 	nx = data[0].get_xsize()
 	ny = data[0].get_ysize()
@@ -896,9 +896,9 @@ def add_series_class_ctf(images, ctf1, ctf2, snr, assign, kc):
 	  average and variance are output objects
 	  
 	"""
-	from fundamentals import  fftip, fft
-	from filter       import  filt_table
-	from utilities    import  model_blank #, info
+	from EMAN2.fundamentals import fftip, fft
+	from EMAN2.filter import filt_table
+	from EMAN2.utilities import model_blank #, info
 	nx = images[0].get_xsize()
 	ny = images[0].get_ysize()
 	nz = images[0].get_zsize()
@@ -973,8 +973,8 @@ def aves(stack, mode="a", i1 = 0, i2 = 0):
 		1. mode="a" for alignment
 		2. mode=else for normal summation
 	"""
-	from utilities    import get_im, model_blank, get_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import get_im, model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D
 
 	if i2 == 0:
 		if type(stack) == type(""):  i2 = EMUtil.get_image_count(stack)-1
@@ -1013,8 +1013,8 @@ def aveq(stack, mode="a", i1 = 0, i2 = 0):
 		1. mode="a" for alignment
 		2. mode=else for normal summation
 	"""
-	from utilities    import get_im, model_blank, get_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import get_im, model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D
 
 	if i2 == 0:
 		if type(stack) == type(""):  i2 = EMUtil.get_image_count(stack)-1
@@ -1044,9 +1044,9 @@ def aves_w(stack, mode="a"):
 		mode="a" will apply alignment parameters to the input image.
 	"""
 	
-	from filter       import filt_table
-	from utilities    import model_blank, get_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.filter import filt_table
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D
 	
 	
 	e    = EMData()
@@ -1101,11 +1101,11 @@ def aves_wiener(input_stack, mode="a", SNR=1.0):
 		mode="a" will apply alignment parameters to the input image.
 	"""
 	
-	from  fundamentals import fft, rot_shift2D
-	from  morphology   import ctf_img
-	from  filter 	   import filt_ctf
-	from  utilities    import pad, get_params2D, get_im
-	from  math 	   import sqrt
+	from EMAN2.fundamentals import fft, rot_shift2D
+	from EMAN2.morphology import ctf_img
+	from EMAN2.filter import filt_ctf
+	from EMAN2.utilities import pad, get_params2D, get_im
+	from math import sqrt
 	
 	if type(input_stack) == type(""):	n = EMUtil.get_image_count(input_stack)
 	else:  n = len(input_stack)
@@ -1158,11 +1158,11 @@ def aves_adw(input_stack, mode="a", SNR=1.0, Ng = -1):
 		mode="a" will apply alignment parameters to the input image.
 	"""
 	
-	from  fundamentals import fft, rot_shift2D
-	from  morphology   import ctf_img, ctf_1d, ctf_2
-	from  filter 	   import filt_ctf, filt_table
-	from  utilities    import pad, get_params2D, get_im
-	from  math 	   import sqrt
+	from EMAN2.fundamentals import fft, rot_shift2D
+	from EMAN2.morphology import ctf_img, ctf_1d, ctf_2
+	from EMAN2.filter import filt_ctf, filt_table
+	from EMAN2.utilities import pad, get_params2D, get_im
+	from math import sqrt
 	
 	if type(input_stack) == type(""):	n = EMUtil.get_image_count(input_stack)
 	else:  n = len(input_stack)
@@ -1223,10 +1223,10 @@ def ssnr2d(data, mask = None, mode=""):
 	Calculate ssnr and variance in Fourier space for 2D or 3D images
 	If mode = "a" apply alignment parameters
 	'''
-	from morphology   import threshold
-	from utilities    import get_params2D
-	from fundamentals import fft, rot_shift2D
-	import  types
+	from EMAN2.morphology import threshold
+	from EMAN2.utilities import get_params2D
+	from EMAN2.fundamentals import fft, rot_shift2D
+	import types
 	if (type(data) is types.StringType):
 		n = EMUtil.get_image_count(data)
 		ima = EMData()
@@ -1269,7 +1269,7 @@ def ssnr2d(data, mask = None, mode=""):
 	sumsq = Util.pack_complex_to_real(sumsq)
 	var = (var - sumsq/n)/(n-1)
 	ssnr   = sumsq/var/n - 1.0
-	from fundamentals import rot_avg_table
+	from EMAN2.fundamentals import rot_avg_table
 	rvar = rot_avg_table(var)
 	rsumsq = rot_avg_table(sumsq)
 	rssnr = []
@@ -1285,11 +1285,11 @@ def ssnr2d_ctf(data, mask = None, mode="", dopa=True):
 	Calculate ssnr and variance in Fourier space for 2D images including CTF information
 	If mode = "a" apply alignment parameters
 	'''
-	from fundamentals import fft, rot_shift2D, rot_avg_table, fftip
-	from morphology   import ctf_img, threshold
-	from filter       import filt_ctf
-	from utilities    import get_params2D, pad
-	import  types
+	from EMAN2.fundamentals import fft, rot_shift2D, rot_avg_table, fftip
+	from EMAN2.morphology import ctf_img, threshold
+	from EMAN2.filter import filt_ctf
+	from EMAN2.utilities import get_params2D, pad
+	import types
 	
 	if type(data) is types.StringType:
 		n = EMUtil.get_image_count(data)
@@ -1378,8 +1378,8 @@ def ssnr2d_ctf(data, mask = None, mode="", dopa=True):
 	nn = nx2//2
 	nm = ny2//2
 
-	from utilities import info
-	from fundamentals import resample
+	from EMAN2.utilities import info
+	from EMAN2.fundamentals import resample
 	sumsq = Util.pack_complex_to_real(sumsq)
 	sumsq[nn,nm] = sumsq[nn+1,nm]
 	#if dopa:  sumsq = resample(sumsq,0.5)
@@ -1416,11 +1416,11 @@ def ssnr2d_ctf_OLD(data, mask = None, mode=""):
 	Calculate ssnr and variance in Fourier space for 2D images including CTF information
 	If mode = "a" apply alignment parameters
 	'''
-	from fundamentals import fft, fftip, rot_shift2D, rot_avg_table
-	from morphology   import ctf_img, threshold
-	from filter       import filt_ctf
-	from utilities    import get_params2D
-	import  types
+	from EMAN2.fundamentals import fft, fftip, rot_shift2D, rot_avg_table
+	from EMAN2.morphology import ctf_img, threshold
+	from EMAN2.filter import filt_ctf
+	from EMAN2.utilities import get_params2D
+	import types
 	
 	if type(data) is types.StringType:
 		n = EMUtil.get_image_count(data)
@@ -1483,9 +1483,9 @@ def varf(data, mask = None, mode="a"):
 	Calculate variance in Fourier space for 2D or 3D images, (no CTF correction)
 	If mode = "a" apply alignment parameters
 	'''
-	from fundamentals import fftip, rot_shift2D
-	from utilities    import get_params2D
-	import  types
+	from EMAN2.fundamentals import fftip, rot_shift2D
+	from EMAN2.utilities import get_params2D
+	import types
 	if (type(data) is types.StringType):
 		n = EMUtil.get_image_count(data)
 		ima = EMData()
@@ -1521,7 +1521,7 @@ def varf(data, mask = None, mode="a"):
 	Util.mul_scalar(var, 1.0/float(n-1))
 	st = Util.infomask(var, None, True)
 	if(st[2]<0.0):  ERROR("Negative variance!","varf",1)
-	from fundamentals import rot_avg_table
+	from EMAN2.fundamentals import rot_avg_table
 
 	return var, rot_avg_table(Util.pack_complex_to_real(var))
 
@@ -1531,11 +1531,11 @@ def varfctf(data, mask = None, mode="a", dopad = True):
 	If mode = "a" apply alignment parameters
 	This command is for ML average, i.e., A = sum_k (CTF_k F_k) / sum_k ( CTF_k^2 )
 	'''
-	from fundamentals import fftip, fft, rot_shift2D, window2d, cyclic_shift
-	from morphology   import ctf_img
-	from filter       import filt_ctf
-	from utilities    import get_arb_params, get_params2D
-	import  types
+	from EMAN2.fundamentals import fftip, fft, rot_shift2D, window2d, cyclic_shift
+	from EMAN2.morphology import ctf_img
+	from EMAN2.filter import filt_ctf
+	from EMAN2.utilities import get_arb_params, get_params2D
+	import types
 
 	if (type(data) is types.StringType):
 		n = EMUtil.get_image_count(data)
@@ -1558,7 +1558,7 @@ def varfctf(data, mask = None, mode="a", dopad = True):
 		ny2 = 2*ny
 		if( nz>1 ): nz2 = 2*nz
 		else:       nz2 = nz
-		from utilities import pad
+		from EMAN2.utilities import pad
 	else:
 		nx2 = nx
 		ny2 = ny
@@ -1593,7 +1593,7 @@ def varfctf(data, mask = None, mode="a", dopad = True):
 	if dopad:  #  CHECK THIS< CAN IT BE DONE BETTER??
 		var = fft( cyclic_shift(window2d(cyclic_shift(fft(var), nx, ny, nz), nx, ny), -nx//2, -ny//2, -nz//2) )
 
-	from fundamentals import rot_avg_table
+	from EMAN2.fundamentals import rot_avg_table
 
 	return var, rot_avg_table(Util.pack_complex_to_real(var))
 
@@ -1604,12 +1604,12 @@ def varf2d(data, ave, mask = None, mode="a"):
 	If mode = "a" apply alignment parameters
 	This command is for Wiener average, i.e., A = sum_k (CTF_k SNR_k F_k) / [sum_k ( CTF_k^2 SNR_k) + 1]
 	'''
-	from fundamentals import fft, rot_shift2D
-	from morphology   import ctf_img
-	from filter       import filt_ctf
-	from utilities    import get_arb_params, get_params2D, get_im
-	from fundamentals import fft
-	import  types
+	from EMAN2.fundamentals import fft, rot_shift2D
+	from EMAN2.morphology import ctf_img
+	from EMAN2.filter import filt_ctf
+	from EMAN2.utilities import get_arb_params, get_params2D, get_im
+	from EMAN2.fundamentals import fft
+	import types
 
 	if (type(data) is types.StringType):
 		n = EMUtil.get_image_count(data)
@@ -1643,7 +1643,7 @@ def varf2d(data, ave, mask = None, mode="a"):
 	st = Util.infomask(var, None, True)
 	if(st[2]<0.0):  ERROR("Negative variance!","varf2d",1)
 
-	from fundamentals import rot_avg_table
+	from EMAN2.fundamentals import rot_avg_table
 
 	return var, rot_avg_table(Util.pack_complex_to_real(var))
 
@@ -1654,10 +1654,10 @@ def varf2d_MPI(myid, data, ave, mask = None, mode = "a", CTF = False, main_node 
 	If mode = "a" apply alignment parameters
 	This command is for Wiener average, i.e., A = sum_k (CTF_k SNR_k F_k) / [sum_k ( CTF_k^2 SNR_k) + 1]
 	"""
-	from utilities    import    model_blank, get_params2D
-	from fundamentals import    rot_shift2D, fft, fftip
-	from utilities    import    reduce_EMData_to_root
-	from mpi          import    mpi_reduce, MPI_INT, MPI_SUM
+	from EMAN2.utilities import model_blank, get_params2D
+	from EMAN2.fundamentals import rot_shift2D, fft, fftip
+	from EMAN2.utilities import reduce_EMData_to_root
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	
 	if comm == -1:
 		from mpi import MPI_COMM_WORLD
@@ -1669,8 +1669,8 @@ def varf2d_MPI(myid, data, ave, mask = None, mode = "a", CTF = False, main_node 
 	var  = EMData(nx, ny, 1, False)
 	
 	if CTF:
-		from filter       import filt_ctf
-		from morphology   import ctf_img
+		from EMAN2.filter import filt_ctf
+		from EMAN2.morphology import ctf_img
 		if data[0].get_attr_default('ctf_applied', 1) == 1:
 	 		ERROR("data cannot be ctf-applied", "add_ave_varf_MPI", 1)
 		defocus = -1.0
@@ -1705,7 +1705,7 @@ def varf2d_MPI(myid, data, ave, mask = None, mode = "a", CTF = False, main_node 
 		if var.get_value_at(0, 0) < 0.0:	var.set_value_at(0, 0, 0.0)		
 		st = Util.infomask(var, None, True)
 		if st[2] < 0.0:  ERROR("Negative variance!", "varf2_MPI", 1)
-		from fundamentals import rot_avg_table
+		from EMAN2.fundamentals import rot_avg_table
 		return var, rot_avg_table(Util.pack_complex_to_real(var))
 	else:
 		return  EMData(), [0]  # return minimum what has to be returned, but no meaning.
@@ -1719,9 +1719,9 @@ def varf3d(prjlist,ssnr_text_file = None, mask2D = None, reference_structure = N
 	  from the reconstruction program, it was computed using different snr.  I tested it and in practice there is no difference,
 	  as this only changes the background variance due to reconstruction algorithm, which is much lower anyway.  PAP.
 	"""
-	from reconstruction import   recons3d_nn_SSNR, recons3d_4nn, recons3d_4nn_ctf
-	from utilities      import   model_blank
-	from projection     import   prep_vol, prgs
+	from reconstruction import recons3d_nn_SSNR, recons3d_4nn, recons3d_4nn_ctf
+	from EMAN2.utilities import model_blank
+	from EMAN2.projection import prep_vol, prgs
 
 	[ssnr1, vol_ssnr1] = recons3d_nn_SSNR(prjlist, mask2D, rw, npad, sign, sym, CTF)
 
@@ -1737,7 +1737,7 @@ def varf3d(prjlist,ssnr_text_file = None, mask2D = None, reference_structure = N
 
 	volft,kb = prep_vol(reference_structure)
 	del reference_structure
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	if CTF: from filter import filt_ctf
 	re_prjlist = []
 	for prj in prjlist:
@@ -1798,9 +1798,9 @@ def varf3d_MPI(prjlist, ssnr_text_file = None, mask2D = None, reference_structur
 	  from the reconstruction program, it was computed using different snr.  I tested it and in practice there is no difference,
 	  as this only changes the background variance due to reconstruction algorithm, which is much lower anyway.  PAP.
 	"""
-	from reconstruction import   recons3d_nn_SSNR_MPI, recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
-	from utilities      import   bcast_EMData_to_all, model_blank
-	from projection     import   prep_vol, prgs
+	from reconstruction import recons3d_nn_SSNR_MPI, recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
+	from EMAN2.utilities import bcast_EMData_to_all, model_blank
+	from EMAN2.projection import prep_vol, prgs
 	from mpi import MPI_COMM_WORLD
 	
 	if mpi_comm == None:
@@ -1831,7 +1831,7 @@ def varf3d_MPI(prjlist, ssnr_text_file = None, mask2D = None, reference_structur
 	#vol *= model_circle(radius, nx, nx, nx)
 	volft,kb = prep_vol(reference_structure)
 	del reference_structure
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	if CTF: from filter import filt_ctf
 	re_prjlist = []
 	for prj in prjlist:
@@ -1932,9 +1932,9 @@ def fsc_mask(img1, img2, mask = None, w = 1.0, filename=None):
 		If no mask is provided, using circular mask with R=nx//2
 
 	"""
-	from statistics import fsc
-	from utilities import model_circle
-	from morphology import binarize, erosion
+	from EMAN2.statistics import fsc
+	from EMAN2.utilities import model_circle
+	from EMAN2.morphology import binarize, erosion
 	nx = img1.get_xsize()
 	ny = img1.get_ysize()
 	nz = img1.get_zsize()
@@ -1946,14 +1946,14 @@ def fsc_mask(img1, img2, mask = None, w = 1.0, filename=None):
 
 
 def locres(vi, ui, m, nk, cutoff, step, myid, main_node, number_of_proc):
-	from mpi 	  	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv, mpi_send, mpi_recv
-	from mpi 	  	  import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_TAG_UB
-	from fundamentals import fft
-	from utilities import model_blank, bcast_EMData_to_all, recv_EMData, send_EMData, bcast_number_to_all, info
-	from filter import filt_tophatb
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv, mpi_send, mpi_recv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_TAG_UB
+	from EMAN2.fundamentals import fft
+	from EMAN2.utilities import model_blank, bcast_EMData_to_all, recv_EMData, send_EMData, bcast_number_to_all, info
+	from EMAN2.filter import filt_tophatb
 	from EMAN2 import rsconvolution
-	from morphology import square_root
+	from EMAN2.morphology import square_root
 	
 
 	nx = m.get_xsize()
@@ -2082,7 +2082,7 @@ def get_refstack(imgstack,params,nref,refstack,cs,mask,center,Iter):
 	"""
 		Calculate multiple references from imgstack using aligment parameter table
 	"""
-	from filter import fshift
+	from EMAN2.filter import fshift
 			 	
  	refimg=EMData()
 	refimgo=EMData()
@@ -2131,7 +2131,7 @@ def get_1dpw_table_stack(stack):
 		Output
 			a list containing 1D rotationally averaged power spectrum
 	"""
-	from utilities import get_im
+	from EMAN2.utilities import get_im
 	from EMAN2 import periodogram
 	if  type(stack) == type(""): nima = EMUtil.get_image_count(stack)
 	else:                       nima = len(stack)
@@ -2163,7 +2163,7 @@ def histogram(image, mask = None, nbins = 0, hmin = 0.0, hmax = 0.0):
 
 def im_diff(im1, im2, mask = None):
 	import types
-	from utilities import model_circle, get_im
+	from EMAN2.utilities import model_circle, get_im
 	if type(im1) == types.StringType : im1 = get_im(im1)
 	if type(im2) == types.StringType : im2 = get_im(im2)
 	nx = im1.get_xsize()
@@ -2211,10 +2211,10 @@ def k_means_init_asg_rnd(N, K):
 
 # init cluster assignment by D2 weighting
 def k_means_init_asg_d2w(im, N, K):
-	from random    import randrange, gauss
-	from numpy     import ones
+	from random import randrange, gauss
+	from numpy import ones
 	#from utilities import print_msg
-	from sys       import exit
+	from sys import exit
 	
 	C = [im[randrange(N)]]
 	#print_msg('\n')
@@ -2291,7 +2291,7 @@ def k_means_locasg2glbasg(ASG, LUT, N):
 
 # k-means, prepare to open images later
 def k_means_init_open_im(stack, maskname):
-	from utilities import get_image, get_im, model_blank, file_type
+	from EMAN2.utilities import get_image, get_im, model_blank, file_type
 
 	ext = file_type(stack)
 	if ext == 'txt': TXT = True
@@ -2357,13 +2357,13 @@ def k_means_init_open_im(stack, maskname):
 # k-means open and prepare images
 def k_means_open_im(stack, mask, CTF, lim, flagnorm = False):
 	from utilities     import get_params2D, get_image, get_params3D, file_type, model_blank, print_msg
-	from fundamentals  import rot_shift2D, rot_shift3D
-	from sys           import exit
+	from EMAN2.fundamentals import rot_shift2D, rot_shift3D
+	from sys import exit
 	if CTF:
-		from morphology		import ctf_2, ctf_1d
-		from filter		import filt_ctf, filt_table
-		from fundamentals 	import fftip
-		from utilities          import get_arb_params
+		from EMAN2.morphology import ctf_2, ctf_1d
+		from EMAN2.filter import filt_ctf, filt_table
+		from EMAN2.fundamentals import fftip
+		from EMAN2.utilities import get_arb_params
 
 	ext = file_type(stack)
 	if ext == 'txt': TXT = True
@@ -2565,8 +2565,8 @@ def k_means_export(Cls, crit, assign, out_seedname, part = -1, TXT = False):
 
 # K-means compute criterion in order to validate the number of groups
 def k_means_criterion(Cls, crit_name=''):
-	from utilities		import model_blank
-	from fundamentals	import fftip
+	from EMAN2.utilities import model_blank
+	from EMAN2.fundamentals import fftip
 	
 	if crit_name == 'all':	crit_name = 'CHD'
 	
@@ -2653,7 +2653,7 @@ def k_means_criterion(Cls, crit_name=''):
 # very well for k-means, error of selection, insufficiently smooth, ... JB 2009-01-16 12:30:43
 def select_kmeans(dJe, T):
 	from random import random
-	from math   import exp
+	from math import exp
 
 	K    = len(dJe)
 	p    = [[0.0, k] for k in xrange(K)]
@@ -2677,15 +2677,15 @@ def select_kmeans(dJe, T):
 
 # K-means with classical method
 def k_means_cla(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEBUG=False, rnd_method = 'rnd'):
-	from utilities 		import model_blank, get_im, running_time
-	from random    		import seed, randint
+	from EMAN2.utilities import model_blank, get_im, running_time
+	from random import seed, randint
 	from utilities 		import print_msg
-	from copy		import deepcopy
+	from copy import deepcopy
 	import sys
 	import time
 	if CTF[0]:
-		from filter	        import filt_ctf, filt_table
-		from fundamentals 	import fftip
+		from EMAN2.filter import filt_ctf, filt_table
+		from EMAN2.fundamentals import fftip
 
 		ctf  = deepcopy(CTF[1])
 		ctf2 = deepcopy(CTF[2])
@@ -2699,7 +2699,7 @@ def k_means_cla(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEBUG=F
 
 	if SA:
 		# for simulated annealing
-		from math   import exp
+		from math import exp
 		from random import random
 
 	if mask != None:
@@ -3028,16 +3028,16 @@ def k_means_cla(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEBUG=F
 
 # K-means with SSE method
 def k_means_SSE(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEBUG=False, rnd_method = 'rnd'):
-	from utilities    import model_blank, get_im, running_time
+	from EMAN2.utilities import model_blank, get_im, running_time
 	from utilities    import print_begin_msg, print_end_msg, print_msg
-	from random       import seed, randint, shuffle
-	from copy         import deepcopy
+	from random import seed, randint, shuffle
+	from copy import deepcopy
 	import sys
 	import time
 	
 	if CTF[0]:
-		from filter		import filt_ctf, filt_table
-		from fundamentals	import fftip
+		from EMAN2.filter import filt_ctf, filt_table
+		from EMAN2.fundamentals import fftip
 
 		ctf  = deepcopy(CTF[1])
 		ctf2 = deepcopy(CTF[2])
@@ -3051,7 +3051,7 @@ def k_means_SSE(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEBUG=F
 
 	if SA:
 		# for simulated annealing
-		from math   import exp
+		from math import exp
 		from random import random
 
 	if mask != None:
@@ -3462,14 +3462,14 @@ def k_means_SSE(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEBUG=F
 def k_means_SSE_combine(Cls, assign, Je, N, K, ncpu, myid, main_node):
 	# Common
 	from utilities   import print_begin_msg, print_end_msg, print_msg, file_type, running_time
-	from statistics  import k_means_locasg2glbasg
-	from time        import time
+	from EMAN2.statistics import k_means_locasg2glbasg
+	from time import time
 	import sys, os
 	
-	from mpi        import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier
-	from mpi        import MPI_COMM_WORLD, MPI_INT, mpi_bcast
-	from mpi	import MPI_FLOAT, MPI_INT, mpi_recv, mpi_send, MPI_TAG_UB
-	from utilities  import bcast_number_to_all, recv_EMData, send_EMData
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier
+	from mpi import MPI_COMM_WORLD, MPI_INT, mpi_bcast
+	from mpi import MPI_FLOAT, MPI_INT, mpi_recv, mpi_send, MPI_TAG_UB
+	from EMAN2.utilities import bcast_number_to_all, recv_EMData, send_EMData
 
 	#print "my id ==", myid, " assign [10:20] ", assign[10:20], " Je===", Je, "Cls==",Cls[ 'n' ], " Ji==", Cls['Ji']
 
@@ -3572,14 +3572,14 @@ def k_means_SSE_combine(Cls, assign, Je, N, K, ncpu, myid, main_node):
 def k_means_SSE_collect(Cls, assign, Je, N, K, ncpu, myid, main_node):
 	# Common
 	from utilities   import print_begin_msg, print_end_msg, print_msg, file_type, running_time
-	from statistics  import k_means_locasg2glbasg
-	from time        import time
+	from EMAN2.statistics import k_means_locasg2glbasg
+	from time import time
 	import sys, os
 	
-	from mpi        import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier
-	from mpi        import MPI_COMM_WORLD, MPI_INT, mpi_bcast
-	from mpi	import MPI_FLOAT, MPI_INT, mpi_recv, mpi_send, MPI_TAG_UB
-	from utilities  import bcast_number_to_all, recv_EMData, send_EMData
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier
+	from mpi import MPI_COMM_WORLD, MPI_INT, mpi_bcast
+	from mpi import MPI_FLOAT, MPI_INT, mpi_recv, mpi_send, MPI_TAG_UB
+	from EMAN2.utilities import bcast_number_to_all, recv_EMData, send_EMData
 	
 	
 	
@@ -3679,16 +3679,16 @@ def k_means_SSE_collect(Cls, assign, Je, N, K, ncpu, myid, main_node):
 	
 
 def k_means_SSE_MPI(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEBUG=False, rnd_method = 'rnd', myid = 0, main_node =0, jumping = 1):
-	from utilities    import model_blank, get_im, running_time
+	from EMAN2.utilities import model_blank, get_im, running_time
 	#from utilities    import print_begin_msg, print_end_msg, print_msg
-	from random       import seed, randint, shuffle
-	from copy         import deepcopy
+	from random import seed, randint, shuffle
+	from copy import deepcopy
 	import sys
 	import time
 	#using jumping to change method for initialization
 	if CTF[0]:
-		from filter		import filt_ctf, filt_table
-		from fundamentals	import fftip
+		from EMAN2.filter import filt_ctf, filt_table
+		from EMAN2.fundamentals import fftip
 
 		ctf  = deepcopy(CTF[1])
 		ctf2 = deepcopy(CTF[2])
@@ -3702,7 +3702,7 @@ def k_means_SSE_MPI(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEB
 
 	if SA:
 		# for simulated annealing
-		from math   import exp
+		from math import exp
 		from random import random
 
 	if mask != None:
@@ -4117,19 +4117,19 @@ def k_means_SSE_MPI(im_M, mask, K, rand_seed, maxit, trials, CTF, F=0, T0=0, DEB
 
 # K-means MPI with classical method
 def k_means_cla_MPI(IM, mask, K, rand_seed, maxit, trials, CTF, F, T0, myid, main_node, N_start, N_stop, N):
-	from utilities    import model_blank, get_im
-	from utilities    import bcast_EMData_to_all, reduce_EMData_to_root
+	from EMAN2.utilities import model_blank, get_im
+	from EMAN2.utilities import bcast_EMData_to_all, reduce_EMData_to_root
 	from utilities    import print_msg, running_time
-	from random       import seed, randint, jumpahead
-	from copy	  import deepcopy
-	from mpi 	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_recv, mpi_send
-	from mpi 	  import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_LOR
+	from random import seed, randint, jumpahead
+	from copy import deepcopy
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_recv, mpi_send
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_LOR
 	import time
 	import sys
 	if CTF[0]:
-		from filter		import filt_ctf, filt_table
-		from fundamentals	import fftip
+		from EMAN2.filter import filt_ctf, filt_table
+		from EMAN2.fundamentals import fftip
 
 		tmpctf  = deepcopy(CTF[1])
 		tmpctf2 = deepcopy(CTF[2])
@@ -4150,7 +4150,7 @@ def k_means_cla_MPI(IM, mask, K, rand_seed, maxit, trials, CTF, F, T0, myid, mai
 	else:      SA = False
 
 	if SA:
-		from math   import exp
+		from math import exp
 		from random import random
 
 	if mask != None:
@@ -4628,10 +4628,10 @@ def k_means_cla_MPI(IM, mask, K, rand_seed, maxit, trials, CTF, F, T0, myid, mai
 
 # K-means CUDA
 def k_means_CUDA(stack, mask, LUT, m, N, Ntot, K, maxit, F, T0, rand_seed, outdir, TXT, nbpart, logging = -1, flagnorm = False):
-	from statistics import k_means_cuda_error, k_means_cuda_open_im
-	from statistics import k_means_locasg2glbasg, k_means_cuda_export
+	from EMAN2.statistics import k_means_cuda_error, k_means_cuda_open_im
+	from EMAN2.statistics import k_means_locasg2glbasg, k_means_cuda_export
 	from utilities  import print_msg, running_time
-	from time       import time
+	from time import time
 	
 	# Init memory
 	Kmeans = MPICUDA_kmeans()
@@ -4712,10 +4712,10 @@ def k_means_CUDA(stack, mask, LUT, m, N, Ntot, K, maxit, F, T0, rand_seed, outdi
 	
 # K-mean CUDA
 def k_means_SSE_CUDA(stack, mask, LUT, m, N, Ntot, K, maxit, F, T0, rand_seed, outdir, TXT, nbpart, logging = -1, flagnorm = False):
-	from statistics import k_means_cuda_error, k_means_cuda_open_im
-	from statistics import k_means_locasg2glbasg, k_means_cuda_export
+	from EMAN2.statistics import k_means_cuda_error, k_means_cuda_open_im
+	from EMAN2.statistics import k_means_locasg2glbasg, k_means_cuda_export
 	from utilities  import print_msg, running_time
-	from time       import time
+	from time import time
 	
 	# Init memory
 	Kmeans = MPICUDA_kmeans()
@@ -4809,13 +4809,13 @@ def dump_AVE(AVE, mask, myid, ite = 0):
 
 # K-mean CUDA
 def k_means_CUDA_MPI(stack, mask, LUT, m, N, Ntot, K, maxit, F, T0, rand_seed, myid, main_node, ncpu, outdir, TXT, nbpart, logging = -1, flagnorm = False):
-	from applications import MPI_start_end
-	from statistics   import k_means_cuda_error, k_means_cuda_open_im
-	from statistics   import k_means_locasg2glbasg, k_means_cuda_export
-	from mpi          import mpi_bcast, mpi_reduce, mpi_barrier, mpi_gatherv
-	from mpi          import MPI_COMM_WORLD, MPI_INT, MPI_SUM, MPI_LOR, MPI_FLOAT
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.statistics import k_means_cuda_error, k_means_cuda_open_im
+	from EMAN2.statistics import k_means_locasg2glbasg, k_means_cuda_export
+	from mpi import mpi_bcast, mpi_reduce, mpi_barrier, mpi_gatherv
+	from mpi import MPI_COMM_WORLD, MPI_INT, MPI_SUM, MPI_LOR, MPI_FLOAT
 	from utilities    import print_msg, running_time
-	from time         import time, sleep
+	from time import time, sleep
 	import sys
 
 	# CST
@@ -4971,13 +4971,13 @@ def k_means_CUDA_MPI(stack, mask, LUT, m, N, Ntot, K, maxit, F, T0, rand_seed, m
 
 
 def k_means_CUDA_MPI_YANG(stack, mask, LUT, m, N, Ntot, K, maxit, F, T0, rand_seed, myid, main_node, ncpu, outdir, TXT, ipart, logging = -1, flagnorm = False, comm = -1, gpuid = 0):
-	from applications import MPI_start_end
-	from statistics   import k_means_cuda_error, k_means_cuda_open_im
-	from statistics   import k_means_locasg2glbasg, k_means_cuda_export
-	from mpi          import mpi_bcast, mpi_reduce, mpi_barrier, mpi_gatherv
-	from mpi          import MPI_COMM_WORLD, MPI_INT, MPI_SUM, MPI_LOR, MPI_FLOAT
+	from EMAN2.applications import MPI_start_end
+	from EMAN2.statistics import k_means_cuda_error, k_means_cuda_open_im
+	from EMAN2.statistics import k_means_locasg2glbasg, k_means_cuda_export
+	from mpi import mpi_bcast, mpi_reduce, mpi_barrier, mpi_gatherv
+	from mpi import MPI_COMM_WORLD, MPI_INT, MPI_SUM, MPI_LOR, MPI_FLOAT
 	from utilities    import print_msg, running_time
-	from time         import time, sleep
+	from time import time, sleep
 	import sys
 
 	if comm == -1:  comm = MPI_COMM_WORLD	
@@ -5154,9 +5154,9 @@ def k_means_groups_gnuplot(file, src, C, DB, H):
 # to figure out the number of clusters
 def k_means_groups_serial(stack, outdir, maskname, opt_method, K1, K2, rand_seed, maxit, trials, CTF, F, T0, DEBUG = False, flagnorm = False):
 	from utilities   import print_begin_msg, print_end_msg, print_msg, running_time, file_type
-	from statistics  import k_means_open_im, k_means_criterion, k_means_headlog
-	from statistics  import k_means_cla, k_means_SSE, k_means_groups_gnuplot
-	from statistics  import k_means_init_open_im
+	from EMAN2.statistics import k_means_open_im, k_means_criterion, k_means_headlog
+	from EMAN2.statistics import k_means_cla, k_means_SSE, k_means_groups_gnuplot
+	from EMAN2.statistics import k_means_init_open_im
 	import os, sys, time
 
 	if os.path.exists(outdir): ERROR('Output directory exists, please change the name and restart the program', "k_means_groups_serial", 1)
@@ -5218,8 +5218,8 @@ def k_means_groups_serial(stack, outdir, maskname, opt_method, K1, K2, rand_seed
 # to figure out the number of clusters CUDA version
 def k_means_groups_CUDA(stack, outdir, maskname, K1, K2, rand_seed, maxit, F, T0):
 	from utilities   import print_begin_msg, print_end_msg, print_msg, running_time, file_type
-	from statistics  import k_means_cuda_init_open_im, k_means_cuda_headlog
-	from statistics  import k_means_groups_gnuplot, k_means_CUDA
+	from EMAN2.statistics import k_means_cuda_init_open_im, k_means_cuda_headlog
+	from EMAN2.statistics import k_means_groups_gnuplot, k_means_CUDA
 	import time, os, sys
 
 	if os.path.exists(outdir): ERROR('Output directory exists, please change the name and restart the program', "k_means_groups_CUDA", 1)
@@ -5277,12 +5277,12 @@ def k_means_groups_CUDA(stack, outdir, maskname, K1, K2, rand_seed, maxit, F, T0
 # to figure out the number of clusters MPI version
 def k_means_groups_MPI(stack, outdir, maskname, opt_method, K1, K2, rand_seed, maxit, trials, CTF, F, T0, flagnorm):
 	from utilities    import print_begin_msg, print_end_msg, print_msg, running_time, file_type
-	from statistics   import k_means_open_im, k_means_criterion, k_means_headlog
-	from statistics   import k_means_cla_MPI, k_means_SSE_MPI
-	from applications import MPI_start_end
-	from mpi 	  import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier, MPI_COMM_WORLD, mpi_bcast, MPI_INT, mpi_send, mpi_recv, MPI_TAG_UB
+	from EMAN2.statistics import k_means_open_im, k_means_criterion, k_means_headlog
+	from EMAN2.statistics import k_means_cla_MPI, k_means_SSE_MPI
+	from EMAN2.applications import MPI_start_end
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier, MPI_COMM_WORLD, mpi_bcast, MPI_INT, mpi_send, mpi_recv, MPI_TAG_UB
 	import sys, os, time
-	from utilities import bcast_number_to_all
+	from EMAN2.utilities import bcast_number_to_all
 
 	sys.argv  = mpi_init(len(sys.argv), sys.argv)
 	ncpu      = mpi_comm_size(MPI_COMM_WORLD)
@@ -5334,7 +5334,7 @@ def k_means_groups_MPI(stack, outdir, maskname, opt_method, K1, K2, rand_seed, m
 					1, [CTF, ctf, ctf2], F, T0, False, "rnd", myid = myid, main_node = main_node, jumping = 1)
 
 
-		from statistics import k_means_SSE_combine
+		from EMAN2.statistics import k_means_SSE_combine
 		[ assign_return, r_Cls, je_return, n_best] = k_means_SSE_combine(Cls, assign, Je, N, K, ncpu, myid, main_node)
 		if myid == main_node: running_time(t_start1)
 		n_best_get = 0
@@ -5479,8 +5479,8 @@ def k_means_cuda_headlog(stackname, outname, method, N, K, maskname, maxit, T0, 
 
 # k-means, prepare to open images later
 def k_means_cuda_init_open_im(stack, maskname):
-	from utilities import get_image, get_im, model_blank, file_type
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import get_image, get_im, model_blank, file_type
+	from EMAN2.EMAN2db import db_open_dict
 
 	ext = file_type(stack)
 	if ext == 'txt': TXT = True
@@ -5547,8 +5547,8 @@ def k_means_cuda_init_open_im(stack, maskname):
 
 # k-means open, prepare, and load images for CUDA k-means
 def k_means_cuda_open_im(KmeansCUDA, stack, lim, mask, flagnorm = False):
-	from utilities     import get_params2D, get_params3D, get_im, file_type, model_blank
-	from fundamentals  import rot_shift2D, rot_shift3D
+	from EMAN2.utilities import get_params2D, get_params3D, get_im, file_type, model_blank
+	from EMAN2.fundamentals import rot_shift2D, rot_shift3D
 	
 	ext = file_type(stack)
 	if ext == 'txt': TXT = True
@@ -5689,13 +5689,13 @@ def k_means_cuda_export(PART, FLATAVE, out_seedname, mask, crit, part = -1, TXT 
 # K-means SA define the first temperature T0 with a couple of testing values
 def k_means_SA_T0(im_M, mask, K, rand_seed, CTF, F):
 	from utilities 		import model_blank, print_msg
-	from alignment          import select_k
-	from random    		import seed, randint
+	from EMAN2.alignment import select_k
+	from random import seed, randint
 	import sys
 	import time
 	if CTF[0]:
-		from filter	        import filt_ctf, filt_table
-		from fundamentals 	import fftip
+		from EMAN2.filter import filt_ctf, filt_table
+		from EMAN2.fundamentals import fftip
 
 		ctf  = deepcopy(CTF[1])
 		ctf2 = deepcopy(CTF[2])
@@ -5703,7 +5703,7 @@ def k_means_SA_T0(im_M, mask, K, rand_seed, CTF, F):
 	else:
 		CTF  = False
 
-	from math   import exp
+	from math import exp
 	from random import random
 
 	if mask != None:
@@ -5867,16 +5867,16 @@ def k_means_SA_T0(im_M, mask, K, rand_seed, CTF, F):
 # K-means SA define the first temperature T0 (MPI version) with a couple of testing values
 def k_means_SA_T0_MPI(im_M, mask, K, rand_seed, CTF, F, myid, main_node, N_start, N_stop):
 	from utilities 		import model_blank, print_msg, bcast_EMData_to_all, reduce_EMData_to_root
-	from random    		import seed, randint
-	from alignment          import select_k
-	from mpi                import mpi_reduce, mpi_bcast, mpi_barrier, mpi_recv, mpi_send
-	from mpi                import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_LOR, MPI_COMM_WORLD
-	from copy               import deepcopy
+	from random import seed, randint
+	from EMAN2.alignment import select_k
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_recv, mpi_send
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT, MPI_LOR, MPI_COMM_WORLD
+	from copy import deepcopy
 	import sys
 	import time
 	if CTF[0]:
-		from filter	        import filt_ctf, filt_table
-		from fundamentals 	import fftip
+		from EMAN2.filter import filt_ctf, filt_table
+		from EMAN2.fundamentals import fftip
 
 		ctf  = deepcopy(CTF[1])
 		ctf2 = deepcopy(CTF[2])
@@ -5884,7 +5884,7 @@ def k_means_SA_T0_MPI(im_M, mask, K, rand_seed, CTF, F, myid, main_node, N_start
 	else:
 		CTF  = False
 
-	from math   import exp
+	from math import exp
 	from random import random
 
 	if mask != None:
@@ -6465,8 +6465,8 @@ See the module documentation for usage.
 '''
 # Hungarian algorithm between two partitions
 def Hungarian(part1, part2):
-	from statistics import Munkres
-	from numpy      import zeros, array
+	from EMAN2.statistics import Munkres
+	from numpy import zeros, array
 	import sys
 
 	K = len(part1)
@@ -6493,10 +6493,10 @@ def Hungarian(part1, part2):
 # K-means main stability stream command line
 def k_means_stab_stream(stack, outdir, maskname, K, npart = 5, F = 0, T0 = 0, th_nobj = 0, rand_seed = 0, opt_method = 'cla', CTF = False, maxit = 1e9, flagnorm = False):
 	from utilities 	 import print_begin_msg, print_end_msg, print_msg
-	from utilities   import model_blank, get_image, get_im, file_type
-	from statistics  import k_means_stab_update_tag, k_means_headlog, k_means_export, k_means_init_open_im
-	from statistics  import k_means_cla, k_means_SSE, k_means_criterion, k_means_locasg2glbasg, k_means_open_im
-	from statistics  import k_means_stab_asg2part, k_means_stab_pwa, k_means_stab_export, k_means_stab_export_txt, k_means_stab_H, k_means_stab_bbenum
+	from EMAN2.utilities import model_blank, get_image, get_im, file_type
+	from EMAN2.statistics import k_means_stab_update_tag, k_means_headlog, k_means_export, k_means_init_open_im
+	from EMAN2.statistics import k_means_cla, k_means_SSE, k_means_criterion, k_means_locasg2glbasg, k_means_open_im
+	from EMAN2.statistics import k_means_stab_asg2part, k_means_stab_pwa, k_means_stab_export, k_means_stab_export_txt, k_means_stab_H, k_means_stab_bbenum
 	import sys, logging, os, pickle
 	
 	ext = file_type(stack)
@@ -6594,14 +6594,14 @@ def k_means_stab_stream(stack, outdir, maskname, K, npart = 5, F = 0, T0 = 0, th
 # K-means main stability stream command line
 # added argument num_first_matches (jia)
 def k_means_stab_MPI_stream(stack, outdir, maskname, K, npart = 5, F = 0, T0 = 0, th_nobj = 0, rand_seed = 0, opt_method = 'cla', CTF = False, maxit = 1e9, flagnorm = False, num_first_matches=1):
-	from mpi         import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier, MPI_COMM_WORLD
-	from mpi         import mpi_bcast, MPI_FLOAT, MPI_INT, mpi_send, mpi_recv, MPI_TAG_UB
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, mpi_barrier, MPI_COMM_WORLD
+	from mpi import mpi_bcast, MPI_FLOAT, MPI_INT, mpi_send, mpi_recv, MPI_TAG_UB
 	from utilities 	 import print_begin_msg, print_end_msg, print_msg, running_time
-	from utilities   import model_blank, get_image, get_im, file_type
-	from statistics  import k_means_stab_update_tag, k_means_headlog, k_means_init_open_im, k_means_open_im
-	from statistics  import k_means_cla_MPI, k_means_SSE_MPI, k_means_criterion, k_means_locasg2glbasg
-	from statistics  import k_means_stab_asg2part, k_means_stab_pwa, k_means_stab_export, k_means_stab_H, k_means_export, k_means_stab_export_txt, k_means_stab_bbenum, k_means_stab_getinfo
-	from applications import MPI_start_end
+	from EMAN2.utilities import model_blank, get_image, get_im, file_type
+	from EMAN2.statistics import k_means_stab_update_tag, k_means_headlog, k_means_init_open_im, k_means_open_im
+	from EMAN2.statistics import k_means_cla_MPI, k_means_SSE_MPI, k_means_criterion, k_means_locasg2glbasg
+	from EMAN2.statistics import k_means_stab_asg2part, k_means_stab_pwa, k_means_stab_export, k_means_stab_H, k_means_export, k_means_stab_export_txt, k_means_stab_bbenum, k_means_stab_getinfo
+	from EMAN2.applications import MPI_start_end
 	import sys, logging, os, pickle, time
 	
 	ncpu      = mpi_comm_size(MPI_COMM_WORLD)
@@ -6752,8 +6752,8 @@ def k_means_stab_MPI_stream(stack, outdir, maskname, K, npart = 5, F = 0, T0 = 0
 # Match two partitions with hungarian algorithm
 def k_means_match_clusters_asg(asg1, asg2):
 	# asg1 and asg2 are numpy array
-	from numpy      import zeros, array
-	from statistics import Munkres
+	from numpy import zeros, array
+	from EMAN2.statistics import Munkres
 	import sys
 
 	K        = len(asg1)
@@ -6790,8 +6790,8 @@ def k_means_match_clusters_asg(asg1, asg2):
 #     then their "cost" is set to 0 in MAT, i.e., the cost table which is input to Munkres. 
 def k_means_match_clusters_asg_new(asg1, asg2, T=0):
 	# asg1 and asg2 are numpy array
-	from numpy      import zeros, array
-	from statistics import Munkres
+	from numpy import zeros, array
+	from EMAN2.statistics import Munkres
 	import sys
 
 	K        = len(asg1)
@@ -6826,8 +6826,8 @@ def k_means_match_clusters_asg_new(asg1, asg2, T=0):
 
 # Hierarchical stability between partitions given by k-means
 def k_means_stab_H(ALL_PART):
-	from copy       import deepcopy
-	from statistics import k_means_match_clusters_asg
+	from copy import deepcopy
+	from EMAN2.statistics import k_means_match_clusters_asg
 
 	nb_part = len(ALL_PART)
 	K       = len(ALL_PART[0])
@@ -6975,8 +6975,8 @@ def k_means_match_pwa(PART, lim = -1):
 
 # Stability with pairwise agreement matching
 def k_means_stab_pwa(PART, lim = -1):
-	from statistics import k_means_match_pwa
-	from copy       import deepcopy
+	from EMAN2.statistics import k_means_match_pwa
+	from copy import deepcopy
 
 	MATCH    = k_means_match_pwa(PART, lim)
 	np       = len(PART)
@@ -7040,8 +7040,8 @@ def k_means_stab_export_txt(PART, outdir, th_nobj):
 
 # Build and export the stable class averages 
 def k_means_stab_export(PART, stack, outdir, th_nobj, CTF = False):
-	from utilities    import model_blank, get_params2D, get_im
-	from fundamentals import rot_shift2D, fftip
+	from EMAN2.utilities import model_blank, get_params2D, get_im
+	from EMAN2.fundamentals import rot_shift2D, fftip
 	
 	K    = len(PART)
 	im   = EMData()
@@ -7093,8 +7093,8 @@ def k_means_stab_export(PART, stack, outdir, th_nobj, CTF = False):
 # Init the header for the stack file
 # TODO this function need to be removed (not used)
 def k_means_stab_init_tag(stack):
-	from utilities import file_type, write_header
-	from EMAN2db import db_open_dict
+	from EMAN2.utilities import file_type, write_header
+	from EMAN2.EMAN2db import db_open_dict
 	
 	N   = EMUtil.get_image_count(stack)
 	ext = file_type(stack)
@@ -7114,15 +7114,15 @@ def k_means_stab_init_tag(stack):
 
 # Convert local all assignment to absolute all partition
 def k_means_stab_asg2part(outdir, npart):
-	from numpy     import array
-	from utilities import get_im
-	from os        import path, listdir
+	from numpy import array
+	from EMAN2.utilities import get_im
+	from os import path, listdir
 
 	# first check special case, when membership is export as txt file
 	# due to the limitation of hdf header or the data is TXT file
 	ALL_PART = []
 	if path.isfile(path.join(outdir, 'kmeans_part_01_grp_001.txt')):
-		from utilities import read_text_file
+		from EMAN2.utilities import read_text_file
 		lname = listdir(outdir)
 		K     = 0
 		for name in lname:
@@ -7193,8 +7193,8 @@ def k_means_asg_locasg2glbpart(ASG, LUT):
 
 # Gather all stable class averages in the same stack
 def k_means_stab_gather(nb_run, maskname, outdir):
-	from utilities import get_image
-	from os        import path
+	from EMAN2.utilities import get_image
+	from os import path
 
 	ct   = 0
 	im   = EMData()
@@ -7219,8 +7219,8 @@ def k_means_stab_gather(nb_run, maskname, outdir):
 
 # extract group to a stack of images for each classe, and apply alignment
 def k_means_extract_class_ali(stack_name, ave_name, dir):
-	from   utilities  import get_im, get_params2D, set_params2D
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import get_im, get_params2D, set_params2D
+	from EMAN2.fundamentals import rot_shift2D
 	import os
 
 	K = EMUtil.get_image_count(ave_name)
@@ -7242,9 +7242,9 @@ def k_means_extract_class_ali(stack_name, ave_name, dir):
 	
 # compute pixel error for a class given	
 def k_means_class_pixerror(class_name, dir, ou, xr, ts, maxit, fun, CTF=False, snr=1.0, Fourvar=False):
-	from applications import header, ali2d
-	from utilities    import estimate_stability
-	from statistics   import aves
+	from EMAN2.applications import header, ali2d
+	from EMAN2.utilities import estimate_stability
+	from EMAN2.statistics import aves
 	import os
 	name = class_name.split('.')[0]
 	file = os.path.join(dir, class_name)
@@ -7369,8 +7369,8 @@ def isc_read_conf(conf_file):
 	return cfgmain, cfgali, cfgclu, cfgrali
 
 def isc_ave_huge(ave_tiny, org_data, ave_huge):
-	from utilities    import get_im, get_params2D, model_blank
-	from fundamentals import rot_shift2D
+	from EMAN2.utilities import get_im, get_params2D, model_blank
+	from EMAN2.fundamentals import rot_shift2D
 	from sys import exit
 	im = get_im(org_data, 0)
 	nx = im.get_xsize()
@@ -7945,7 +7945,7 @@ class py_cluster_HierarchicalClustering(py_cluster_BaseClusterMethod):
 # helper functions for ali2d_ra and ali2d_rac
 def kmn(data, numr, wr, cm = 0, max_iter = 10, this_seed = 1000):
 	from utilities    import model_blank, print_msg
-	from random       import seed, randint, shuffle
+	from random import seed, randint, shuffle
 	seed(this_seed)
 	if (not cm):  mirror = 0
 	nima = len(data)
@@ -8038,7 +8038,7 @@ def kmn(data, numr, wr, cm = 0, max_iter = 10, this_seed = 1000):
 
 def kmn_a(data, numr, wr, cm = 0, max_iter = 10, this_seed = 1000):
 	from utilities    import model_blank, print_msg, amoeba
-	from random       import seed, randint, shuffle
+	from random import seed, randint, shuffle
 	seed(this_seed)
 	if (not cm):  mirror = 0
 	nima = len(data)
@@ -8147,10 +8147,10 @@ def kmn_a(data, numr, wr, cm = 0, max_iter = 10, this_seed = 1000):
 def kmn_g(data, numr, wr, stack, check_mirror = False, max_iter = 10, this_seed = 1000):
 
 	from utilities    import   model_blank, print_msg, amoeba, combine_params2
-	from random       import   seed, randint
-	from alignment    import   ang_n
-	from development  import   oned_search_func
-	from random       import   gauss
+	from random import seed, randint
+	from EMAN2.alignment import ang_n
+	from EMAN2.development import oned_search_func
+	from random import gauss
 	from EMAN2 import Processor
 	
 	mode = "F"
@@ -8433,7 +8433,7 @@ def kmn_g(data, numr, wr, stack, check_mirror = False, max_iter = 10, this_seed 
 
 def multi_search_func(args, data):
 
-	from utilities import model_blank
+	from EMAN2.utilities import model_blank
 
 	fdata = data[0]
 	numr = data[1]
@@ -8467,8 +8467,8 @@ def multi_search_func(args, data):
 """
 def multi_search_func2(args, data):
 	
-	from utilities import model_blank, model_circle
-	from alignment import ang_n
+	from EMAN2.utilities import model_blank, model_circle
+	from EMAN2.alignment import ang_n
 	
 	stack = data[0]
 	numr = data[1]
@@ -8493,7 +8493,7 @@ def multi_search_func2(args, data):
 
 def kmn_ctf(data, ref_data, numr, wr, cm = 0, max_iter = 10, this_seed = 1000):
 	from utilities    import model_blank, print_msg
-	from random       import seed, randint, shuffle
+	from random import seed, randint, shuffle
 	#  This version is not quite correct, as ctf2 is not modified in the avergae, but it cannot be done any other simple way :-(
 	seed(this_seed)
 	if(not cm):  mirror = 0
@@ -8585,8 +8585,8 @@ def kmn_ctf(data, ref_data, numr, wr, cm = 0, max_iter = 10, this_seed = 1000):
 		else:  break
 
 def kmnr(data, assign, nima, k, numr, wr, cm = 0, max_iter = 10, this_seed = 1000, MPI = False):
-	from random       import seed, randint, random, shuffle
-	from utilities    import model_blank
+	from random import seed, randint, random, shuffle
+	from EMAN2.utilities import model_blank
 	seed(this_seed)
 	if(not cm):  mirror = 0
 	ntot = len(data)
@@ -8703,7 +8703,7 @@ def kmnr(data, assign, nima, k, numr, wr, cm = 0, max_iter = 10, this_seed = 100
 	return  tave
 	
 def Wiener_CSQ(data, K, assign, Cls, ctf1, ctf2, snr = 1.0):
-	from filter       import filt_table
+	from EMAN2.filter import filt_table
 
 	N = len(data)
 	lctf = len(ctf2[0])
@@ -8739,8 +8739,8 @@ def Wiener_CSQ(data, K, assign, Cls, ctf1, ctf2, snr = 1.0):
 	return Cls, ctf_2
 	
 def Wiener_sse(data, K, assign, Cls, ctf1, ctf2, snr = 1.0):
-	from filter       import filt_table
-	from fundamentals import fft
+	from EMAN2.filter import filt_table
+	from EMAN2.fundamentals import fft
 	N = len(data)
 	lctf = len(ctf2[0])
 	ctf_2 = [[0.0]*lctf for k in xrange(K)]
@@ -8780,8 +8780,8 @@ def Wiener_sse(data, K, assign, Cls, ctf1, ctf2, snr = 1.0):
 '''
 # This code looks obsolete, I do not write it. JB.. So I commented it out, PAP 12/31/09
 def k_means_aves(images, N, K, rand_seed, outdir):
-	from utilities import model_blank
-	from random       import seed, randint
+	from EMAN2.utilities import model_blank
+	from random import seed, randint
 	from sys import exit
 	
 	#  This version is not quite correct, as ctf2 is not modified in the average, but it cannot be done any other simple way :-(
@@ -9077,8 +9077,8 @@ def get_power_spec(stack_file, start_particle, end_particle):
 	# computes the rotationally averaged power spectra of a series of images, e.g. a defocus group
 	# and averages these spectra into one spectrum for the whole set of images
 	# returns a list
-	from fundamentals import rops_table
-	from utilities import get_im
+	from EMAN2.fundamentals import rops_table
+	from EMAN2.utilities import get_im
 
 	ima = get_im(stack_file, start_particle)
 	PSrot_avg = rops_table(ima)
@@ -9182,7 +9182,7 @@ def noise_corrected_PW(pw, lo_limit, hi_limit, abs_limit):
 
 class def_variancer:
 	def __init__(self, nx, ny, nz):
-		from utilities import model_blank
+		from EMAN2.utilities import model_blank
 		self.nimg = 0
 		self.sum1 = model_blank(nx, ny, nz)
 		self.imgs = []
@@ -9194,7 +9194,7 @@ class def_variancer:
 		self.imgs.append(img)
 
         def mpi_getvar(self, myid, rootid):
-		from utilities import reduce_EMData_to_root, bcast_EMData_to_all
+		from EMAN2.utilities import reduce_EMData_to_root, bcast_EMData_to_all
 		from mpi import mpi_reduce, MPI_INT, MPI_SUM, MPI_COMM_WORLD
 		avg = self.sum1.copy()
 
@@ -9223,7 +9223,7 @@ class def_variancer:
 
         def mpi_getavg(self, myid, rootid ):
 		from mpi import mpi_reduce, MPI_INT, MPI_SUM, MPI_COMM_WORLD
-		from utilities import reduce_EMData_to_root
+		from EMAN2.utilities import reduce_EMData_to_root
 
 		cpy1 = self.sum1.copy()
 
@@ -9265,7 +9265,7 @@ class inc_variancer:
 
 	def insert(self, img):
 		from numpy import reshape
-		from utilities import get_image_data
+		from EMAN2.utilities import get_image_data
 		data = reshape( get_image_data(img), (self.ntot,) )
 		self.sum1 += data
 		self.sum2 += (data*data)
@@ -9274,7 +9274,7 @@ class inc_variancer:
 
 
         def mpi_getvar(self, myid, rootid):
-		from utilities import memory_usage, get_image_data, model_blank
+		from EMAN2.utilities import memory_usage, get_image_data, model_blank
 		from mpi import mpi_reduce, MPI_DOUBLE, MPI_INT, MPI_SUM, MPI_COMM_WORLD
 		from numpy import reshape
 
@@ -9371,7 +9371,7 @@ def cluster_pairwise(d, K):
 	  d  - lower half of the square matrix of pairwsie distances
 	  K  - number of classes
 	"""
-	from statistics import mono
+	from EMAN2.statistics import mono
 	from random import randint, shuffle
 	from math import sqrt
 	N = 1 + int((sqrt(1.0 + 8.0*len(d))-1.0)/2.0)
@@ -9426,7 +9426,7 @@ def cluster_pairwise(d, K):
 	return  assign,cent,disp,it
 	"""
 	# write out information
-	from utilities import write_text_file
+	from EMAN2.utilities import write_text_file
 	write_text_file(cent, "cent")
 	for k in xrange(K):
 		cent = []
@@ -9440,7 +9440,7 @@ def cluster_equalsize(d, m):
 	  d  - lower half of the square matrix of pairwsie distances
 	  m  - number of objects per class
 	"""
-	from statistics import mono
+	from EMAN2.statistics import mono
 	from random import randint, shuffle
 	from math import sqrt
 	nd = d.get_xsize()
@@ -9637,7 +9637,7 @@ class pcanalyzer:
 	def shuffle( self ):
 		assert self.bufused
 		from random import shuffle, seed
-		from numpy  import zeros, float32, array
+		from numpy import zeros, float32, array
 		from string import replace
 		seed( 10000 + 10*self.myid )
 
@@ -9686,7 +9686,7 @@ class pcanalyzer:
 
 	def setavg( self, avg ):
 		from numpy import zeros, float32
-		from utilities import get_image_data
+		from EMAN2.utilities import get_image_data
 		tmpimg = Util.compress_image_mask( avg, self.mask )
 		avgdat = get_image_data(tmpimg)
 		self.avgdat = zeros( (len(avgdat)), float32 )
@@ -9697,7 +9697,7 @@ class pcanalyzer:
 		assert self.mask.get_ysize()==img.get_ysize()
 		assert self.mask.get_zsize()==img.get_zsize()
 
-		from utilities import get_image_data
+		from EMAN2.utilities import get_image_data
 		tmpimg = Util.compress_image_mask( img, self.mask )
 		tmpdat = get_image_data(tmpimg)
 		if self.incore:
@@ -9736,7 +9736,7 @@ class pcanalyzer:
 			for j in xrange(self.nvec):
 				eigval[j] = diag[kstep-j-1]
 
-			from utilities import model_blank, get_image_data
+			from EMAN2.utilities import model_blank, get_image_data
 			eigimgs = []
 			for j in xrange(self.nvec):
 				tmpimg = model_blank(ncov, 1, 1)
@@ -9899,14 +9899,14 @@ class pcanalyzebck:
 	"""
 	def get_dat( self, k ):
 		from reconstruction import backproject_swbp
-		from filter  import filt_tanl
+		from EMAN2.filter import filt_tanl
 		vb = Util.divn_img(backproject_swbp(self.dataw[k], self.list_of_particles[k], self.dm), self.variance)
 		if(self.fl > 0.0):
 			vb = filt_tanl(vb, self.fl, self.aa)
 		#vb -= pc[0]
 		#vb *= (refstat[1]/pc[1])
 		from numpy import zeros, float32
-		from utilities import get_image_data
+		from EMAN2.utilities import get_image_data
 
 		tmpimg = Util.compress_image_mask( vb, self.mask )
 		data = get_image_data(tmpimg)
@@ -9935,7 +9935,7 @@ class pcanalyzebck:
 	def shuffle( self ):
 		assert self.bufused
 		from random import shuffle, seed
-		from numpy  import zeros, float32, array
+		from numpy import zeros, float32, array
 		from string import replace
 		seed( 10000 + 10*self.myid )
 
@@ -9973,7 +9973,7 @@ class pcanalyzebck:
 
 	def setavg( self, avg ):
 		from numpy import zeros, float32
-		from utilities import get_image_data
+		from EMAN2.utilities import get_image_data
 		tmpimg = Util.compress_image_mask( avg, self.mask )
 		avgdat = get_image_data(tmpimg)
 		self.avgdat = zeros( (len(avgdat)), float32 )
@@ -9985,7 +9985,7 @@ class pcanalyzebck:
 		assert self.mask.get_ysize()==img.get_ysize()
 		assert self.mask.get_zsize()==img.get_zsize()
 
-		from utilities import get_image_data
+		from EMAN2.utilities import get_image_data
 		tmpimg = Util.compress_image_mask( img, self.mask )
 		tmpdat = get_image_data(tmpimg)
 		self.writedat( tmpdat )                                   #   WRITEDAT
@@ -10021,7 +10021,7 @@ class pcanalyzebck:
 			for j in xrange(self.nvec):
 				eigval[j] = diag[kstep-j-1]
 
-			from utilities import model_blank, get_image_data
+			from EMAN2.utilities import model_blank, get_image_data
 			eigimgs = []
 			for j in xrange(self.nvec):
 				tmpimg = model_blank(ncov, 1, 1)
@@ -10130,7 +10130,7 @@ class pcanalyzebck:
 
 
 def k_means_stab_bbenum(PART, T=10, nguesses=5, J=50, max_branching=40, stmult=0.25, branchfunc=2, LIM=-1, doMPI_init=False, njobs=-1,do_mpi=False, K=-1,cdim=[],nstart=-1, nstop=-1, top_Matches=[]):
-	from statistics import k_means_match_clusters_asg_new
+	from EMAN2.statistics import k_means_match_clusters_asg_new
 	"""
 		
 		Input:
@@ -10522,8 +10522,8 @@ def fit_ctf(crossresolution, ctf_params, rangedef = -1.0, i1 = 0, i2 = 0, chisqu
 		ctf_params = [defocus, cs, voltage, apix, bfactor, ampcont]
 	"""
 	from math import copysign
-	from morphology import ctf_1d
-	from utilities import generate_ctf
+	from EMAN2.morphology import ctf_1d
+	from EMAN2.utilities import generate_ctf
 	n = len(crossresolution[1])
 	if(i2 <= i1):  i2 = n
 	nx = 2*n

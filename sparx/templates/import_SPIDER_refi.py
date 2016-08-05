@@ -3,9 +3,9 @@
 # it is likely that the above line would have to be changed depending on python location
 
 from EMAN2 import *
-from sparx import *
+from EMAN2.sparx import *
 
-from sys import  *
+from sys import *
 from string import *
 from math import sqrt
 

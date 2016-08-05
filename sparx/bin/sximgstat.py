@@ -32,12 +32,12 @@
 #
 
 import global_def
-from   global_def     import *
+from global_def import *
 
 def main():
 	import os
 	import sys
-	from optparse    import OptionParser
+	from optparse import OptionParser
 
 	arglist = []
 	for arg in sys.argv:
@@ -61,9 +61,9 @@ def main():
 
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
-	from applications import imgstat
+	from EMAN2.applications import imgstat
 	global_def.BATCH = True
 	imgstat( args, options.ccc, options.fsc, options.inf, options.rad )
 

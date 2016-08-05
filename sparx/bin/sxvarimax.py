@@ -64,9 +64,9 @@ def main():
 	else:               mask = None
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
-        from applications import varimax
+        from EMAN2.applications import varimax
 	global_def.BATCH = True
         varimax(input_stack, range(imgstart, imgend), output_stack, mask, options.rad, options.verbose)
 	global_def.BATCH = False

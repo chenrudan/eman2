@@ -33,8 +33,8 @@
 from time import time
 from math import ceil
 from copy import copy
-import EMAN2db
-from EMAN2db import db_open_dict, db_close_dict, db_remove_dict, db_check_dict
+import EMAN2.EMAN2db as EMAN2db
+from EMAN2.EMAN2db import db_open_dict, db_close_dict, db_remove_dict, db_check_dict
 from EMAN2 import *
 import traceback
 
@@ -267,7 +267,7 @@ class Box:
 				print "        Minimum Template  : ", template_min
 				print "        Frequency cut-off : ", frequency_cutoff
 			
-				from filter import filt_gaussh
+				from EMAN2.filter import filt_gaussh
 				
 				image = filt_gaussh(image, gaussh_param) #1.0/(self.box_size/ratio) 
 				sb = Util.sincBlackman(template_min, frequency_cutoff, 1999) # 1999 taken directly from util_sparx.h
@@ -800,7 +800,7 @@ class SincBlackmanSubsampledImage:
 		'''
 		Updates the image using the parameters that are deduced from the params_mediator
 		'''
-		from sparx import filt_gaussh
+		from EMAN2.sparx import filt_gaussh
 		from EMAN2 import Util
 		subsample_rate = params_mediator.get_subsample_rate()
 		template_min = params_mediator.get_window_size_min()
@@ -2275,7 +2275,7 @@ class Boxable:
 		
 	def process_finished(self,int):
 		try:
-			from emimage import EMImage
+			from EMAN2.emimage import EMImage
 		except:
 			print "Cannot import EMAN image GUI objects (emimage,etc.)"
 			sys.exit(1)
@@ -3138,21 +3138,21 @@ class PawelAutoBoxer(AutoBoxer):
 		image_name = boxable.get_image_name()
 		img = BigImageCache.get_image_directly( image_name )
 
-		from fundamentals import welch_pw2
+		from EMAN2.fundamentals import welch_pw2
 		# XXX: check image dimensions, especially box size for welch_pw2!
 		power_sp = welch_pw2(img,win_size=self.ctf_window,overlp_x=self.ctf_overlap,overlp_y=self.ctf_overlap,
 				     edge_x=self.ctf_edge,edge_y=self.ctf_edge)
 
-		from fundamentals import rot_avg_table
+		from EMAN2.fundamentals import rot_avg_table
 		avg_sp = rot_avg_table(power_sp)
 		del power_sp
 
-		from morphology import defocus_gett
+		from EMAN2.morphology import defocus_gett
 		defocus = defocus_gett(avg_sp,voltage=self.ctf_volt,Pixel_size=self.pixel_input,Cs=self.ctf_Cs,wgh=self.ctf_ampcont,
 		    		       f_start=self.ctf_fstart,f_stop=self.ctf_fstop)
 
 		# set image properties, in order to save ctf values
-		from utilities import set_ctf, generate_ctf
+		from EMAN2.utilities import set_ctf, generate_ctf
 		ctf_tuple = [defocus,self.ctf_Cs,self.ctf_volt,self.pixel_input,0,self.ctf_ampcont]
 		set_ctf(img, ctf_tuple)
 		img.write_image(image_name, 0)
@@ -3165,7 +3165,7 @@ class PawelAutoBoxer(AutoBoxer):
             
 
 	def run(self, imgname, boxable=None):
-		from sparx import get_im, filt_gaussl, filt_gaussh
+		from EMAN2.sparx import get_im, filt_gaussl, filt_gaussh
 		print "Running Gauss convolution ..."
 		print "        Input pixel size  : ", self.pixel_input
 		print "        Ouput pixel size  : ", self.pixel_output
@@ -3201,7 +3201,7 @@ class PawelAutoBoxer(AutoBoxer):
 			self.parent.clear_displays() # remove all boxes
 
 		if(self.use_variance):
-			from morphology import power
+			from EMAN2.morphology import power
 			img = power(img, 2.0)
 
 		#from utilities import info

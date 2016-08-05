@@ -31,7 +31,7 @@
 #
 #
 import global_def
-from   global_def import *
+from global_def import *
 
 def main():
 	import os
@@ -142,10 +142,10 @@ def main():
 		os.mkdir(output_directory)
 	
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	
-	from morphology import cter
+	from EMAN2.morphology import cter
 	global_def.BATCH = True
 	
 	cter(stack, out1, out2, indir, nameroot, micsuffix, options.wn, \

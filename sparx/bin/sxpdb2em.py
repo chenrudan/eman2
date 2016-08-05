@@ -42,7 +42,7 @@
 
 
 from EMAN2 import *
-from sparx import *
+from EMAN2.sparx import *
 from optparse import OptionParser
 from math import *
 from global_def import *
@@ -76,7 +76,7 @@ map to the center of the volume."""
 	#try: chains=options.chains
 	#except: 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from EMAN2.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	chains=None
 	

@@ -10,7 +10,7 @@
 #********************************************************************************
 
 from EMAN2 import *
-from EMAN2db import db_open_dict
+from EMAN2.EMAN2db import db_open_dict
 import pyemtbx.options
 import os
 import sys

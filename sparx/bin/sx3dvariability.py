@@ -32,13 +32,13 @@
 
 
 from EMAN2 import *
-from sparx import *
+from EMAN2.sparx import *
 
 
 import	global_def
-from	global_def 	import *
-from	optparse 	import OptionParser
-from	EMAN2 		import EMUtil
+from global_def import *
+from optparse import OptionParser
+from EMAN2 import EMUtil
 import	os
 import	sys
 from 	time		import	time
@@ -48,9 +48,9 @@ def image_decimate_window_xform_ctf(img,decimation=2,window_size=0,CTF=False):
                 Window 2D image to FFT-friendly size, apply Butterworth low pass filter,
                 and decimate image by integer factor
         """
-        from filter       import filt_btwl
-        from fundamentals import smallprime,window2d
-        from utilities    import get_image,get_params_proj,set_params_proj,get_ctf, set_ctf
+        from EMAN2.filter import filt_btwl
+        from EMAN2.fundamentals import smallprime,window2d
+        from EMAN2.utilities import get_image,get_params_proj,set_params_proj,get_ctf, set_ctf
         if decimation ==1:
         	if window_size ==0:
         		return img
@@ -128,17 +128,17 @@ def main():
 	#####
 	from mpi import mpi_init, mpi_comm_rank, mpi_comm_size, mpi_recv, MPI_COMM_WORLD, MPI_TAG_UB
 	from mpi import mpi_barrier, mpi_reduce, mpi_bcast, mpi_send, MPI_FLOAT, MPI_SUM, MPI_INT, MPI_MAX
-	from applications import MPI_start_end
+	from EMAN2.applications import MPI_start_end
 	from reconstruction import recons3d_em, recons3d_em_MPI
-	from reconstruction	import recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
+	from reconstruction import recons3d_4nn_MPI, recons3d_4nn_ctf_MPI
 	from utilities import print_begin_msg, print_end_msg, print_msg
-	from utilities import read_text_row, get_image, get_im
-	from utilities import bcast_EMData_to_all, bcast_number_to_all
-	from utilities import get_symt
+	from EMAN2.utilities import read_text_row, get_image, get_im
+	from EMAN2.utilities import bcast_EMData_to_all, bcast_number_to_all
+	from EMAN2.utilities import get_symt
 
 	#  This is code for handling symmetries by the above program.  To be incorporated. PAP 01/27/2015
 
-	from EMAN2db import db_open_dict
+	from EMAN2.EMAN2db import db_open_dict
 	
 	if options.symmetrize :
 		try:
@@ -239,7 +239,7 @@ def main():
 		options.sym = options.sym.lower()
 		 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from EMAN2.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		global_def.BATCH = True
 
@@ -265,7 +265,7 @@ def main():
 						ERROR("The symmetry provided does not agree with the symmetry of the input stack", "sx3dvariability", myid=myid)
 				except:
 					ERROR("Input stack is not prepared for symmetry, please follow instructions", "sx3dvariability", myid=myid)
-				from utilities import get_symt
+				from EMAN2.utilities import get_symt
 				i = len(get_symt(options.sym))
 				if((nima/i)*i != nima):
 					ERROR("The length of the input stack is incorrect for symmetry processing", "sx3dvariability", myid=myid)
@@ -302,11 +302,11 @@ def main():
 		img_begin, img_end = MPI_start_end(nima, number_of_proc, myid)
 		"""
 		if options.SND:
-			from projection		import prep_vol, prgs
-			from statistics		import im_diff
-			from utilities		import get_im, model_circle, get_params_proj, set_params_proj
-			from utilities		import get_ctf, generate_ctf
-			from filter			import filt_ctf
+			from EMAN2.projection import prep_vol, prgs
+			from EMAN2.statistics import im_diff
+			from EMAN2.utilities import get_im, model_circle, get_params_proj, set_params_proj
+			from EMAN2.utilities import get_ctf, generate_ctf
+			from EMAN2.filter import filt_ctf
 		
 			imgdata = EMData.read_images(stack, range(img_begin, img_end))
 
@@ -340,15 +340,15 @@ def main():
 				this_image.read_image(stack,index_of_particle)
 				varList.append(image_decimate_window_xform_ctf(img,options.decimate,options.window,options.CTF))
 		else:
-			from utilities		import bcast_number_to_all, bcast_list_to_all, send_EMData, recv_EMData
-			from utilities		import set_params_proj, get_params_proj, params_3D_2D, get_params2D, set_params2D, compose_transform2
-			from utilities		import model_blank, nearest_proj, model_circle
-			from applications	import pca
-			from statistics		import avgvar, avgvar_ctf, ccc
-			from filter		    import filt_tanl
-			from morphology		import threshold, square_root
-			from projection 	import project, prep_vol, prgs
-			from sets		    import Set
+			from EMAN2.utilities import bcast_number_to_all, bcast_list_to_all, send_EMData, recv_EMData
+			from EMAN2.utilities import set_params_proj, get_params_proj, params_3D_2D, get_params2D, set_params2D, compose_transform2
+			from EMAN2.utilities import model_blank, nearest_proj, model_circle
+			from EMAN2.applications import pca
+			from EMAN2.statistics import avgvar, avgvar_ctf, ccc
+			from EMAN2.filter import filt_tanl
+			from EMAN2.morphology import threshold, square_root
+			from EMAN2.projection import project, prep_vol, prgs
+			from EMAN2.sets import Set
 
 			if myid == main_node:
 				t1 = time()
@@ -449,8 +449,8 @@ def main():
 			del vol, imgdata2
 			mpi_barrier(MPI_COMM_WORLD)
 			'''
-			from applications import prepare_2d_forPCA
-			from utilities import model_blank
+			from EMAN2.applications import prepare_2d_forPCA
+			from EMAN2.utilities import model_blank
 			for i in xrange(len(proj_list)):
 				ki = proj_angles[proj_list[i][0]][3]
 				if ki >= symbaselen:  continue
@@ -482,12 +482,12 @@ def main():
 					del mask
 
 				if options.fl > 0.0:
-					from filter import filt_ctf, filt_table
-					from fundamentals import fft, window2d
+					from EMAN2.filter import filt_ctf, filt_table
+					from EMAN2.fundamentals import fft, window2d
 					nx2 = 2*nx
 					ny2 = 2*ny
 					if options.CTF:
-						from utilities import pad
+						from EMAN2.utilities import pad
 						for k in xrange(img_per_grp):
 							grp_imgdata[k] = window2d(fft( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa) ),nx,ny)
 							#grp_imgdata[k] = window2d(fft( filt_table( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa), fifi) ),nx,ny)
@@ -498,13 +498,13 @@ def main():
 							#grp_imgdata[k] = window2d(fft( filt_table( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa), fifi) ),nx,ny)
 							#grp_imgdata[k] = filt_tanl(grp_imgdata[k], options.fl, options.aa)
 				else:
-					from utilities import pad, read_text_file
-					from filter import filt_ctf, filt_table
-					from fundamentals import fft, window2d
+					from EMAN2.utilities import pad, read_text_file
+					from EMAN2.filter import filt_ctf, filt_table
+					from EMAN2.fundamentals import fft, window2d
 					nx2 = 2*nx
 					ny2 = 2*ny
 					if options.CTF:
-						from utilities import pad
+						from EMAN2.utilities import pad
 						for k in xrange(img_per_grp):
 							grp_imgdata[k] = window2d( fft( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1) ) , nx,ny)
 							#grp_imgdata[k] = window2d(fft( filt_table( filt_tanl( filt_ctf(fft(pad(grp_imgdata[k], nx2, ny2, 1,0.0)), grp_imgdata[k].get_attr("ctf"), binary=1), options.fl, options.aa), fifi) ),nx,ny)
@@ -563,7 +563,7 @@ def main():
 			#  To this point, all averages, variances, and eigenvectors are computed
 
 			if options.ave2D:
-				from fundamentals import fpol
+				from EMAN2.fundamentals import fpol
 				if myid == main_node:
 					km = 0
 					for i in xrange(number_of_proc):
@@ -607,7 +607,7 @@ def main():
 						"""
 
 			if options.ave3D:
-				from fundamentals import fpol
+				from EMAN2.fundamentals import fpol
 				if options.VERBOSE:
 					print "Reconstructing 3D average volume"
 				ave3D = recons3d_4nn_MPI(myid, aveList, symmetry=options.sym, npad=options.npad)
@@ -664,7 +664,7 @@ def main():
 
 			if options.ave3D: del ave3D
 			if options.var2D:
-				from fundamentals import fpol 
+				from EMAN2.fundamentals import fpol 
 				if myid == main_node:
 					km = 0
 					for i in xrange(number_of_proc):
@@ -698,7 +698,7 @@ def main():
 			res = recons3d_4nn_MPI(myid, varList, symmetry=options.sym, npad=options.npad)
 			#res = recons3d_em_MPI(varList, vol_stack, options.iter, radiusvar, options.abs, True, options.sym, options.squ)
 			if myid == main_node:
-				from fundamentals import fpol
+				from EMAN2.fundamentals import fpol
 				res =fpol(res, Tracker["nx"], Tracker["nx"], Tracker["nx"])
 				res.write_image(options.var3D)
 

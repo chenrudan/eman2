@@ -4,15 +4,15 @@
 #  08/13/2015
 #  New version.
 #  
-from sparx import *
+from EMAN2.sparx import *
 import os
 import global_def
-from   global_def import *
-from   optparse  import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
-from   numpy     import array
+from numpy import array
 import types
-from   logger    import Logger, BaseLogger_Files
+from EMAN2.logger import Logger, BaseLogger_Files
 
 def sample_down_1D_curve(nxinit, nnxo, pspcurv_nnxo_file):
 	shrinkage=float(nnxo)/float(nxinit)
@@ -38,8 +38,8 @@ def get_initial_ID(part_list, full_ID_dict):
 	return part_initial_id_list, new_dict
 
 def get_shrink_3dmask(nxinit,mask_file_name):
-	from utilities import get_im
-	from fundamentals import resample
+	from EMAN2.utilities import get_im
+	from EMAN2.fundamentals import resample
 	mask3d = get_im(mask_file_name)
 	nx2 = nxinit
 	nx1 = mask3d.get_xsize()
@@ -62,23 +62,23 @@ def remove_small_groups(class_list,minimum_number_of_objects_in_a_group):
 	return final_list, new_class
 	
 def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker): 
-	from utilities      import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
-	from utilities      import bcast_list_to_all, get_image, get_input_from_string, get_im
-	from utilities      import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, model_blank, write_text_file
-	from filter         import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
-	from utilities      import rotate_3D_shift,estimate_3D_center_MPI
-	from alignment      import Numrinit, prepare_refrings, proj_ali_incore
-	from random         import randint
-	from filter         import filt_ctf
+	from EMAN2.utilities import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
+	from EMAN2.utilities import bcast_list_to_all, get_image, get_input_from_string, get_im
+	from EMAN2.utilities import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, model_blank, write_text_file
+	from EMAN2.filter import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
+	from EMAN2.utilities import rotate_3D_shift,estimate_3D_center_MPI
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore
+	from random import randint
+	from EMAN2.filter import filt_ctf
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from projection     import prep_vol, prgs, prgl, project, prgq, gen_rings_ctf
-	from applications   import MPI_start_end
+	from EMAN2.projection import prep_vol, prgs, prgl, project, prgq, gen_rings_ctf
+	from EMAN2.applications import MPI_start_end
 	from reconstruction import rec3D_MPI_noCTF,rec3D_two_chunks_MPI
 	import os
 	import types
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, MPI_INT, MPI_SUM
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, MPI_INT, MPI_SUM
 	from time import sleep
 	### - reconstruction parameters - No need to change
 	fourvar   = False
@@ -87,7 +87,7 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 	ref_a     = "S"
 	npad      = 2
 	############################################################
-	from logger import Logger,BaseLogger_Files
+	from EMAN2.logger import Logger,BaseLogger_Files
 	log       = Logger()
 	log   =Logger(BaseLogger_Files())
 	log.prefix=outdir+"/"
@@ -163,7 +163,7 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 		an = []
 		for i in xrange(len(xrng)):   an.append(-1)
 	else:
-		from  alignment	    import proj_ali_incore_local
+		from EMAN2.alignment import proj_ali_incore_local
 		an      = get_input_from_string(an)
 	first_ring  = int(ir)
 	rstep       = int(rs)
@@ -175,7 +175,7 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 	if last_ring < 0:       last_ring = nx//2 - 2
 	fscmask     = model_circle(last_ring, nx, nx, nx)
 	stack       = Tracker["constants"]["stack"]
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 	if myid == main_node:
 		#import user_functions
@@ -229,7 +229,7 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 		data[im].set_attr_dict({'ID':list_of_particles[im], 'group':-1})
 	if fourvar:
 		from reconstruction import rec3D_MPI
-		from statistics     import varf3d_MPI
+		from EMAN2.statistics import varf3d_MPI
 		#  Compute Fourier variance
 		vol, fscc = rec3D_MPI(data,snr,sym,fscmask,os.path.join(outdir, "resolution0000"), myid, main_node, finfo=frec, npad=npad)
 		varf = varf3d_MPI(data, os.path.join(outdir, "ssnr0000"), None, vol, last_ring, 1.0, 1, CTF, 1, sym, myid)
@@ -288,10 +288,10 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 			trans = [tr_dummy]*nima
 			pixer = [0.0]*nima
 			if(an[N_step] > 0):
-				from utilities    import even_angles
+				from EMAN2.utilities import even_angles
 				ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 				generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
 				del ref_angles
@@ -431,7 +431,7 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 			mpi_barrier(MPI_COMM_WORLD)
 			if myid == main_node:
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if region[0] < 0.0:  region[0] = 0.0
@@ -525,12 +525,12 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 	else: par_str = ['group', 'ID' ]
 	"""	
 	if myid == main_node:
-		from utilities import file_type
+		from EMAN2.utilities import file_type
 		if file_type(stack) == "bdb":
-			from utilities import recv_attr_dict_bdb
+			from EMAN2.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		else:
-			from utilities import recv_attr_dict
+			from EMAN2.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
 	"""
@@ -553,23 +553,23 @@ def ali3d_mref_Kmeans_MPI(ref_list, outdir,this_data_list_file,Tracker):
 	return empty_group,res_groups,final_group_list
 
 def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
-	from utilities      import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
-	from utilities      import  bcast_list_to_all, get_image, get_input_from_string, get_im
-	from utilities      import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
-	from utilities      import get_params_proj, set_params_proj, model_blank, wrap_mpi_bcast, write_text_file
-	from filter         import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
-	from utilities      import rotate_3D_shift,estimate_3D_center_MPI
-	from alignment      import Numrinit, prepare_refrings, proj_ali_incore
-	from random         import randint, random
-	from filter         import filt_ctf
+	from EMAN2.utilities import model_circle, reduce_EMData_to_root, bcast_EMData_to_all, bcast_number_to_all, drop_image
+	from EMAN2.utilities import bcast_list_to_all, get_image, get_input_from_string, get_im
+	from EMAN2.utilities import get_arb_params, set_arb_params, drop_spider_doc, send_attr_dict
+	from EMAN2.utilities import get_params_proj, set_params_proj, model_blank, wrap_mpi_bcast, write_text_file
+	from EMAN2.filter import filt_params, filt_btwl, filt_ctf, filt_table, fit_tanh, filt_tanl
+	from EMAN2.utilities import rotate_3D_shift,estimate_3D_center_MPI
+	from EMAN2.alignment import Numrinit, prepare_refrings, proj_ali_incore
+	from random import randint, random
+	from EMAN2.filter import filt_ctf
 	from utilities      import print_begin_msg, print_end_msg, print_msg, read_text_file
-	from projection     import prep_vol, prgs, prgl, project, prgq, gen_rings_ctf
-	from morphology     import binarize
+	from EMAN2.projection import prep_vol, prgs, prgl, project, prgq, gen_rings_ctf
+	from EMAN2.morphology import binarize
 	import os
 	import types
-	from mpi            import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
-	from mpi            import mpi_reduce, mpi_gatherv, mpi_scatterv, MPI_INT, MPI_SUM
-	from applications   import MPI_start_end
+	from mpi import mpi_bcast, mpi_comm_size, mpi_comm_rank, MPI_FLOAT, MPI_COMM_WORLD, mpi_barrier
+	from mpi import mpi_reduce, mpi_gatherv, mpi_scatterv, MPI_INT, MPI_SUM
+	from EMAN2.applications import MPI_start_end
 	from reconstruction import rec3D_two_chunks_MPI, rec3D_MPI_noCTF
 	mpi_comm = MPI_COMM_WORLD
 	#####  reconstruction parameters, no need to change.
@@ -579,7 +579,7 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 	ref_a     = "S"
 	npad      = 2
 	#####################################################
-	from logger import Logger,BaseLogger_Files
+	from EMAN2.logger import Logger,BaseLogger_Files
 	log       = Logger()
 	log   =Logger(BaseLogger_Files())
 	log.prefix=outdir+"/"
@@ -662,7 +662,7 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 		an = []
 		for i in xrange(len(xrng)):   an.append(-1)
 	else:
-		from  alignment	    import proj_ali_incore_local
+		from EMAN2.alignment import proj_ali_incore_local
 		an      = get_input_from_string(an)
 
 	first_ring  = int(ir)
@@ -673,7 +673,7 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 	numref  = len(ref_list)
 	nx      = ref_list[0].get_xsize()
 	if last_ring < 0:last_ring = nx//2 - 2
-	import user_functions
+	import EMAN2.user_functions as user_functions
 	user_func = user_functions.factory[user_func_name]
 	if (myid == main_node):
 		#import user_functions
@@ -820,10 +820,10 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
  			trans = [ [ tr_dummy for im in xrange(nima) ] for iref in xrange(numref) ]
 			pixer = [ [  0.0     for im in xrange(nima) ] for iref in xrange(numref) ]
 			if(an[N_step] > 0):
-				from utilities    import even_angles
+				from EMAN2.utilities import even_angles
 				ref_angles = even_angles(delta[N_step], symmetry=sym, method = ref_a, phiEqpsi = "Zero")
 				# generate list of angles
-				from alignment import generate_list_of_reference_angles_for_search
+				from EMAN2.alignment import generate_list_of_reference_angles_for_search
 				list_of_reference_angles = \
 				generate_list_of_reference_angles_for_search(ref_angles, sym=sym)
 				del ref_angles
@@ -900,7 +900,7 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 		del recvbuf
 		#  The while loop over even angles delta should start here.
 		#  prepare reference directions
-		from utilities import even_angles, getvec
+		from EMAN2.utilities import even_angles, getvec
 		refa = even_angles(60.0)
 		numrefang = len(refa)
 		refanorm = empty( (numrefang, 3), dtype = float32)
@@ -940,7 +940,7 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 		if myid == main_node:
 
 			for imrefa in xrange(numrefang):
-				from utilities import findall
+				from EMAN2.utilities import findall
 				N = findall(imrefa, assigntorefa)
 				current_nima = len(N)
 				if( current_nima >= numref and report_error == 0):
@@ -982,7 +982,7 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 			asi = [[] for iref in xrange(numref)]
 			report_error = 0
 			for imrefa in xrange(numrefang):
-				from utilities import findall
+				from EMAN2.utilities import findall
 				N = findall(imrefa, assigntorefa)
 				current_nima = len(N)
 				if( current_nima >= numref and report_error == 0):
@@ -1175,7 +1175,7 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 			mpi_barrier(MPI_COMM_WORLD)
 			if(myid == main_node):
 				recvbuf = map(float, recvbuf)
-				from statistics import hist_list
+				from EMAN2.statistics import hist_list
 				lhist = 20
 				region, histo = hist_list(recvbuf, lhist)
 				if(region[0] < 0.0):  region[0] = 0.0
@@ -1243,12 +1243,12 @@ def mref_ali3d_EQ_Kmeans(ref_list,outdir,particle_list_file,Tracker):
 			else: par_str = ['group', 'ID' ]
 			"""
 	        	if myid == main_node:
-				from utilities import file_type
+				from EMAN2.utilities import file_type
 	        		if(file_type(stack) == "bdb"):
-	        			from utilities import recv_attr_dict_bdb
+	        			from EMAN2.utilities import recv_attr_dict_bdb
 	        			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        		else:
-	        			from utilities import recv_attr_dict
+	        			from EMAN2.utilities import recv_attr_dict
 	        			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 	        	else:		send_attr_dict(main_node, data, par_str, image_start, image_end)
 			"""
@@ -1322,7 +1322,7 @@ def print_dict(dict,theme):
 				print("                    => "+key+spaces[len(key):]+":  "+str(value))
 """
 def checkstep(item, keepchecking, myid, main_node):
-	from utilities import bcast_number_to_all
+	from EMAN2.utilities import bcast_number_to_all
         if(myid == main_node):
                 if keepchecking:
                         if(os.path.exists(item)):
@@ -1342,9 +1342,9 @@ def get_resolution_mrk01(vol, radi, nnxo, fscoutputdir,mask_option):
         # this function is single processor
         #  Get updated FSC curves, user can also provide a mask using radi variable
 	import types
-	from statistics import fsc
-	from utilities import model_circle, get_im
-	from filter import fit_tanh1
+	from EMAN2.statistics import fsc
+	from EMAN2.utilities import model_circle, get_im
+	from EMAN2.filter import fit_tanh1
 	if(type(radi) == int):
 		if(mask_option is None):  mask = model_circle(radi,nnxo,nnxo,nnxo)
 		else:                     mask = get_im(mask_option)
@@ -1406,7 +1406,7 @@ def merge_groups(stable_members_list):
 	return alist
 
 def save_alist(Tracker,name_of_the_text_file,alist):
-	from utilities import write_text_file
+	from EMAN2.utilities import write_text_file
 	import os
 	log       =Tracker["constants"]["log_main"]
 	myid      =Tracker["constants"]["myid"]
@@ -1428,8 +1428,8 @@ def get_margin_of_error(this_group_of_data,Tracker):
 	
 def do_two_way_comparison(Tracker):
 	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_file,write_text_file
-	from statistics import k_means_match_clusters_asg_new
+	from EMAN2.utilities import read_text_file,write_text_file
+	from EMAN2.statistics import k_means_match_clusters_asg_new
 	######
 	myid              =Tracker["constants"]["myid"]
 	main_node         =Tracker["constants"]["main_node"]
@@ -1445,7 +1445,7 @@ def do_two_way_comparison(Tracker):
 	if Tracker["constants"]["indep_runs"]<2:
 		if myid ==main_node:
 			log_main.add(" Error! One single run cannot make two-way comparison")
-		from mip import mpi_finalize
+		from EMAN2.mip import mpi_finalize
 		mpi_finalize()
 		exit()
 	for iter_indep in xrange(Tracker["constants"]["indep_runs"]):
@@ -1624,7 +1624,7 @@ def select_two_runs(summed_scores,two_way_dict):
 	return run1, run2, rate1, rate2
 
 def get_ali3d_params(ali3d_old_text_file,shuffled_list):
-	from utilities import read_text_row
+	from EMAN2.utilities import read_text_row
 	ali3d_old = read_text_row(ali3d_old_text_file)
 	ali3d_new = []
 	for iptl in xrange(len(shuffled_list)):
@@ -1632,7 +1632,7 @@ def get_ali3d_params(ali3d_old_text_file,shuffled_list):
 	return ali3d_new
 
 def counting_projections(delta,ali3d_params,image_start):
-	from utilities import even_angles,angle_between_projections_directions
+	from EMAN2.utilities import even_angles,angle_between_projections_directions
 	sampled_directions = {}
 	angles=even_angles(delta,0,180)
 	for a in angles:
@@ -1679,8 +1679,8 @@ def load_dict(dict_angle_main_node, unloaded_dict_angles):
 
 def get_stat_proj(Tracker,delta,this_ali3d):
 	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_row,wrap_mpi_bcast,even_angles
-	from applications import MPI_start_end
+	from EMAN2.utilities import read_text_row,wrap_mpi_bcast,even_angles
+	from EMAN2.applications import MPI_start_end
 	myid      = Tracker["constants"]["myid"]
 	main_node = Tracker["constants"]["main_node"]
 	nproc     = Tracker["constants"]["nproc"]
@@ -1716,7 +1716,7 @@ def get_attr_stack(data_stack,attr_string):
 	return attr_value_list
 	
 def get_sorting_attr_stack(data_stack):
-	from utilities import get_params_proj
+	from EMAN2.utilities import get_params_proj
 	attr_value_list = []
 	for idat in xrange(len(data_stack)):
 		group = data_stack[idat].get_attr("group")
@@ -1731,8 +1731,8 @@ def fill_in_mpi_list(mpi_list,data_list,index_start,index_end):
 	
 def get_sorting_params(Tracker,data):
 	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_row,wrap_mpi_bcast,even_angles
-	from applications import MPI_start_end
+	from EMAN2.utilities import read_text_row,wrap_mpi_bcast,even_angles
+	from EMAN2.applications import MPI_start_end
 	myid      = Tracker["constants"]["myid"]
 	main_node = Tracker["constants"]["main_node"]
 	nproc     = Tracker["constants"]["nproc"]
@@ -1756,8 +1756,8 @@ def get_sorting_params(Tracker,data):
 	
 def get_sorting_params_refine(Tracker,data):
 	from mpi import mpi_barrier, MPI_COMM_WORLD
-	from utilities import read_text_row,wrap_mpi_bcast,even_angles
-	from applications import MPI_start_end
+	from EMAN2.utilities import read_text_row,wrap_mpi_bcast,even_angles
+	from EMAN2.applications import MPI_start_end
 	myid      = Tracker["constants"]["myid"]
 	main_node = Tracker["constants"]["main_node"]
 	nproc     = Tracker["constants"]["nproc"]
@@ -1792,7 +1792,7 @@ def create_random_list(Tracker):
 	myid        = Tracker["constants"]["myid"]
 	main_node   = Tracker["constants"]["main_node"]
 	total_stack = Tracker["total_stack"]
-	from utilities import wrap_mpi_bcast
+	from EMAN2.utilities import wrap_mpi_bcast
 	indep_list  =[]
 	import copy
 	SEED= Tracker["constants"]["seed"]
@@ -1832,7 +1832,7 @@ def recons_mref(Tracker):
 		a_group_list=particle_list[(total_data*igrp)//number_of_groups:(total_data*(igrp+1))//number_of_groups]
 		a_group_list.sort()
 		Tracker["this_data_list"] = a_group_list
-		from utilities import write_text_file
+		from EMAN2.utilities import write_text_file
 		particle_list_file = os.path.join(Tracker["this_dir"],"iclass%d.txt"%igrp)
 		if myid ==main_node:
 			write_text_file(Tracker["this_data_list"],particle_list_file)
@@ -1849,7 +1849,7 @@ def recons_mref(Tracker):
 	return ref_list
 
 def apply_low_pass_filter(refvol,Tracker):
-	from filter import filt_tanl
+	from EMAN2.filter import filt_tanl
 	for iref in xrange(len(refvol)):
 		refvol[iref]=filt_tanl(refvol[iref],Tracker["low_pass_filter"],.1)
 	return refvol
@@ -1928,7 +1928,7 @@ def get_two_chunks_from_stack(Tracker):
 def adjust_fsc_down(fsc,n1,n2):
 	# fsc curve:  frequencies   cc values  number of the sampling points
 	# n1 total data n2 subset
-	from utilities import read_text_file
+	from EMAN2.utilities import read_text_file
 	import types
 	if type(fsc) == types.StringType:fsc=read_text_file(fsc,-1)
 	N_bins =  len(fsc[0])
@@ -1956,7 +1956,7 @@ def set_filter_parameters_from_adjusted_fsc(n1,n2,Tracker):
 	Tracker["falloff"]  = falloff
 
 def main():
-	from logger import Logger, BaseLogger_Files
+	from EMAN2.logger import Logger, BaseLogger_Files
         arglist = []
         i = 0
         while( i < len(sys.argv) ):
@@ -2028,11 +2028,11 @@ def main():
 		mpi_comm = MPI_COMM_WORLD
 		main_node= 0
 		# import some utilities
-		from utilities import get_im,bcast_number_to_all,cmdexecute,write_text_file,read_text_file,wrap_mpi_bcast
-		from applications import recons3d_n_MPI, mref_ali3d_MPI, Kmref_ali3d_MPI
-		from statistics import k_means_match_clusters_asg_new,k_means_stab_bbenum 
+		from EMAN2.utilities import get_im,bcast_number_to_all,cmdexecute,write_text_file,read_text_file,wrap_mpi_bcast
+		from EMAN2.applications import recons3d_n_MPI, mref_ali3d_MPI, Kmref_ali3d_MPI
+		from EMAN2.statistics import k_means_match_clusters_asg_new,k_means_stab_bbenum 
 		# Create the main log file
-		from logger import Logger,BaseLogger_Files
+		from EMAN2.logger import Logger,BaseLogger_Files
 		if myid ==main_node:
 			log_main=Logger(BaseLogger_Files())
 			log_main.prefix=masterdir+"/"
@@ -2124,7 +2124,7 @@ def main():
 		#--------------------------------------------------------------------
 		#
 		# Get the pixel size; if none, set to 1.0, and the original image size
-		from utilities import get_shrink_data_huang
+		from EMAN2.utilities import get_shrink_data_huang
 		if(myid == main_node):
 			line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
 			print(line+"Initialization of 3-D sorting")
@@ -2207,7 +2207,7 @@ def main():
 		from random import shuffle
 		# Compute the resolution 
 		#### make chunkdir dictionary for computing margin of error
-		import user_functions
+		import EMAN2.user_functions as user_functions
 		user_func = user_functions.factory[Tracker["constants"]["user_func"]]
 		chunk_dict = {}
 		chunk_list = []
@@ -2374,7 +2374,7 @@ def main():
 		if myid == main_node:
 			log_main.add("number of cpus used in this run is %d"%Tracker["constants"]["nproc"])
 			log_main.add("**********************************************************")
-		from filter import filt_tanl
+		from EMAN2.filter import filt_tanl
 		### START 3-D sorting
 		if myid ==main_node:
 			log_main.add("----------3-D sorting  program------- ")
@@ -2389,10 +2389,10 @@ def main():
 				volf_file_name = os.path.join(masterdir, "volf%d.hdf"%index)
 				vol.write_image(volf_file_name)
 		mpi_barrier(MPI_COMM_WORLD)
-		from utilities import get_input_from_string
+		from EMAN2.utilities import get_input_from_string
 		delta       = get_input_from_string(Tracker["constants"]["delta"])
 		delta       = delta[0]
-		from utilities import even_angles
+		from EMAN2.utilities import even_angles
 		n_angles = even_angles(delta, 0, 180)
 		this_ali3d  = Tracker["constants"]["ali3d"]
 		sampled = get_stat_proj(Tracker,delta,this_ali3d)

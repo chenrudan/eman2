@@ -10,7 +10,7 @@ import os
 import sys
 from global_def import ERROR
 
-from sxgui_template import SXcmd_token, SXcmd
+from EMAN2.sxgui_template import SXcmd_token, SXcmd
 
 # ========================================================================================
 def construct_token_list_from_wiki(wiki_file_path):

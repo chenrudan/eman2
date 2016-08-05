@@ -41,14 +41,14 @@
 # ========================================================================================
 
 from EMAN2 import *
-from sparx import *
-from sys import  *
+from EMAN2.sparx import *
+from sys import *
 import os
 import sys
 
 from optparse import OptionParser
 import global_def
-from global_def import  *
+from global_def import *
 
 def main():
 	# Parse command argument

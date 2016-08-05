@@ -1789,7 +1789,7 @@ def sptctffit( options, apix, imagefilenames, angles ):
 def sptctfplotter( options, nx, xdata, ydata, maxangle, angle, angleindx, nangles, imgindx, m=0, b=0, gdefocus=None, gmid=None, failedys=[], failedxs=[] ):
 	import matplotlib
 	import matplotlib.pyplot as plt
-	import pylab
+	import EMAN2.pylab as pylab
 	
 	print "failed data in plotter is", failedys, failedxs
 	
@@ -1929,7 +1929,7 @@ def sptctfplotter( options, nx, xdata, ydata, maxangle, angle, angleindx, nangle
 def generalplotter( options, xaxis, yaxis ):
 	import matplotlib
 	import matplotlib.pyplot as plt
-	import pylab
+	import EMAN2.pylab as pylab
 	'''
 	FORMAT AXES
 	'''

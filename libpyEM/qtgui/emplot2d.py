@@ -59,12 +59,12 @@ from OpenGL.GL import *
 from math import *
 from EMAN2 import *
 import sys
-from emshape import *
+from EMAN2.emshape import *
 import weakref
 from cPickle import dumps,loads
 import struct, math
 from numpy import *
-from valslider import *
+from EMAN2.valslider import *
 from cStringIO import StringIO
 import re
 
@@ -73,8 +73,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 #matplotlib.use('Agg')
 
-from emapplication import EMApp, EMGLWidget
-from emglobjects import EMOpenGLFlagsAndTools
+from EMAN2.emapplication import EMApp, EMGLWidget
+from EMAN2.emglobjects import EMOpenGLFlagsAndTools
 
 import traceback
 
@@ -1433,7 +1433,7 @@ class EMPlot2DClassInsp(QtGui.QWidget):
 
 	def imgSelect(self,sel=None):
 		if self.imgwin==None :
-			from emimagemx import EMImageMXWidget
+			from EMAN2.emimagemx import EMImageMXWidget
 			self.imgwin=EMImageMXWidget()
 
 		try:
@@ -1452,7 +1452,7 @@ class EMPlot2DClassInsp(QtGui.QWidget):
 		self.imgwin.show()
 
 	def selectImgFile(self):
-		from embrowser import EMBrowserWidget
+		from EMAN2.embrowser import EMBrowserWidget
 		self.browse = EMBrowserWidget(withmodal=True,multiselect=False)
 		self.browse.show()
 		QtCore.QObject.connect(self.browse, QtCore.SIGNAL("ok"),self.setImgFile)

@@ -13,7 +13,7 @@
 from EMAN2 import *
 import sys
 import os
-from EMAN2star import *
+from EMAN2.EMAN2star import *
 import pyemtbx.options
 
 progname = os.path.basename(sys.argv[0])
