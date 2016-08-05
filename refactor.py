@@ -16,12 +16,12 @@ doctest,dumbdbm,EasyDialogs,errno,exceptions,filecmp,fileinput,fnmatch,fractions
 gc,gdbm,getopt,getpass,gettext,glob,grp,gzip,hashlib,heapq,hmac,imaplib,inspect,itertools,
 json,linecache,locale,logging,mailbox,math,mhlib,mmap,multiprocessing,operator,optparse,os,
 pdb,pickle,pipes,pkgutil,platform,plistlib,pprint,profile,pstats,pwd,pyclbr,pydoc,Queue,
-random,re,readline,resource,rlcompleter,robotparser,sched,select,shelve,shlex,shutil,signal,
+random,re,types,readline,resource,rlcompleter,robotparser,sched,select,shelve,shlex,shutil,signal,
 SimpleXMLRPCServer,site,sitecustomize,smtpd,smtplib,socket,SocketServer,sqlite3,string,
 StringIO,struct,subprocess,sys,sysconfig,tabnanny,tarfile,tempfile,textwrap,threading,time,
 timeit,trace,traceback,unittest,urllib,urllib2,urlparse,usercustomize,uuid,warnings,weakref,
 webbrowser,whichdb,xml,xmlrpclib,zipfile,zipimport,zlib,builtins,__builtin__,bsddb,PyQt4,
-OpenGL,numpy,scipy,matplotlib,readlinem,ipython,IPython""" # standard library plus a few commonly used packages
+OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py""" # standard library plus a few commonly used packages
 stdlib27 = stdlib27.replace("\n","").split(",") # clean up and generate list
 
 bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
@@ -38,8 +38,6 @@ def main():
 
 		newroot = root.replace(olddir,newdir)
 		mkdir_p(newroot)
-
-
 
 		for f in files:
 			if os.path.isfile("{}/{}".format(root,f)):
