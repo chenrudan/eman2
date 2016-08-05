@@ -21,7 +21,7 @@ SimpleXMLRPCServer,site,sitecustomize,smtpd,smtplib,socket,SocketServer,sqlite3,
 StringIO,struct,subprocess,sys,sysconfig,tabnanny,tarfile,tempfile,textwrap,threading,time,
 timeit,trace,traceback,unittest,urllib,urllib2,urlparse,usercustomize,uuid,warnings,weakref,
 webbrowser,whichdb,xml,xmlrpclib,zipfile,zipimport,zlib,builtins,__builtin__,bsddb,PyQt4,
-OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py""" # standard library plus a few commonly used packages
+OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py,setuptools""" # standard library plus a few commonly used packages
 stdlib27 = stdlib27.replace("\n","").split(",") # clean up and generate list
 
 bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
@@ -52,7 +52,6 @@ def main():
 					except: pass
 
 	print("Results stored in: {}".format(newdir))
-
 
 def mkdir_p(path):
 	try: os.makedirs(path)
