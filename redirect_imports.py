@@ -4,10 +4,7 @@ import os
 import errno
 import shutil
 
-global progs_contain
 progs_contain = ["em","EM","libpy","EMAN","eman","e2"]
-
-global bindir_files
 bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
 
 #homedir = os.getenv("HOME")
