@@ -387,7 +387,7 @@ def main(args):
 		for i in range(len(new_class_average_images)):  new_class_average_images[i].write_image(size_adjusted_class_averages_file_name,i)
 		#  It has to be explicitly closed
 		if size_adjusted_class_averages_file_name[:4] == "bdb:":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			DB = db_open_dict(size_adjusted_class_averages_file_name)
 			DB.close()
 	mpi_barrier(MPI_COMM_WORLD)

@@ -38,7 +38,7 @@ from OpenGL import GL,GLU,GLUT
 from OpenGL.GL import *
 from valslider import ValSlider,ValBox
 from math import *
-import EMAN2db
+from EMAN2 import EMAN2db
 from EMAN2 import *
 import EMAN2
 import sys
@@ -500,7 +500,7 @@ class EMImage2DWidget(EMGLWidget):
 
 	def auto_contrast(self,bool=False,inspector_update=True,display_update=True):
 		global HOMEDB
-		HOMEDB=EMAN2db.EMAN2DB.open_db()
+		HOMEDB= EMAN2db.EMAN2DB.open_db()
 		HOMEDB.open_dict("display_preferences")
 		db = HOMEDB.display_preferences
 		auto_contrast = db.get("display_2d_auto_contrast",dfl=True)
@@ -549,7 +549,7 @@ class EMImage2DWidget(EMGLWidget):
 		if self.file_name == "": return # there is no file name, we have no means to stores information
 		try:
 			global HOMEDB
-			HOMEDB=EMAN2db.EMAN2DB.open_db()
+			HOMEDB= EMAN2db.EMAN2DB.open_db()
 			HOMEDB.open_dict("image_2d_display_settings")
 		except:
 			# something wrong with the HOMEDB?

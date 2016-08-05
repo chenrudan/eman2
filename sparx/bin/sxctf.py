@@ -34,21 +34,19 @@
 # e2ctf.py  10/29/2008 Steven Ludtke
 # This is a program for determining CTF parameters
 
-import global_def
-from global_def import *
-
-from EMAN2 import *
-from EMAN2db import db_open_dict, db_check_dict
-from sparx import *
-from optparse import OptionParser
-from OpenGL import GL,GLUT
-from numpy import *
 import os
 import sys
 import weakref
-from emapplication import EMApp
+from optparse import OptionParser
 
 from Simplex import Simplex
+from emapplication import EMApp
+from numpy import *
+
+import global_def
+from EMAN2.EMAN2db import db_open_dict, db_check_dict
+from global_def import *
+from sparx import *
 
 debug=False
 logid=None

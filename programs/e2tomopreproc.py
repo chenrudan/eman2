@@ -29,13 +29,10 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  2111-1307 USA
 
 
-from optparse import OptionParser
-
-from EMAN2 import *
-from EMAN2jsondb import JSTask,jsonclasses
-
 import sys
-from sys import argv
+
+from EMAN2jsondb import JSTask
+
 
 def main():
 
@@ -234,7 +231,7 @@ def main():
 
 		print "\n(e2spt_preproc)(main) - INITIALIZING PARALLELISM!\n"
 
-		from EMAN2PAR import EMTaskCustomer
+		from EMAN2.EMAN2PAR import EMTaskCustomer
 		etc=EMTaskCustomer(options.parallel)
 		pclist=[options.input]
 

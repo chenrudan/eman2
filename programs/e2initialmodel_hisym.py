@@ -31,14 +31,11 @@
 #
 #
 
-from EMAN2 import *
-import random
-from math import *
-from numpy import *
 import os
 import sys
-from e2simmx import cmponetomany
-from EMAN2jsondb import JSTask,jsonclasses
+
+from numpy import *
+
 
 def main():
 	progname = os.path.basename(sys.argv[0])

@@ -35,11 +35,12 @@
 # This program classify particles using a binary tree
 
 
-from EMAN2 import *
 import os
+
 import numpy as np
 from EMAN2jsondb import JSTask
-	
+
+
 def main():
 	
 	usage="""e2classifytree.py <projection> <particle> [options]
@@ -112,7 +113,7 @@ def main():
 	clsmx=[EMData(1,npt) for i in range(7)]
 	nnod=EMUtil.get_image_count(options.nodes)
 	if options.parallel :
-		from EMAN2PAR import EMTaskCustomer
+		from EMAN2.EMAN2PAR import EMTaskCustomer
 		etc=EMTaskCustomer(options.parallel)
 		tasks=[]
 		step=50

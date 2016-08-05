@@ -34,10 +34,10 @@
 #
 #
 
-from EMAN2 import *
-from EMAN2jsondb import JSTask,jsonclasses
 import os
-from sys import argv
+
+from EMAN2jsondb import JSTask
+
 
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -162,7 +162,7 @@ def main():
 		
 		print "\n(e2spt_preproc)(main) - INITIALIZING PARALLELISM!\n"
 		
-		from EMAN2PAR import EMTaskCustomer
+		from EMAN2.EMAN2PAR import EMTaskCustomer
 		etc=EMTaskCustomer(options.parallel)
 		pclist=[options.input]
 

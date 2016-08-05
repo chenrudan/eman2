@@ -32,10 +32,12 @@
 #
 #
 
-from EMAN2 import *
-import os, math
+import math
+import os
+
 from EMAN2jsondb import JSTask,jsonclasses
-	
+
+
 def main():
 	"""Program to validate a reconstruction by the Richard Henderson tilt validation method. A volume to validate, a small stack (~100 imgs) of untilted and ~10-15 degree
 	tilted particles must be presented. The untilted and tilted particle stack must have a one-to-one relationship. In the contour plot, the Tiltaxis is along positive 'Y'
@@ -162,10 +164,10 @@ def main():
 
 	# Initialize parallelism if being used
 	if options.parallel :
-		from EMAN2PAR import EMTaskCustomer
+		from EMAN2.EMAN2PAR import EMTaskCustomer
 		etc=EMTaskCustomer(options.parallel)
 	else:
-		from EMAN2PAR import EMTaskCustomer
+		from EMAN2.EMAN2PAR import EMTaskCustomer
 		etc=EMTaskCustomer("thread:1")
 		#etc.precache(pclist)
 	

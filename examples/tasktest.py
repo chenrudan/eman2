@@ -34,16 +34,11 @@
 # tasktest.py Steven Ludtke
 # This program implements, via various options, the parallelism system for EMAN2
 
-from EMAN2db import EMTask
-from EMAN2 import *
-from EMAN2PAR import *
-from optparse import OptionParser
-from math import *
-import time
-import os
 import os.path
-import sys
-import socket
+import time
+
+from EMAN2.EMAN2PAR import *
+from EMAN2db import EMTask
 
 #sock=socket.socket()
 #sock.connect(("localhost",9990))
