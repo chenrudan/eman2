@@ -70,8 +70,8 @@ def get_new_import(imp):
 	print("\t{}".format(newimp))
 	return newimp
 
-olddir = "eman2-conda"
-newdir = "refactored"
+olddir = os.getcwd()
+newdir = "../{}_refactor".format(os.path.basename(olddir))
 
 for root,dirs,files in os.walk(olddir,topdown=True):
 	print("\n\nCWD: {}\n\n".format(root))
@@ -90,3 +90,5 @@ for root,dirs,files in os.walk(olddir,topdown=True):
 			else:
 				try: shutil.copy("{}/{}".format(root,f),"{}/{}".format(newroot,f))
 				except: pass
+
+print("RESULT IN {}".format(newdir))
