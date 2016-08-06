@@ -33,8 +33,8 @@
 
 import os
 import global_def
-from global_def import *
-from optparse import OptionParser
+from   global_def import *
+from   optparse   import OptionParser
 import sys
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -68,10 +68,10 @@ def main():
 		else:                 weights = True
 
 		if global_def.CACHE_DISABLE:
-			from sparx.utilities import disable_bdb_cache
+			from utilities import disable_bdb_cache
 			disable_bdb_cache()
 		if options.MPIGA:
-			from sparx.development import cml2_main_mpi
+			from development import cml2_main_mpi
 			global_def.BATCH = True
 			cml2_main_mpi(args[0], args[1], options.ir, options.ou, options.delta, options.dpsi, 
 				      options.lf, options.hf, options.rand_seed, options.maxit, options.given, options.first_zero, 
@@ -81,14 +81,14 @@ def main():
 			from mpi import mpi_init
 			sys.argv = mpi_init(len(sys.argv),sys.argv)
 
-			from sparx.applications import cml_find_structure_MPI2
+			from applications import cml_find_structure_MPI2
 			global_def.BATCH = True
 			cml_find_structure_MPI2(args[0], args[1], options.ir, options.ou, options.delta, options.dpsi, 
 				    options.lf, options.hf, options.rand_seed, options.maxit, options.given, options.first_zero, 
 				    weights, options.debug, options.trials)
 			global_def.BATCH = False
 		else:
-			from sparx.applications import cml_find_structure_main
+			from applications import cml_find_structure_main
 			global_def.BATCH = True
 			cml_find_structure_main(args[0], args[1], options.ir, options.ou, options.delta, options.dpsi, 
 				    options.lf, options.hf, options.rand_seed, options.maxit, options.given, options.first_zero, 

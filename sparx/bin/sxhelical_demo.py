@@ -35,9 +35,9 @@
 
 import os
 import global_def
-from global_def import *
-from sparx.user_functions import *
-from optparse import OptionParser
+from   global_def     import *
+from   user_functions import *
+from   optparse       import OptionParser
 import sys
 
 def main():
@@ -115,7 +115,7 @@ def main():
 			generate_helimic(args[0], args[1], options.apix, options.CTF, options.Cs, options.voltage, options.ac, options.nonoise, options.rand_seed)
 
 		if options.generate_noisycyl:
-			from sparx.utilities import model_cylinder, model_gauss_noise
+			from utilities import model_cylinder, model_gauss_noise
 			outvol = args[0]
 			boxdims = options.boxsize.split(',')
 			if len(boxdims) < 1 or len(boxdims) > 3:
@@ -133,7 +133,7 @@ def main():
 			(model_cylinder(options.rad,nx, ny, nz)*model_gauss_noise(1.0, nx, ny, nz) ).write_image(outvol)
 
 		if options.generate_mask:
-			from sparx.utilities import model_blank, pad
+			from utilities import model_blank, pad
 			outvol = args[0]
 			maskdims = options.masksize.split(',')
 			if len(maskdims) < 1 or len(maskdims) > 2:
@@ -149,8 +149,8 @@ def main():
 			mask.write_image(outvol)
 		
 		if options.applyparams:
-			from sparx.utilities import get_im, get_params2D, set_params2D
-			from sparx.fundamentals import cyclic_shift
+			from utilities    import get_im, get_params2D, set_params2D
+			from fundamentals import cyclic_shift
 			stack = args[0]
 			newstack = args[1]
 			mask = get_im(args[2])
@@ -168,11 +168,11 @@ def main():
 
 def generate_helimic(refvol, outdir, pixel, CTF=False, Cs=2.0,voltage = 200.0, ampcont = 10.0, nonoise = False, rand_seed=14567):
 	
-	from sparx.utilities import model_blank, model_gauss, model_gauss_noise, pad, get_im
-	from random import random
-	from sparx.projection import prgs, prep_vol
-	from sparx.filter import filt_gaussl, filt_ctf
-	from EMAN2 import EMAN2Ctf
+	from utilities	 import model_blank, model_gauss, model_gauss_noise, pad, get_im
+	from random 	 import random
+	from projection  import prgs, prep_vol
+	from filter	     import filt_gaussl, filt_ctf
+	from EMAN2 	     import EMAN2Ctf
 	
 	if os.path.exists(outdir):   ERROR('Output directory exists, please change the name and restart the program', "sxhelical_demo", 1)
 	os.mkdir(outdir)
@@ -201,7 +201,7 @@ def generate_helimic(refvol, outdir, pixel, CTF=False, Cs=2.0,voltage = 200.0, a
 		if CTF :
 			#ctf = EMAN2Ctf()
 			#ctf.from_dict( {"defocus":defocus, "cs":Cs, "voltage":voltage, "apix":pixel, "ampcont":ampcont, "bfactor":0.0} )
-			from sparx.utilities import generate_ctf
+			from utilities import generate_ctf
 			ctf = generate_ctf([defocus,2,200,1.84,0.0,ampcont,defocus*0.2,80])   ##@ming   the range of astigmatism amplitude is between 10 percent and 22 percent. 20 percent is a good choice.
 		i = idef - 4
 		for k in xrange(1):

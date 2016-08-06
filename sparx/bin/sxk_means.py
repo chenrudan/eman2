@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from global_def import *
-from optparse import OptionParser
+from   global_def import *
+from   optparse import OptionParser
 import sys
 def main():
 	
@@ -75,9 +75,9 @@ def main():
 			sys.exit()
 
 		if global_def.CACHE_DISABLE:
-			from sparx.utilities import disable_bdb_cache
+			from utilities import disable_bdb_cache
 			disable_bdb_cache()
-		from sparx.applications import k_means_main
+		from  applications  import  k_means_main
 		global_def.BATCH = True
 		k_means_main(args[0], args[1], mask, "SSE", options.K, options.rand_seed, 
 			     options.maxit, options.trials, options.crit, options.CTF, 0.0, 0.0, 

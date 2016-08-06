@@ -23,7 +23,7 @@ requirements:
         - fftw
         - hdf5
         - libtiff >4
-        - jpeg <9
+        - jpeg >8
         - libpng
         - python <3
     run:
@@ -43,7 +43,7 @@ requirements:
         - bsddb
         - readline
         - libtiff >4
-        - jpeg <9
+        - jpeg >8
         - libpng
 
 about:

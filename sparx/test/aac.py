@@ -31,8 +31,8 @@
 #
 #
 
-from EMAN2 import *
-from sparx import *
+from EMAN2  import *
+from sparx  import *
 
     
 N = 2000

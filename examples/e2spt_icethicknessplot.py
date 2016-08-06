@@ -451,7 +451,7 @@ def plotter(options,xaxis,yaxis,xaxislabel,yaxislabel,title,pad=0,squareplot=Fal
 	matplotlib.use("TkAgg",warn=False)
 
 	import matplotlib.pyplot as plt
-	import EMAN2.pylab as pylab
+	import pylab
 
 	
 	'''

@@ -9,11 +9,11 @@
 from __future__ import print_function
 from EMAN2 import *
 from sparx import *
-from sparx.logger import Logger, BaseLogger_Files
+from logger import Logger, BaseLogger_Files
 import global_def
 
-from mpi import *
-from math import *
+from mpi   import  *
+from math  import  *
 
 
 import os
@@ -21,8 +21,8 @@ import sys
 import subprocess
 import time
 import string
-from sys import exit
-from time import localtime, strftime
+from   sys import exit
+from   time import localtime, strftime
 
 global cushion
 cushion = 6
@@ -589,10 +589,10 @@ def threshold_params_changes(currentdir, previousdir, th = 0.95, sym = "c1"):
 	#  Indexes contain list of images processed - sorted integers, subset of the full range.
 	#  params - contain parameters associated with these images
 	#  Both lists can be of different sizes, so we have to find a common subset
-	from sparx.utilities import getang3
-	from sparx.pixel_error import max_3D_pixel_error
-	from EMAN2 import Vec2f
-	import EMAN2.sets as sets
+	from utilities    import getang3
+	from pixel_error  import max_3D_pixel_error
+	from EMAN2        import Vec2f
+	import sets
 
 	cids    = read_text_file(os.path.join(currentdir,"indexes.txt"))
 	pids    = read_text_file(os.path.join(previousdir,"indexes.txt"))
@@ -828,7 +828,7 @@ def checkstep(item, keepchecking, myid, main_node):
 
 def read_fsc(fsclocation, lc, myid, main_node, comm = -1):
 	# read fsc and fill it with zeroes pass lc location
-	from sparx.utilities import bcast_list_to_all, read_text_file
+	from utilities import bcast_list_to_all, read_text_file
 	if comm == -1 or comm == None: comm = MPI_COMM_WORLD
 	if(myid == main_node):
 		f = read_text_file(fsclocation,1)
@@ -995,7 +995,7 @@ def compute_resolution(stack, partids, partstack, Tracker, myid, main_node, npro
 				mask = Util.window(rot_shift3D(mask,scale=float(nx)/float(Tracker["constants"]["nnxo"])),nx,nx,nx)
 
 		if( myid == main_node):
-			from sparx.fundamentals import fpol
+			from fundamentals import fpol
 			fpol(vol[procid], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"]).write_image(os.path.join(Tracker["directory"],"vor%01d.hdf"%procid))
 			line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
 			print(  line,"Generated vor #%01d  using  image size %d "%(procid, nx))
@@ -1102,7 +1102,7 @@ def compute_resolution(stack, partids, partstack, Tracker, myid, main_node, npro
 				mask = Util.window(rot_shift3D(mask,scale=float(nx)/float(Tracker["constants"]["nnxo"])),nx,nx,nx)
 
 		if( myid == main_node):
-			from sparx.fundamentals import fpol
+			from fundamentals import fpol
 			#fpol(vol[procid], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"]).write_image(os.path.join(Tracker["directory"],"vor%01d.hdf"%procid))
 			fpol(vol[procid], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"]).write_image(os.path.join(Tracker["directory"],"vol%01d.hdf"%procid))
 			line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
@@ -1205,7 +1205,7 @@ def compute_volsmeared(stack, partids, partstack, Tracker, myid, main_node, npro
 			#	mask = Util.window(rot_shift3D(mask,scale=float(nx)/float(Tracker["constants"]["nnxo"])),nx,nx,nx)
 
 		if( myid == main_node):
-			from sparx.fundamentals import fpol
+			from fundamentals import fpol
 			fpol(vol[procid], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"], Tracker["constants"]["nnxo"]).write_image(os.path.join(Tracker["directory"],"vol%01d.hdf"%procid))
 			line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
 			print(  line,"Generated vol #%01d  using  image size %d "%(procid, nx))
@@ -1268,9 +1268,9 @@ def get_shrink_data_old(Tracker, nxinit, partids, partstack, myid, main_node, np
 	#   and assign to them parameters from partstack with optional CTF application and shifting of the data.
 	# So, the lengths of partids and partstack are the same.
 	#  The read data is properly distributed among MPI threads.
-	from sparx.fundamentals import resample
-	from sparx.filter import filt_ctf
-	from sparx.applications import MPI_start_end
+	from fundamentals import resample
+	from filter import filt_ctf
+	from applications import MPI_start_end
 
 	if( myid == main_node ):
 		print( "  ")
@@ -1333,13 +1333,13 @@ def get_shrink_data_old(Tracker, nxinit, partids, partstack, myid, main_node, np
 	return data, oldshifts
 
 def metamove(projdata, oldshifts, Tracker, partids, partstack, outputdir, procid, myid, main_node, nproc):
-	from sparx.applications import slocal_ali3d_base_old, sali3d_base_old
-	from mpi import mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
+	from applications import slocal_ali3d_base_old, sali3d_base_old
+	from mpi import  mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
 	#  Takes preshrunk data and does the refinement as specified in Tracker
 	#
 	#  Will create outputdir
 	#  Will write to outputdir output parameters: params-chunk0.txt and params-chunk1.txt
-	from sparx.utilities import get_input_from_string
+	from utilities  import get_input_from_string
 	shrinkage = float(Tracker["nxinit"])/float(Tracker["constants"]["nnxo"])
 	if(myid == main_node):
 		#  Create output directory
@@ -1451,15 +1451,15 @@ def print_dict(dict,theme):
 #
 def main():
 
-	from sparx.utilities import write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
-	import sparx.user_functions as user_functions
-	from sparx.applications import MPI_start_end
+	from utilities import write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
+	import user_functions
+	from applications import MPI_start_end
 	from optparse import OptionParser
 	from global_def import SPARXVERSION
 	from EMAN2 import EMData
-	from sparx.multi_shc import multi_shc
+	from multi_shc import multi_shc
 	#from development import do_volume_mrk01
-	from sparx.logger import Logger, BaseLogger_Files
+	from logger import Logger, BaseLogger_Files
 	import sys
 	import os
 	import time
@@ -1823,7 +1823,7 @@ def main():
 			doit, keepchecking = checkstep(Tracker["local_filter"], keepchecking, myid, main_node)
 			if  doit:
 				#  Compute local resolution volume
-				from sparx.statistics import locres
+				from statistics import locres
 				if( myid == main_node):
 					vi = get_im(os.path.join(Tracker["previousoutputdir"] ,"vol0.hdf"))
 					if( Tracker["nxinit"] != Tracker["constants"]["nnxo"] ):

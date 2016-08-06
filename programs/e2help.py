@@ -63,7 +63,7 @@ act as a filter on the names of the algorithms."""
 		
 	if options.gui:
 		from e2projectmanager import TheHelp
-		from EMAN2.emapplication import EMApp
+		from emapplication import EMApp
 		app = EMApp()
 		thehelp = TheHelp()
 		thehelp.show()

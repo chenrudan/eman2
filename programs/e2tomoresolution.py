@@ -33,8 +33,8 @@
 
 
 from EMAN2 import *
-from EMAN2.emplot2d import EMPlot2DWidget
-from EMAN2.emapplication import EMApp
+from emplot2d import EMPlot2DWidget
+from emapplication import EMApp
 
 def main():
 	progname = os.path.basename(sys.argv[0])

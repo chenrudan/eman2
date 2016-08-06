@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from EMAN2 import *
-from sparx import *
+from EMAN2  import *
+from sparx  import *
 
-from sys import exit
-from time import time
+from sys   import exit
+from time  import time
 vol = EMData()
 vol.read_image("../model001.tcp")
 #nx = 128

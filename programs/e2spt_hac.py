@@ -35,7 +35,7 @@ from EMAN2 import *
 
 import os
 import sys
-from EMAN2.EMAN2jsondb import JSTask,jsonclasses
+from EMAN2jsondb import JSTask,jsonclasses
 
 from e2spt_classaverage import alignment
 
@@ -382,7 +382,7 @@ def main():
 				
 				print "\n(e2spt_hac.py) (allvsall) Initializing parallelism for preprocessing"
 				if options.parallel:							# Initialize parallelism if being used
-					from EMAN2.EMAN2PAR import EMTaskCustomer
+					from EMAN2PAR import EMTaskCustomer
 					etc=EMTaskCustomer(options.parallel)
 					pclist=[options.input]
 					etc.precache(pclist)
@@ -690,7 +690,7 @@ def allvsall(options):
 		
 		print "\n(e2spt_hac.py) (allvsall) Initializing parallelism"
 		if options.parallel:							# Initialize parallelism if being used
-			from EMAN2.EMAN2PAR import EMTaskCustomer
+			from EMAN2PAR import EMTaskCustomer
 			etc=EMTaskCustomer(options.parallel)
 			pclist=[options.input]
 			etc.precache(pclist)
@@ -1552,7 +1552,7 @@ def plotter(xaxis,yaxis,options,name,maxX,maxY,invert=1,sort=1):
 	matplotlib.use('Agg',warn=False)
 
 	import matplotlib.pyplot as plt
-	import EMAN2.pylab as pylab
+	import pylab
 	
 	#plt.clf()
 	#plt.close('all')

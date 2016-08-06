@@ -32,13 +32,13 @@
 #
 
 from EMAN2 import *
-from EMAN2.testlib import *
+from testlib import *
 import os
 import sys
 import numpy
 
 import unittest
-import EMAN2.testlib as testlib
+import testlib
 from optparse import OptionParser
 
 IS_TEST_EXCEPTION = False

@@ -33,9 +33,9 @@
 
 import EMAN2
 from EMAN2 import *
-from EMAN2.pyemtbx.exceptions import *
+from pyemtbx.exceptions import *
 import unittest
-import EMAN2.testlib as testlib
+import testlib
 import sys
 import math
 import os

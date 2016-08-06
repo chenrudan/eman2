@@ -36,9 +36,9 @@ import os
 import sys
 import time
 import numpy
-from EMAN2.pylab import *
-import EMAN2.pylab as pylab
-import EMAN2.colorsys as colorsys
+from pylab import *
+import pylab
+import colorsys
 
 pylab.rcParams['legend.loc'] = 'best'
 #from operator import itemgetter					 
@@ -417,7 +417,7 @@ def symmetrize(vol,options):
 	
 def plotter(options,azs,values,title,ts,loop,absMIN,absMAX):
 	
-	import EMAN2.colorsys as colorsys
+	import colorsys
 	N = len(values)
 	HSV_tuples = [(x*1.0/N, 0.5, 0.5) for x in range(N)]
 	RGB_tuples = map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)

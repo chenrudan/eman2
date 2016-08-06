@@ -34,11 +34,11 @@
 from __future__ import print_function
 from EMAN2 import *
 from sparx import *
-from sparx.logger import Logger, BaseLogger_Files
+from logger import Logger, BaseLogger_Files
 import global_def
 
-from mpi import *
-from math import *
+from mpi   import  *
+from math  import  *
 
 
 
@@ -47,15 +47,15 @@ import sys
 import subprocess
 import time
 import string
-from sys import exit
-from time import localtime, strftime
+from   sys import exit
+from   time import localtime, strftime
 
 def subdict(d,u):
 	# substitute values in dictionary d by those given by dictionary u
 	for q in u:  d[q] = u[q]
 
 def cmdexecute(cmd):
-	from time import localtime, strftime
+	from   time import localtime, strftime
 	import subprocess
 	outcome = subprocess.call(cmd, shell=True)
 	line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
@@ -295,14 +295,14 @@ def print_dict(dict,theme):
 
 def main():
 
-	from sparx.utilities import write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
-	import sparx.user_functions as user_functions
-	from sparx.applications import MPI_start_end
+	from utilities import write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
+	import user_functions
+	from applications import MPI_start_end
 	from optparse import OptionParser
 	from global_def import SPARXVERSION
 	from EMAN2 import EMData
-	from sparx.multi_shc import multi_shc, do_volume
-	from sparx.logger import Logger, BaseLogger_Files
+	from multi_shc import multi_shc, do_volume
+	from logger import Logger, BaseLogger_Files
 	import sys
 	import os
 	import time

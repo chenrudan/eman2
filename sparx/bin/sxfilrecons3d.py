@@ -67,10 +67,10 @@ def main():
 			sys.exit()
 			
 		if global_def.CACHE_DISABLE:
-			from sparx.utilities import disable_bdb_cache
+			from utilities import disable_bdb_cache
 			disable_bdb_cache()
 
-		from sparx.development import filrecons3D_MPI
+		from development import filrecons3D_MPI
 		global_def.BATCH = True
 		filrecons3D_MPI(args[0], args[1], args[2], options.dp, options.dphi, options.apix, options.function, options.zstep, options.fract, options.rmax, options.rmin,
 		                options.CTF, options.maxit, options.sym)

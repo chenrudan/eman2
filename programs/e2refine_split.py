@@ -40,7 +40,7 @@ import random
 from random import choice
 import traceback
 
-from EMAN2.EMAN2jsondb import JSTask,jsonclasses
+from EMAN2jsondb import JSTask,jsonclasses
 
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -121,7 +121,7 @@ def main():
 		
 
 	# Initialize parallelism
-	from EMAN2.EMAN2PAR import EMTaskCustomer
+	from EMAN2PAR import EMTaskCustomer
 	etc=EMTaskCustomer(options.parallel)
 
 	# Empty image to pad classes file

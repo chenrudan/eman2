@@ -46,7 +46,7 @@ class TestMultiAlignStability(unittest.TestCase):
     # d - diameter
     def internal_test_conf(self, a1, a2, d):
         from EMAN2 import *
-        from sparx.pixel_error import align_diff_params, multi_align_stability
+        from pixel_error import align_diff_params, multi_align_stability
         
         # number of images
         N = len(a1) / 4

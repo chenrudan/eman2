@@ -46,8 +46,8 @@ Eulerian_Angles = "SPIDER"
 
 # We read the global seed here. If the user wish to repeat the random results twice,
 # he/she should first set the rand_seed to a fixed number and then run the program twice.
-from EMAN2 import Util, EMData, EMUtil, Transform
-from random import seed
+from   EMAN2   import Util, EMData, EMUtil, Transform
+from   random  import seed
 
 rand_seed = Util.get_randnum_seed()
 seed(rand_seed)

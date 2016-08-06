@@ -33,11 +33,11 @@
 
 import EMAN2
 from EMAN2 import *
-from EMAN2.emimage import image_update
+from emimage import image_update
 from PyQt4 import QtCore, QtGui, QtOpenGL
 from PyQt4.QtCore import Qt
 import threading
-from EMAN2.emapplication import EMApp
+from emapplication import EMApp
 
 from IPython.frontend.terminal.ipapp import launch_new_instance
 ttx=False

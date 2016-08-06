@@ -192,7 +192,7 @@ def main():
 	c:plot the distribution of scores
 	'''
 	import matplotlib.pyplot as plt
-	import EMAN2.pylab as pylab
+	import pylab
 	import matplotlib
 	
 	std = np.std( scores )

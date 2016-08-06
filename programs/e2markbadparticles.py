@@ -32,16 +32,16 @@
 
 #
 from EMAN2 import *
-from EMAN2.emimagemx import EMImageMXWidget
+from emimagemx import EMImageMXWidget
 
 import sys
 from PyQt4 import QtCore, QtGui, QtOpenGL
 from PyQt4.QtCore import Qt
 #from OpenGL import GL,GLU,GLUT
-from EMAN2.emapplication import EMApp
+from emapplication import EMApp
 import os
-from EMAN2.EMAN2db import *
-from EMAN2.valslider import *
+from EMAN2db import *
+from valslider import *
 import traceback
 
 def main():

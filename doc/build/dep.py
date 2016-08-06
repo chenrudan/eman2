@@ -18,7 +18,7 @@ import glob
 import datetime
 import argparse
 
-from EMAN2.build import *
+from build import *
 
 def cmd(*popenargs, **kwargs):
     print "Running:", 

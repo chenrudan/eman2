@@ -50,13 +50,13 @@ except ImportError, e:
 #	print "WARNING: Could not import bsddb3; falling back on the older bsddb. Consider installing BerkeleyDB and bsddb3:", e
 	from bsddb import db
 
-from EMAN2.libpyEMData2 import EMData
-from EMAN2.libpyUtils2 import EMUtil
+from libpyEMData2 import EMData
+from libpyUtils2 import EMUtil
 
 try:
 	a=frozenset()
 except:
-	from EMAN2.sets import Set
+	from sets import Set
 	frozenset=Set
 
 # If set, fairly verbose debugging information will be written to the console
@@ -121,7 +121,7 @@ def parallel_process_exit():
 	# Compete HACK to prevent EMAN2DB creation if one deosn't already exisit. Need to do this b/c when anything in EMAN2PAR gets improted, and EMAN2DB is created!!!
 	if os.access('EMAN2DB',os.R_OK):
 		# Kill any running process from e2paralle.py running on localhost. If none are running nothing happens
-		from EMAN2.EMAN2PAR import EMLocalTaskHandler
+		from EMAN2PAR import EMLocalTaskHandler
 		for proc in EMLocalTaskHandler.allrunning.values():
 			proc.terminate()
 			os.kill(proc.pid,signal.SIGKILL)

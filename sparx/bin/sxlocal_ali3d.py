@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from global_def import *
-from optparse import OptionParser
+from   global_def import *
+from   optparse import OptionParser
 import sys
 
 
@@ -77,24 +77,24 @@ def main():
 			sys.argv = mpi_init(len(sys.argv), sys.argv)
 
 		if global_def.CACHE_DISABLE:
-			from sparx.utilities import disable_bdb_cache
+			from utilities import disable_bdb_cache
 			disable_bdb_cache()
 
 		
 		global_def.BATCH = True
 		if options.fourvar:
-			from sparx.development import nlocal_ali3d_MPI
+			from development import nlocal_ali3d_MPI
 			nlocal_ali3d_MPI(args[0], args[1], mask, options.ou, options.delta, options.ts, options.center, options.maxit,
 			options.CTF, options.snr, options.sym, options.chunk, options.function, options.fourvar,
 			options.npad, options.debug)
 		elif options.scipy_minimization:
 			if options.MPI:
-				from sparx.applications import local_ali3d_MPI_scipy_minimization
+				from applications import local_ali3d_MPI_scipy_minimization
 				local_ali3d_MPI_scipy_minimization(args[0], args[1], mask, options.ou, options.delta, options.ts, options.center, options.maxit,
 				options.CTF, options.snr, options.sym, options.chunk, options.function, options.fourvar,
 				options.npad, options.debug)
 		else:
-			from sparx.applications import local_ali3d
+			from applications import local_ali3d
 			local_ali3d(args[0], args[1], mask, options.ou, options.delta, options.ts, options.center, options.maxit,
 			options.CTF, options.snr, options.sym, options.chunk, options.function, options.fourvar,
 			options.npad, options.debug, options.MPI)

@@ -1,5 +1,5 @@
 #!/bin/env python
-from sparx import *
+from sparx  import *
 from EMAN2 import *
 
 

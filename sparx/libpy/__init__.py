@@ -35,15 +35,15 @@
 Python layer for scripting and interactive use.
 """
 
-from sparx.utilities import *
-from sparx.filter import *
-from sparx.projection import *
-from sparx.fundamentals import *
-from sparx.statistics import *
-from sparx.alignment import *
-from sparx.morphology import *
-from reconstruction import *
-from sparx.applications import *
-from global_def import *
-from sparx.pixel_error import *
-from sparx.development import *
+from utilities       import *
+from filter          import *
+from projection      import *
+from fundamentals    import *
+from statistics      import *
+from alignment       import *
+from morphology      import *
+from reconstruction  import *
+from applications    import *
+from global_def      import *
+from pixel_error     import *
+from development     import *

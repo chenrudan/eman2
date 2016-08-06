@@ -12,7 +12,7 @@
 
 #import block
 from EMAN2 import *
-import EMAN2.pyemtbx.options as pyemtbx.options
+import pyemtbx.options
 import os
 import sys
 import shutil

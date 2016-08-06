@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from EMAN2 import *
-from sparx import *
+from EMAN2  import *
+from sparx  import *
 from math import pi, sin, cos
 from sys import exit
 fc = 0.12

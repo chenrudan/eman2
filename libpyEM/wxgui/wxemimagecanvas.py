@@ -30,7 +30,7 @@
 #
 #
 
-import EMAN2.wx as wx
+import wx
 from math import *
 
 DEBUG = 0

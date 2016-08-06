@@ -37,7 +37,7 @@ import sys
 import os.path
 import math
 import random
-import EMAN2.pyemtbx.options as pyemtbx.options
+import pyemtbx.options
 import os
 import datetime
 import time

@@ -441,7 +441,7 @@ def fpol(image, nnx, nny=1, nnz=1, RetReal = True, normalize = True):
 		Output
 			the output interpolated up image
 	"""
-	from sparx.fundamentals import fft
+	from fundamentals import fft
 	
 	nx = image.get_xsize()
 	ny = image.get_ysize()
@@ -493,9 +493,9 @@ def image_decimate(img, decimation=2, fit_to_fft = True, frequency_low=0, freque
 		Window 2D image to FFT-friendly size, apply Butterworth low pass filter,
 		and decimate image by integer factor
 	"""
-	from sparx.filter import filt_btwl
-	from sparx.fundamentals import smallprime, window2d
-	from sparx.utilities import get_image
+	from filter       import filt_btwl
+	from fundamentals import smallprime, window2d
+	from utilities    import get_image
 	if type(img)     == str:	img=get_image(img)
 	nz       = img.get_zsize()
 	if( nz > 1):                    ERROR("This command works only for 2-D images", "image_decimate", 1)
@@ -532,11 +532,11 @@ def resample(img, sub_rate=0.5):
 		fit_to_fft will change the ouput image size to an fft_friendly size
 	"""
 
-	from sparx.fundamentals import subsample
-	from sparx.utilities import get_pixel_size, set_pixel_size
+	from fundamentals import subsample
+	from utilities    import get_pixel_size, set_pixel_size
 
 	if type(img) == str:
-		from sparx.utilities import get_image
+		from utilities    import get_image
 		img = get_image(img)
 	nx = img.get_xsize()
 	ny = img.get_ysize()
@@ -572,7 +572,7 @@ def resample(img, sub_rate=0.5):
 				e = e.rot_scale_conv_new_3D(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, kb, sub_rate)
 
 	# Automatically adjust pixel size for ctf parameters
-	from sparx.utilities import get_pixel_size, set_pixel_size
+	from utilities import get_pixel_size, set_pixel_size
 	apix = get_pixel_size(e)
 	apix /= sub_rate
 	set_pixel_size(e, apix)
@@ -581,14 +581,14 @@ def resample(img, sub_rate=0.5):
 		cp = cc.get_params("spider")
 		cp["tx"] *= sub_rate
 		cp["ty"] *= sub_rate
-		from sparx.utilities import set_params_proj
+		from utilities import set_params_proj
 		set_params_proj(e, [cp["phi"], cp["theta"], cp["psi"], -cp["tx"], -cp["ty"]]) # have to invert as set inverts them again
 	cc = e.get_attr_default("xform.align2d", None)
 	if cc:
 		cp = cc.get_params("2D")
 		cp["tx"] *= sub_rate
 		cp["ty"] *= sub_rate
-		from sparx.utilities import set_params2D
+		from utilities import set_params2D
 		set_params2D(e, [cp["alpha"], cp["tx"], cp["ty"], cp["mirror"], cp["scale"]])
 
 	return 	e
@@ -604,11 +604,11 @@ def fdownsample(img, sub_rate=0.5, RetReal = True):
 		fit_to_fft will change the ouput image size to an fft_friendly size
 	"""
 
-	from sparx.fundamentals import fdecimate
-	from sparx.utilities import get_pixel_size, set_pixel_size
+	from fundamentals import fdecimate
+	from utilities    import get_pixel_size, set_pixel_size
 
 	if type(img) == str:
-		from sparx.utilities import get_image
+		from utilities    import get_image
 		img = get_image(img)
 	nx = img.get_xsize()
 	if img.is_complex():
@@ -652,7 +652,7 @@ def fdownsample(img, sub_rate=0.5, RetReal = True):
 		"""
 
 	# Automatically adjust pixel size for ctf parameters
-	from sparx.utilities import get_pixel_size, set_pixel_size
+	from utilities import get_pixel_size, set_pixel_size
 	apix = get_pixel_size(e)
 	apix /= sub_rate
 	set_pixel_size(e, apix)
@@ -661,14 +661,14 @@ def fdownsample(img, sub_rate=0.5, RetReal = True):
 		cp = cc.get_params("spider")
 		cp["tx"] *= sub_rate
 		cp["ty"] *= sub_rate
-		from sparx.utilities import set_params_proj
+		from utilities import set_params_proj
 		set_params_proj(e, [cp["phi"], cp["theta"], cp["psi"], -cp["tx"], -cp["ty"]]) # have to invert as set inverts them again
 	cc = e.get_attr_default("xform.align2d", None)
 	if cc:
 		cp = cc.get_params("2D")
 		cp["tx"] *= sub_rate
 		cp["ty"] *= sub_rate
-		from sparx.utilities import set_params2D
+		from utilities import set_params2D
 		set_params2D(e, [cp["alpha"], cp["tx"], cp["ty"], cp["mirror"], cp["scale"]])
 
 	return 	e
@@ -708,7 +708,7 @@ def prepi(image):
 
 
 def prep_refim_gridding(refim, wr, numr, mode = "F"):
-	from sparx.fundamentals import prepi
+	from fundamentals import prepi
 	nx = refim.get_xsize()
 	ny = refim.get_ysize()
 	cnx = nx//2+1
@@ -817,7 +817,7 @@ def rot_avg_image(image_to_be_averaged):
 	Returns a 2-D or 3-D image containing a rotational average of image e
 	"""
 	import types
-	from sparx.utilities import get_im
+	from utilities import get_im
 	if type(image_to_be_averaged) is types.StringType: image_to_be_averaged = get_im(image_to_be_averaged)
 	return image_to_be_averaged.rotavg_i()
 
@@ -937,7 +937,7 @@ def gridrot_shift2D(image, ang = 0.0, sx = 0.0, sy = 0.0, scale = 1.0):
 		Rotate and shift an image using gridding in Fourier space.
 	"""
 	from EMAN2 import Processor
-	from sparx.fundamentals import fftip, fft
+	from fundamentals import fftip, fft
 
 	nx = image.get_xsize()
 	# split shift into integer and fractional parts
@@ -1011,7 +1011,7 @@ def rot_shift2D(img, angle = 0.0, sx = 0.0, sy = 0.0, mirror = 0, scale = 1.0, i
 		return img
 	elif(use_method == "gridding" and mode == "cyclic"): # previous rtshg
 		from math import radians
-		from sparx.fundamentals import prepi
+		from fundamentals import prepi
 		o, kb = prepi(img)
 		# gridding rotation
 		o = o.rot_scale_conv_new(radians(angle), sx, sy, kb, scale)
@@ -1019,14 +1019,14 @@ def rot_shift2D(img, angle = 0.0, sx = 0.0, sy = 0.0, mirror = 0, scale = 1.0, i
 		return o
 	elif(use_method == "gridding" and mode == "background"): # previous rtshg
 		from math import radians
-		from sparx.fundamentals import prepi
+		from fundamentals import prepi
 		o, kb = prepi(img)
 		# gridding rotation
 		o = o.rot_scale_conv_new_background(radians(angle), sx, sy, kb, scale)
 		if  mirror: o.process_inplace("xform.mirror", {"axis":'x'})
 		return o	
 	elif(use_method == "ftgridding"): # previous rtshg
-		from sparx.fundamentals import gridrot_shift2D
+		from fundamentals import gridrot_shift2D
 		img = gridrot_shift2D(img, angle, sx, sy, scale)
 		if  mirror: img.process_inplace("xform.mirror", {"axis":'x'})
 		return img
@@ -1143,14 +1143,14 @@ def welch_pw2(img, win_size=512, overlp_x=50, overlp_y=50, edge_x=0, edge_y=0):
 	""" 
 		Calculate the power spectrum using Welch periodograms (overlapped periodogram)
 	"""
-	from sparx.fundamentals import window2d, ramp
+	from fundamentals import window2d, ramp
 	from EMAN2 import periodogram
 	nx = img.get_xsize()
 	ny = img.get_ysize()
 	nx_fft = smallprime(nx)
 	ny_fft = smallprime(ny)
 	x_gaussian_hi = 1./win_size
-	from sparx.filter import filt_gaussh
+	from filter    import filt_gaussh
 	e_fil = filt_gaussh(window2d(img,nx_fft,ny_fft,"l"), x_gaussian_hi)
 	x38 = 100/(100-overlp_x) # normalization of % of the overlap in x 
 	x39 = 100/(100-overlp_y) # normalization of % of the overlap in y
@@ -1191,8 +1191,8 @@ def welch_pw2_tilt_band(img,theta,num_bnd=-1,overlp_y=50,edge_x=0,edge_y=0,win_s
 	win_y = win_x
 	x_gaussian_hi = 1./win_x
 	del img
-	from sparx.filter import filt_gaussh
-	from sparx.utilities import drop_image, rot_image
+	from filter import filt_gaussh
+	from utilities import drop_image, rot_image
 	# The input img is rotated such that tilt axis is vertical
 	img2  = rot_image(img1,theta, 0, 0, 1.0,1.0)	
 	e_fil = filt_gaussh(img2, x_gaussian_hi)
@@ -1221,14 +1221,14 @@ def tilemic(img, win_size=512, overlp_x=50, overlp_y=50, edge_x=0, edge_y=0):
 	""" 
 		Calculate the power spectrum using Welch periodograms (overlapped periodogram)
 	"""
-	from sparx.fundamentals import window2d, ramp
+	from fundamentals import window2d, ramp
 	from EMAN2 import periodogram
 	nx = img.get_xsize()
 	ny = img.get_ysize()
 	nx_fft = smallprime(nx)
 	ny_fft = smallprime(ny)
 	x_gaussian_hi = 1./win_size
-	from sparx.filter import filt_gaussh
+	from filter    import filt_gaussh
 	e_fil = filt_gaussh(window2d(img,nx_fft,ny_fft,"l"), x_gaussian_hi)
 	x38 = 100/(100-overlp_x) # normalization of % of the overlap in x 
 	x39 = 100/(100-overlp_y) # normalization of % of the overlap in y

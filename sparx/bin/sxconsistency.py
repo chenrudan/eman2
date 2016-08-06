@@ -32,14 +32,14 @@
 
 #  VERSION 2  09/25/2014
 
-from EMAN2 import *
-from sparx import *
+from   EMAN2 import *
+from   sparx import *
 import os
 import global_def
-from global_def import *
-from optparse import OptionParser
+from   global_def import *
+from   optparse import OptionParser
 import sys
-from random import shuffle
+from   random import shuffle
 import subprocess
 
 
@@ -253,8 +253,8 @@ def errors_per_image(params, avgtrans, thresherr=1.0, radius = 1.0):
 
 def average_trans(params):
 	#  Compute average projection params and pixel errors
-	from sparx.utilities import getfvec
-	from sparx.pixel_error import max_3D_pixel_error
+	from utilities import getfvec
+	from pixel_error import max_3D_pixel_error
 	from math import sqrt, degrees, radians, acos
 	nn = lem(params[0])
 	avgtrans = [None]*nn

@@ -32,11 +32,11 @@
 #
 
 from EMAN2 import EMANVERSION, E2init, E2end, EMData, base_name, file_exists, EMArgumentParser
-import EMAN2.EMAN2db as EMAN2db
-from EMAN2.emapplication import EMApp
-import EMAN2.embrowser as embrowser
-from EMAN2.emimage import EMImageWidget, EMWidgetFromFile
-from EMAN2.emscene3d import EMScene3D
+import EMAN2db
+from emapplication import EMApp
+import embrowser
+from emimage import EMImageWidget, EMWidgetFromFile
+from emscene3d import EMScene3D
 import os
 import sys
 
@@ -50,7 +50,7 @@ def main():
 
 	This program can be used to visualize most files used in EMAN2. Running it without arguments
 	will open a browser window with more flexible functionality than the command-line.
-	
+
 	"""
 	global app,win,options
 
@@ -78,7 +78,7 @@ def main():
 	win=[]
 	if options.fullrange:
 		fullrangeparms = set_full_range()
-	
+
 	if len(args) < 1:
 		global dialog
 		file_list = []
@@ -88,19 +88,19 @@ def main():
 # 			QtCore.QObject.connect(dialog,QtCore.SIGNAL("ok"),on_browser_done)
 # 			QtCore.QObject.connect(dialog,QtCore.SIGNAL("cancel"),on_browser_cancel)
 		except: pass
-	
+
 	elif options.pdb:
 		load_pdb(args,app)
-	
+
 	elif options.plot:
 		plot(args,app)
-		
+
 	elif options.hist:
 		hist(args,app)
-	
+
 	elif options.plot3d:
 		plot_3d(args,app)
-	
+
 	elif options.classes:
 		options.classes=options.classes.split(",")
 		imgs=EMData.read_images(args[0])
@@ -112,20 +112,20 @@ def main():
 			out.write("#LST\n")
 			out.close()
 		except: pass
-		
+
 	elif options.classmx:
 		options.classmx=options.classmx.split(",")
 		clsnum=int(options.classmx[1])
 		imgs=getmxim(args[0],options.classmx[0],clsnum)
 		display(imgs,app,args[0])
-	
+
 	else:
 		for i in args:
 			if not file_exists(i):
 				print "%s doesn't exist" %i
 				sys.exit(1)
 			display_file(i,app,options.singleimage,usescenegraph=options.newwidget)
-	
+
 	if options.fullrange:
 		revert_full_range(fullrangeparms)
 
@@ -249,7 +249,7 @@ def display(img,app,title="EMAN2 image"):
 	return w
 
 def plot(files,app):
-	from EMAN2.emplot2d import EMPlot2DWidget
+	from emplot2d import EMPlot2DWidget
 	plotw=EMPlot2DWidget(application=app)
 	for f in files:
 		plotw.set_data_from_file(f,quiet=True)
@@ -258,7 +258,7 @@ def plot(files,app):
 	return plotw
 
 def hist(files,app):
-	from EMAN2.emhist import EMHistogramWidget
+	from emhist import EMHistogramWidget
 	histw=EMHistogramWidget(application=app)
 	for f in files:
 		histw.set_data_from_file(f,quiet=True)
@@ -267,7 +267,7 @@ def hist(files,app):
 	return histw
 
 def plot_3d(files,app):
-	from EMAN2.emplot3d import EMPlot3DWidgetNew
+	from emplot3d import EMPlot3DWidgetNew
 	plotw=EMPlot3DWidgetNew(application=app)
 	for f in files:
 		plotw.set_data_from_file(f)
@@ -276,13 +276,13 @@ def plot_3d(files,app):
 	return plotw
 
 def load_pdb(files,app):
-	from EMAN2.empdbitem3D import EMPDBItem3D, EMBallStickModel
+	from empdbitem3D import EMPDBItem3D, EMBallStickModel
 	scene=EMScene3D()
 	title = []
 	for f in files:
 		pdb_model = EMPDBItem3D(f)
 		scene.insertNewNode(f.split("/")[-1],pdb_model)
-		modeltype = EMBallStickModel(f) 
+		modeltype = EMBallStickModel(f)
 		scene.insertNewNode(modeltype.representation, modeltype, parentnode = pdb_model)
 		scene.addChild(EMPDBItem3D(f))
 		title.append(pdb_model.getName())

@@ -32,16 +32,16 @@
 #
 
 import global_def
-from global_def import *
+from   global_def import *
 
-from EMAN2 import *
-from sparx import *
-from numpy import *
-from time import time
-from optparse import OptionParser
+from   EMAN2 import *
+from   sparx import *
+from   numpy import *
+from   time import time
+from   optparse import OptionParser
 
 def resample_insert( bufprefix, fftvols, wgtvols, mults, CTF, npad, info=None):
-	from EMAN2 import newfile_store
+	from EMAN2 import  newfile_store
 	ostore = newfile_store( bufprefix, npad, CTF )
 	blocksize = 250
 	nvol = len(fftvols)
@@ -98,7 +98,7 @@ def resample_finish( rectors, fftvols, wgtvols, volfile, niter, nprj, info=None 
 		info.write( "    Volume finished.\t time: %10.3f\n" % (time() - overall_start) )
 
 def resample_prepare( prjfile, nvol, snr, CTF, npad ):
-	from sparx.utilities import get_im
+	from utilities import get_im
 	nx = get_im( prjfile, 0 ).get_xsize()
 	fftvols = [None]*nvol
 	wgtvols = [None]*nvol
@@ -120,10 +120,10 @@ def resample_prepare( prjfile, nvol, snr, CTF, npad ):
 def resample( prjfile, outdir, bufprefix, nbufvol, nvol, seedbase,\
 		delta, d, snr, CTF, npad,\
 		MPI, myid, ncpu, verbose = 0 ):
-	from sparx.utilities import even_angles
-	from random import seed, jumpahead, shuffle
+	from   utilities import even_angles
+	from   random import seed, jumpahead, shuffle
 	import os
-	from sys import exit
+	from   sys import exit
 
 	nprj = EMUtil.get_image_count( prjfile )
 
@@ -149,7 +149,7 @@ def resample( prjfile, outdir, bufprefix, nbufvol, nvol, seedbase,\
 	if(verbose == 1):  finfo=open( os.path.join(outdir, "progress%04d.txt" % myid), "w" )
 	else:              finfo = None
 	#print  " before evenangles",myid
-	from sparx.utilities import getvec
+	from utilities import getvec
 	from numpy import array, reshape
 	refa = even_angles(delta)
 	nrefa = len(refa)
@@ -181,7 +181,7 @@ def resample( prjfile, outdir, bufprefix, nbufvol, nvol, seedbase,\
 		#print " will bcast",myid
 		from mpi import mpi_bcast, MPI_FLOAT, MPI_COMM_WORLD
 		vct = mpi_bcast(vct,len(vct),MPI_FLOAT,0,MPI_COMM_WORLD)
-		from sparx.utilities import bcast_list_to_all
+		from utilities import  bcast_list_to_all
 		tetprj = bcast_list_to_all(tetprj, myid, 0)
 	#print  "  reshape  ",myid
 	vct = reshape(vct,(nprj,3))
@@ -306,7 +306,7 @@ def main():
 		ncpu = 1
 
 	if global_def.CACHE_DISABLE:
-		from sparx.utilities import disable_bdb_cache
+		from utilities import disable_bdb_cache
 		disable_bdb_cache()
 
 	outdir = args[1]

@@ -40,8 +40,8 @@ from EMAN2 import *
 import sys
 from math import *
 try:
-	import EMAN2.wx as wx
-	from EMAN2.emimage import *
+	import wx
+	from emimage import *
 except:
 	print "no wx"
 

@@ -31,8 +31,8 @@
 #
 #
 
-from EMAN2 import *
-from sparx import *
+from EMAN2  import *
+from sparx  import *
 
 f = EMData()
 f.read_image("tf2d0001.tfc")

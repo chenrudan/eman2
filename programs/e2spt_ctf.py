@@ -2424,7 +2424,7 @@ def sptctfplotter( options, nx, xdata, ydata, maxangle, angle, angleindx, nangle
 	import matplotlib
 	matplotlib.use("TkAgg")
 	import matplotlib.pyplot as plt
-	import EMAN2.pylab as pylab
+	import pylab
 	
 	
 	#change defocus values to negative so that the slope of the plot makes sense; they are passed in negative already
@@ -2596,7 +2596,7 @@ def generalplotter( options, xaxis, yaxis, xlabel, ylabel, plotname, title, flip
 	import matplotlib
 	matplotlib.use("TkAgg")
 	import matplotlib.pyplot as plt
-	import EMAN2.pylab as pylab
+	import pylab
 	
 	sizerangex = math.fabs( max(xaxis)-min(xaxis) )
 	sizerangey = math.fabs( max(yaxis)-min(yaxis) )

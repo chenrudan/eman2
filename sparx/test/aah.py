@@ -1,6 +1,6 @@
 #!/bin/env python
-from EMAN2 import *
-from sparx import *
+from EMAN2  import *
+from sparx  import *
 
 from sys import exit
 from random import seed,gauss

@@ -34,11 +34,11 @@
 from __future__ import print_function
 from EMAN2 import *
 from sparx import *
-from sparx.logger import Logger, BaseLogger_Files
+from logger import Logger, BaseLogger_Files
 import global_def
 
-from mpi import *
-from math import *
+from mpi   import  *
+from math  import  *
 
 
 
@@ -47,13 +47,13 @@ import sys
 import subprocess
 import time
 import string
-from sys import exit
-from time import localtime, strftime
+from   sys import exit
+from   time import localtime, strftime
 
 
 
 def cmdexecute(cmd):
-	from time import localtime, strftime
+	from   time import localtime, strftime
 	import subprocess
 	outcome = subprocess.call(cmd, shell=True)
 	line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
@@ -543,14 +543,14 @@ def metamove(paramsdict, partids, partstack, outputdir, procid, myid, main_node,
 
 def main():
 
-	from sparx.utilities import write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
-	import sparx.user_functions as user_functions
-	from sparx.applications import MPI_start_end
+	from utilities import write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
+	import user_functions
+	from applications import MPI_start_end
 	from optparse import OptionParser
 	from global_def import SPARXVERSION
 	from EMAN2 import EMData
-	from sparx.multi_shc import multi_shc, do_volume
-	from sparx.logger import Logger, BaseLogger_Files
+	from multi_shc import multi_shc, do_volume
+	from logger import Logger, BaseLogger_Files
 	import sys
 	import os
 	import time
@@ -909,7 +909,7 @@ def main():
 			doit, keepchecking = checkstep(outvol[procid], keepchecking, myid, main_node)
 
 			if  doit:
-				from sparx.multi_shc import do_volume
+				from multi_shc import do_volume
 				projdata = getindexdata(stack, partids[procid], partstack[procid], myid, nproc)
 				if ali3d_options.CTF:  vol = recons3d_4nn_ctf_MPI(myid, projdata, symmetry=ali3d_options.sym, npad = 2)
 				else:                  vol = recons3d_4nn_MPI(myid, projdata, symmetry=ali3d_options.sym, npad = 2)
@@ -968,7 +968,7 @@ def main():
 			doit, keepchecking = checkstep(outvol, keepchecking, myid, main_node)
 
 			if  doit:
-				from sparx.multi_shc import do_volume
+				from multi_shc import do_volume
 				projdata = getindexdata(stack, partids[procid], partstack[procid], myid, nproc)
 				if ali3d_options.CTF:  vol = recons3d_4nn_ctf_MPI(myid, projdata, symmetry=ali3d_options.sym, npad = 2)
 				else:                  vol = recons3d_4nn_MPI(myid, projdata, symmetry=ali3d_options.sym, npad = 2)
@@ -1074,8 +1074,8 @@ def main():
 			doit, keepchecking = checkstep(os.path.join(mainoutputdir,"badapples.txt"), keepchecking, myid, main_node)
 			if  doit:
 				if(myid == main_node):
-					from sparx.utilities import get_symt
-					from sparx.pixel_error import max_3D_pixel_error
+					from utilities import get_symt
+					from pixel_error import max_3D_pixel_error
 					ts = get_symt(ali3d_options.sym)
 					badapples = []
 					deltaerror = 2.0

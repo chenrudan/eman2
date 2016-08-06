@@ -31,9 +31,9 @@
 #
 #
 import global_def
-from global_def import *
-from EMAN2 import *
-from sparx import *
+from   global_def import *
+from   EMAN2 import *
+from   sparx import *
 from global_def import SPARX_MPI_TAG_UNIVERSAL
 
 def main():
@@ -61,13 +61,13 @@ def main():
 		sys.exit()
 
 	if global_def.CACHE_DISABLE:
-		from sparx.utilities import disable_bdb_cache
+		from utilities import disable_bdb_cache
 		disable_bdb_cache()
 
 	if options.MPI:
-		from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-		from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv, mpi_send, mpi_recv
-		from mpi import MPI_SUM, MPI_FLOAT, MPI_INT
+		from mpi 	  	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+		from mpi 	  	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv, mpi_send, mpi_recv
+		from mpi 	  	  import MPI_SUM, MPI_FLOAT, MPI_INT
 		sys.argv = mpi_init(len(sys.argv),sys.argv)		
 	
 		number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
@@ -108,7 +108,7 @@ def main():
 			outvol = args[3]
 			bcast_EMData_to_all(m, myid, main_node)
 
-		from sparx.filter import filterlocal
+		from filter import filterlocal
 		filteredvol = filterlocal(ui, vi, m, options.falloff, myid, main_node, number_of_proc)
 
 		if(myid == 0):   filteredvol.write_image(outvol)

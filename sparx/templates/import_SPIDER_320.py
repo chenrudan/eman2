@@ -5,7 +5,7 @@
 from EMAN2 import *
 from sparx import *
 
-from sys import *
+from sys import  *
 from string import *
 from math import sqrt
 

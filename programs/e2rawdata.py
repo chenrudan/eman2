@@ -36,7 +36,7 @@ from EMAN2 import *
 def main():
 	progname = os.path.basename(sys.argv[0])
 	usage = """prog [options] <micrograph1, micrograph2....>
-	Use this program to import sparx.and filter raw micrographs, including automatic micrograph-based CTF determination. This program will process each micrograph as and filter raw micrographs, including automatic micrograph-based CTF determination. This program will process each micrograph
+	Use this program to import and filter raw micrographs, including automatic micrograph-based CTF determination. This program will process each micrograph
 	and copy them into the directory './micrographs.', otherwise the micrographs will simply be moved into './micrographs'. If you select the option
 	--moverawdata AND you filter or change format, your original micrographs will be moved into the directory './raw_micrographs' and your
 	filtered micrographs will be in './micrographs as usual. """

@@ -32,13 +32,13 @@
 #
 
 import global_def
-from global_def import *
+from   global_def import *
 
-from optparse import OptionParser
+from   optparse import OptionParser
 
 def genbuf( prjfile, bufprefix, beg, end, CTF, npad, verbose = 0 ):
-	from EMAN2 import newfile_store
-	from sparx.utilities import get_im
+	from EMAN2  import newfile_store
+	from utilities import get_im
 	from time import time
 	import os
 	if(verbose == 1):  finfo=open( os.path.join(outdir, "progress.txt"), "w" )
@@ -77,7 +77,7 @@ def main():
 	prjfile = args[0]
 
 	if global_def.CACHE_DISABLE:
-		from sparx.utilities import disable_bdb_cache
+		from utilities import disable_bdb_cache
 		disable_bdb_cache()
 
 	bufprefix = args[1]

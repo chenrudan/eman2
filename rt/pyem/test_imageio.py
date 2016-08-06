@@ -35,9 +35,9 @@ from EMAN2 import *
 import unittest
 import os
 import sys
-import EMAN2.testlib as testlib
+import testlib
 import os
-from EMAN2.pyemtbx.exceptions import *
+from pyemtbx.exceptions import *
 from optparse import OptionParser
 from EMAN2 import remove_file
 

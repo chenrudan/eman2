@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from global_def import *
-from optparse import OptionParser
+from   global_def import *
+from   optparse import OptionParser
 import sys
 def main():
 	
@@ -64,10 +64,10 @@ def main():
 			name_output = args[1]
 		
 		if options.filament:
-			from sparx.development import ave_ali_filament
+			from development import ave_ali_filament
 	
 			if global_def.CACHE_DISABLE:
-				from sparx.utilities import disable_bdb_cache
+				from utilities import disable_bdb_cache
 				disable_bdb_cache()
 	
 			global_def.BATCH = True
@@ -75,10 +75,10 @@ def main():
 			global_def.BATCH = False
 		
 		else:
-			from sparx.applications import ave_ali
+			from applications import ave_ali
 	
 			if global_def.CACHE_DISABLE:
-				from sparx.utilities import disable_bdb_cache
+				from utilities import disable_bdb_cache
 				disable_bdb_cache()
 	
 			global_def.BATCH = True

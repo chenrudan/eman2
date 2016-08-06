@@ -11,7 +11,7 @@ import sys
 import copy
 from global_def import ERROR
 
-from EMAN2.sxgui_template import SXcmd_token, SXcmd, SXcmd_category
+from sxgui_template import SXcmd_token, SXcmd, SXcmd_category
 
 # ========================================================================================
 class SXsubcmd_config:

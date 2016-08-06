@@ -32,7 +32,7 @@
 from optparse import OptionParser
 
 from EMAN2 import *
-from EMAN2.EMAN2jsondb import JSTask,jsonclasses
+from EMAN2jsondb import JSTask,jsonclasses
 
 import sys
 from sys import argv
@@ -187,7 +187,7 @@ def main():
 	
 	print "\n(e2spt_preproc)(main) - INITIALIZING PARALLELISM!\n"
 
-	from EMAN2.EMAN2PAR import EMTaskCustomer
+	from EMAN2PAR import EMTaskCustomer
 	etc=EMTaskCustomer(options.parallel)
 	pclist=[options.input]
 
