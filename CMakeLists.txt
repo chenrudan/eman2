@@ -11,8 +11,11 @@ MARK_AS_ADVANCED(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
 MARK_AS_ADVANCED(CLEAR CMAKE_VERBOSE_MAKEFILE)
 OPTION(CMAKE_VERBOSE_MAKEFILE "if all commands will be echoed to the console during the make" ON)
 
-SET(EMAN_INSTALL_PREFIX $ENV{HOME}/EMAN2 CACHE PATH "installation prefix")
-SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
+#SET(EMAN_INSTALL_PREFIX $ENV{HOME}/EMAN2 CACHE PATH "installation prefix")
+SET(EMAN_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/libeman CACHE PATH "installation prefix")
+#SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
+SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation prefix")
+
 MARK_AS_ADVANCED(CLEAR EMAN_INSTALL_PREFIX)
 
 SET(EXECUTABLE_OUTPUT_PATH ${EMAN_BINARY_DIR}/bin CACHE PATH "output directory for building all executables.")
@@ -196,6 +199,7 @@ ENDIF(ENABLE_IOCACHE)
 
 SET(INCLUDE_DIRS 
 	${EMAN_SOURCE_DIR}/libEM 
+	$ENV{PREFIX}/include
 	$ENV{HOME}/include 
 	$ENV{FFTWDIR}/include 
 	$ENV{GSLDIR}/include 
@@ -210,6 +214,7 @@ SET(INCLUDE_DIRS
 SET(LIB_DIRS 
 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries
 	$ENV{EMANDIR}/lib 
+	$ENV{PREFIX}/lib
 	$ENV{HOME}/lib 
 	${PLATFORMLIB} 
 	$ENV{FFTWDIR}/lib 
@@ -363,6 +368,7 @@ IF(ENABLE_ACML_FFT)
 	FIND_LIBRARY(G2C_LIBRARY NAMES g2c PATHS
 		/usr/lib64
 		/usr/lib
+		$ENV{PREFIX}/lib
 		/usr/local/lib
 		$ENV{HOME}/lib )
 	ADD_DEFINITIONS(-DACML)
@@ -391,12 +397,12 @@ ENDIF(ENABLE_DJBFFT)
 
 IF(ENABLE_OPTPP)
     FIND_PATH(OPTPP_INCLUDE_PATH Opt.h /usr/include /usr/include/opt++
-              /usr/local/include /usr/local/include/opt++ $ENV{HOME}/include
-             $ENV{HOME}/include/opt++)
+            /usr/local/include /usr/local/include/opt++ $ENV{PREFIX}/include
+            $ENV{PREFIX}/include/opt++ $ENV{HOME}/include $ENV{HOME}/include/opt++)
     FIND_PATH(NEWMAT_INCLUDE_PATH newmat.h /usr/include /usr/include/opt++
               /usr/include/newmat /usr/local/include/newmat
-              /usr/local/include /usr/local/include/opt++ $ENV{HOME}/include
-             $ENV{HOME}/include/opt++)
+              /usr/local/include /usr/local/include/opt++ $ENV{PREFIX}/include
+              $ENV{PREFIX}/include/opt++ $ENV{HOME}/include $ENV{HOME}/include/opt++)
     FIND_LIBRARY(OPTPP_LIBRARY NAMES opt-linux PATHS /usr/lib /usr/local/lib)
     FIND_LIBRARY(NEWMAT_LIBRARY NAMES newmat-linux PATHS /usr/lib /usr/local/lib)
 
@@ -419,7 +425,7 @@ IF (ENABLE_FTGL)
 		ADD_DEFINITIONS(-DOLD_FTGL)
 	ENDIF(EXISTS ${FTGL_INCLUDE_PATH}/FTGL/FTGL.h AND COMMAND IF)
 	ADD_SUBDIRECTORY(fonts)
-    	FIND_PATH(FREETYPE_INCLUDE_PATH ft2build.h /usr/include/freetype2 /usr/include $ENV{${upper}DIR}/include ${INCLUDE_DIRS})
+    	FIND_PATH(FREETYPE_INCLUDE_PATH ft2build.h $ENV{PREFIX}/include/freetype2 /usr/include/freetype2 /usr/include $ENV{${upper}DIR}/include ${INCLUDE_DIRS})
 	CHECK_REQUIRED_LIB(FREETYPE freetype freetype/config/ftheader.h )
 	IF (ENABLE_STATIC_FTGL)
 		IF(WIN32)
@@ -460,8 +466,9 @@ IF(ENABLE_PNG)
 ENDIF(ENABLE_PNG)
 
 FIND_PATH(NUMPY_INCLUDE_PATH numpy/arrayobject.h
-    $ENV{PYTHON_ROOT}/lib/python2.7/site-packages/numpy/core/include
-    $ENV{PYTHON_ROOT}/lib/python2.6/site-packages/numpy/core/include
+	$ENV{SP_DIR}/numpy/core/include
+	$ENV{PYTHON_ROOT}/lib/python2.7/site-packages/numpy/core/include
+	$ENV{PYTHON_ROOT}/lib/python2.6/site-packages/numpy/core/include
 	$ENV{PYTHON_ROOT}/lib/python2.5/site-packages/numpy/core/include
 	$ENV{PYTHON_ROOT}/lib/python2.4/site-packages/numpy/core/include
 	/usr/local/lib/python2.7/site-packages/numpy/core/include
