@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup #, find_packages
 import glob
 import os
 
@@ -9,32 +9,12 @@ setup(
 	name="eman2",
 	version="3.0.0",
 
-    package_dir={'EMAN2':'libeman/EMAN2',
-    	    'sparx':'libeman/sparx'
-    	    },
-    packages={'EMAN2':'EMAN2',
-    	    'EMAN2.pyemtbx':'EMAN2.pyemtbx',
-    	    'sparx':'sparx',
-    	    },
-    package_data={'EMAN2':['*.so','*.dylib'],
-    	    'EMAN2/pmconfig':['libEM/pmconfig/*.json'],
-    	    'EMAN2/images':['lib/images/*.png',
-    	    	    'images/*.ico',
-    	    	    'images/macimages/*.png',
-    	    	    'images/macimages/*.ico',
-    	    	    ],
-    	    'EMAN2/fonts':['fonts/*.txt',
-    	    	    'fonts/*.ttf'],
-    	    'EMAN2/examples':['examples/*.py',
-    	    	    'examples/*.jpg',
-    	    	    'examples/00README'],
-    	    'EMAN2/doc':['doc/*.html',
-    	    	    'doc/*.txt',
-    	    	    'doc/build/*',
-    	    	    'doc/doxygen/*',
-    	    	    'doc/latex/*',
-    	    	    'doc/modular_class_html/*.py'],
-    	    },
+    package_dir={'EMAN2':'libeman/EMAN2','sparx':'libeman/sparx'},
+    packages=['EMAN2','sparx'],
+    package_data={'EMAN2':['*.so','*.dylib','pmconfig/*','pyemtbx/*'],
+    	    '':['include/*.h','include/gorgon/*.h','include/plugins/*.h',
+    	    	    'examples/*.py','fonts/*.txt','fonts/*.ttf',
+    	    	    'images/*.png','images/*.ico','doc/*','test/rt/*.py']},
     include_package_data = True,
     scripts=scripts,
     
