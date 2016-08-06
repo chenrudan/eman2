@@ -9,7 +9,8 @@ import shutil
 
 progs_contain = ["em","EM","","EMAN","eman","e2"]
 
-stdlib27 = """abc,anydbm,argparse,array,asynchat,asyncore,atexit,base64,BaseHTTPServer,
+# standard library plus a few commonly used packages
+pylibs = """abc,anydbm,argparse,array,asynchat,asyncore,atexit,base64,BaseHTTPServer,
 bisect,bz2,calendar,cgitb,cmd,codecs,collections,commands,compileall,ConfigParser,contextlib,
 Cookie,copy,cPickle,cProfile,cStringIO,csv,datetime,dbhash,dbm,decimal,difflib,dircache,dis,
 doctest,dumbdbm,EasyDialogs,errno,exceptions,filecmp,fileinput,fnmatch,fractions,functools,
@@ -21,8 +22,8 @@ SimpleXMLRPCServer,site,sitecustomize,smtpd,smtplib,socket,SocketServer,sqlite3,
 StringIO,struct,subprocess,sys,sysconfig,tabnanny,tarfile,tempfile,textwrap,threading,time,
 timeit,trace,traceback,unittest,urllib,urllib2,urlparse,usercustomize,uuid,warnings,weakref,
 webbrowser,whichdb,xml,xmlrpclib,zipfile,zipimport,zlib,builtins,__builtin__,bsddb,PyQt4,
-OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py,setuptools""" # standard library plus a few commonly used packages
-stdlib27 = stdlib27.replace("\n","").split(",") # clean up and generate list
+OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py,setuptools,theano"""
+pylibs = pylibs.replace("\n","").split(",") # clean up and convert to list
 
 bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
 sparxlibs = [n.replace(".py","") for n in os.listdir("sparx/libpy/") if "__" not in n]
@@ -114,7 +115,7 @@ def get_new_import(imp):
 def fix_import(oldimp,libname="EMAN2"):
 	if oldimp.find("from") == 0: # case 1: from module import blah
 		if oldimp != "from {} import *".format(libname):
-			if not any(["from {}".format(s) in oldimp for s in stdlib27]):
+			if not any(["from {}".format(s) in oldimp for s in pylibs]):
 				if "from {} import".format(libname) in oldimp:
 					newimp = oldimp
 				else:
@@ -128,7 +129,7 @@ def fix_import(oldimp,libname="EMAN2"):
 	elif oldimp.find("import") == 0: # case 2: import module or import module as blah
 		if oldimp == "import {}".format(libname): # we just use the existing import
 			newimp = oldimp
-		elif any(["import {}".format(s) in oldimp for s in stdlib27]):
+		elif any(["import {}".format(s) in oldimp for s in pylibs]):
 			newimp = oldimp # if it's important from stdlib, we don't want to change it
 		else:
 			if oldimp.split(" ")[1] in bindir_files:

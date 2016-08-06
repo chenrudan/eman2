@@ -16,8 +16,11 @@ SET(EMAN_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/libeman CACHE PATH "installation p
 #SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
 SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation prefix")
 
+<<<<<<< HEAD
 #ADD_SUBDIRECTORY(libeman) # perhaps this isn't necessary?
 
+=======
+>>>>>>> parent of 0cc6720... refactored code using refactor.py script
 MARK_AS_ADVANCED(CLEAR EMAN_INSTALL_PREFIX)
 
 SET(EXECUTABLE_OUTPUT_PATH ${EMAN_BINARY_DIR}/bin CACHE PATH "output directory for building all executables.")
