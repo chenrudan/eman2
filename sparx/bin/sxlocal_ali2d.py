@@ -59,10 +59,10 @@ def main():
 		else:
 			mask = args[2]
 		
-		from applications import local_ali2d
+		from sparx.applications import local_ali2d
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		
 		global_def.BATCH = True	

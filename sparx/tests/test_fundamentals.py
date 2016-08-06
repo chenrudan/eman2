@@ -42,8 +42,8 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def internal_correlation(self, A, B, center, circulant, normalized, lag_normalization): # A, B - images, circulant - bool (False - zero padded), center - bool, normalized - bool
 		from EMAN2 import EMData
-		from utilities import model_blank
-		from fundamentals import cyclic_shift
+		from sparx.utilities import model_blank
+		from sparx.fundamentals import cyclic_shift
 		from math import sqrt
 		anx = A.get_xsize()
 		any = A.get_ysize()
@@ -149,7 +149,7 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def internal_test_image2(self, nx, ny=1, nz=1):
 		from EMAN2 import EMData, display
-		from fundamentals import cyclic_shift, mirror
+		from sparx.fundamentals import cyclic_shift, mirror
 		e = EMData()
 		e.set_size(nx, ny, nz)
 		e.process_inplace("testimage.tomo.objects")
@@ -161,45 +161,45 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_acf_circle_2D_20x30(self):
 		"""test acf*: circle 2D, 20x30.........................."""
-		from utilities import model_circle
-		from fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
 		A = model_circle(7, 20, 30)
 		self.internal_check_ccf(A, A, acf(A,False), acfn(A,False), acfp(A,False), acfnp(A,False), acfpl(A, False), acfnpl(A, False)
 									, acf(A,True ), acfn(A,True ), acfp(A,True ), acfnp(A,True ), acfpl(A, True ), acfnpl(A, True ) )
 
 	def test_acf_circle_2D_21x31(self):
 		"""test acf*: circle 2D, 21x31.........................."""
-		from utilities import model_circle
-		from fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
 		A = model_circle(7, 21, 31)
 		self.internal_check_ccf(A, A, acf(A,False), acfn(A,False), acfp(A,False), acfnp(A,False), acfpl(A, False), acfnpl(A, False)
 									, acf(A,True ), acfn(A,True ), acfp(A,True ), acfnp(A,True ), acfpl(A, True ), acfnpl(A, True ) )
 
 	def test_acf_circle_2D_31x20(self):
 		"""test acf*: circle 2D, 31x20.........................."""
-		from utilities import model_circle
-		from fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
 		A = model_circle(7, 31, 20)
 		self.internal_check_ccf(A, A, acf(A,False), acfn(A,False), acfp(A,False), acfnp(A,False), acfpl(A, False), acfnpl(A, False)
 									, acf(A,True ), acfn(A,True ), acfp(A,True ), acfnp(A,True ), acfpl(A, True ), acfnpl(A, True ) )
 
 	def test_acf_objects_2D_20x30(self):
 		"""test acf*: objects 2D, 20x30.........................."""
-		from fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
+		from sparx.fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
 		A = self.internal_test_image(20, 30)
 		self.internal_check_ccf(A, A, acf(A,False), acfn(A,False), acfp(A,False), acfnp(A,False), acfpl(A, False), acfnpl(A, False)
 									, acf(A,True ), acfn(A,True ), acfp(A,True ), acfnp(A,True ), acfpl(A, True ), acfnpl(A, True ) )
 
 	def test_acf_objects_2D_21x31(self):
 		"""test acf*: objects 2D, 21x31.........................."""
-		from fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
+		from sparx.fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
 		A = self.internal_test_image(21, 31)
 		self.internal_check_ccf(A, A, acf(A,False), acfn(A,False), acfp(A,False), acfnp(A,False), acfpl(A, False), acfnpl(A, False)
 									, acf(A,True ), acfn(A,True ), acfp(A,True ), acfnp(A,True ), acfpl(A, True ), acfnpl(A, True ) )
 
 	def test_acf_objects_2D_31x20(self):
 		"""test acf*: objects 2D, 31x20.........................."""
-		from fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
+		from sparx.fundamentals import acf, acfn, acfnp, acfnpl, acfp, acfpl
 		A = self.internal_test_image(31, 20)
 		self.internal_check_ccf(A, A, acf(A,False), acfn(A,False), acfp(A,False), acfnp(A,False), acfpl(A, False), acfnpl(A, False)
 									, acf(A,True ), acfn(A,True ), acfp(A,True ), acfnp(A,True ), acfpl(A, True ), acfnpl(A, True ) )
@@ -208,8 +208,8 @@ class TestCorrelationFunctions(unittest.TestCase):
 	
 	def test_ccf_circle_2D_20x30(self):
 		"""test ccf*: circle 2D, 20x30.........................."""
-		from utilities import model_circle
-		from fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
 		A = model_circle(7, 20, 30)
 		B = model_circle(4, 20, 30)
 		self.internal_check_ccf(A, B, ccf(A,B,False), ccfn(A,B,False), ccfp(A,B,False), ccfnp(A,B,False), ccfpl(A,B,False), ccfnpl(A,B,False)
@@ -217,8 +217,8 @@ class TestCorrelationFunctions(unittest.TestCase):
 	
 	def test_ccf_circle_2D_21x31(self):
 		"""test ccf*: circle 2D, 21x31.........................."""
-		from utilities import model_circle
-		from fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
 		A = model_circle(7, 21, 31)
 		B = model_circle(4, 21, 31)
 		self.internal_check_ccf(A, B, ccf(A,B,False), ccfn(A,B,False), ccfp(A,B,False), ccfnp(A,B,False), ccfpl(A,B,False), ccfnpl(A,B,False)
@@ -226,8 +226,8 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_ccf_circle_2D_31x20(self):
 		"""test ccf*: circle 2D, 31x20.........................."""
-		from utilities import model_circle
-		from fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
 		A = model_circle(7, 31, 20)
 		B = model_circle(4, 31, 20)
 		self.internal_check_ccf(A, B, ccf(A,B,False), ccfn(A,B,False), ccfp(A,B,False), ccfnp(A,B,False), ccfpl(A,B,False), ccfnpl(A,B,False)
@@ -235,7 +235,7 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_ccf_objects_2D_20x30(self):
 		"""test ccf*: objects 2D, 20x30.........................."""
-		from fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
+		from sparx.fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
 		A = self.internal_test_image(20, 30)
 		B = self.internal_test_image2(20, 30)
 		self.internal_check_ccf(A, B, ccf(A,B,False), ccfn(A,B,False), ccfp(A,B,False), ccfnp(A,B,False), ccfpl(A,B,False), ccfnpl(A,B,False)
@@ -243,7 +243,7 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_ccf_objects_2D_21x31(self):
 		"""test ccf*: objects 2D, 21x31.........................."""
-		from fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
+		from sparx.fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
 		A = self.internal_test_image(21, 31)
 		B = self.internal_test_image2(21, 31)
 		self.internal_check_ccf(A, B, ccf(A,B,False), ccfn(A,B,False), ccfp(A,B,False), ccfnp(A,B,False), ccfpl(A,B,False), ccfnpl(A,B,False)
@@ -251,7 +251,7 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_ccf_objects_2D_31x20(self):
 		"""test ccf*: objects 2D, 31x20.........................."""
-		from fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
+		from sparx.fundamentals import ccf, ccfn, ccfnp, ccfnpl, ccfp, ccfpl
 		A = self.internal_test_image(31, 20)
 		B = self.internal_test_image2(31, 20)
 		self.internal_check_ccf(A, B, ccf(A,B,False), ccfn(A,B,False), ccfp(A,B,False), ccfnp(A,B,False), ccfpl(A,B,False), ccfnpl(A,B,False)
@@ -261,8 +261,8 @@ class TestCorrelationFunctions(unittest.TestCase):
 '''
 	def test_cnv_circle_2D_20x30(self):
 		"""test cnv*: circle 2D, 20x30.........................."""
-		from utilities import model_circle
-		from fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
 		A = model_circle(7, 20, 30)
 		B = model_circle(4, 20, 30)
 		C = mirror(mirror(B,'x'),'y')
@@ -271,8 +271,8 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_cnv_circle_2D_21x31(self):
 		"""test cnv*: circle 2D, 21x31.........................."""
-		from utilities import model_circle
-		from fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
 		A = model_circle(7, 21, 31)
 		B = model_circle(4, 21, 31)
 		C = mirror(mirror(B,'x'),'y')
@@ -281,8 +281,8 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_cnv_circle_2D_31x20(self):
 		"""test cnv*: circle 2D, 31x20.........................."""
-		from utilities import model_circle
-		from fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
+		from sparx.utilities import model_circle
+		from sparx.fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
 		A = model_circle(7, 31, 20)
 		B = model_circle(4, 31, 20)
 		C = mirror(mirror(B,'x'),'y')
@@ -291,7 +291,7 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_cnv_objects_2D_20x30(self):
 		"""test cnv*: objects 2D, 20x30.........................."""
-		from fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
+		from sparx.fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
 		A = self.internal_test_image(20, 30)
 		B = self.internal_test_image2(20, 30)
 		C = mirror(mirror(B,'x'),'y')
@@ -300,7 +300,7 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_cnv_objects_2D_21x31(self):
 		"""test cnv*: objects 2D, 21x31.........................."""
-		from fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
+		from sparx.fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
 		A = self.internal_test_image(21, 31)
 		B = self.internal_test_image2(21, 31)
 		C = mirror(mirror(B,'x'),'y')
@@ -309,7 +309,7 @@ class TestCorrelationFunctions(unittest.TestCase):
 
 	def test_cnv_objects_2D_31x20(self):
 		"""test cnv*: objects 2D, 31x20.........................."""
-		from fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
+		from sparx.fundamentals import cnv, cnvn, cnvnp, cnvnpl, cnvp, cnvpl, mirror
 		A = self.internal_test_image(31, 20)
 		B = self.internal_test_image2(31, 20)
 		C = mirror(mirror(B,'x'),'y')

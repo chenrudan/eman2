@@ -36,7 +36,7 @@ import sys
 
 
 import global_def
-from   global_def import *
+from global_def import *
 from optparse import OptionParser, SUPPRESS_HELP
 
 from EMAN2 import *
@@ -44,14 +44,14 @@ from sparx import *
 
 import datetime
 
-from mpi   import  *
-from math  import  *
+from mpi import *
+from math import *
 
-from utilities import send_string_to_all
+from sparx.utilities import send_string_to_all
 
 def shrink_or_enlarge_or_stay_the_same(images, shrink_ratio, target_nx, target_radius, newx, nima):
-	from fundamentals import resample
-	from utilities import pad
+	from sparx.fundamentals import resample
+	from sparx.utilities import pad
 	
 	if newx >= target_nx  :
 		msk = model_circle(target_radius, target_nx, target_nx)
@@ -75,7 +75,7 @@ def shrink_or_enlarge_or_stay_the_same(images, shrink_ratio, target_nx, target_r
 
 def main(args):
 	
-	from alignment import align2d
+	from sparx.alignment import align2d
 
 	progname = os.path.basename(sys.argv[0])
 	usage = ( progname + " stack_file isac_directory class_file_name_no_dir_info --radius=particle_radius")
@@ -100,7 +100,7 @@ def main(args):
 		sys.exit()
 	
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from sparx.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	
 	global_def.BATCH = True

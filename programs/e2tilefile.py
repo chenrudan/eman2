@@ -177,7 +177,7 @@ def build_tiles(img,tilefile,tilesize,options=[]):
 #		try:
 			import matplotlib
 			matplotlib.use('Agg')
-			import pylab
+			import EMAN2.pylab as pylab
 			manager = pylab.get_current_fig_manager()
 			apix=options["pspec"]
 			dx=1.0/(2.0*apix*256.0)

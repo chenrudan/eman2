@@ -122,7 +122,7 @@ if not access("%s/bin/cmake"%prefix,R_OK):
 	system("cd %s; ./configure --prefix=%s; make; make install"%(fsp["cmake"][:-7],prefix))
 
 # SIP
-try: import sip
+try: import EMAN2.sip as sip
 except:
 	system("tar xvzf "+fsp["sip"])
 	system("cd %s; python configure.py; make; make install"%fsp["sip"][:-7])

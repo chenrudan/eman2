@@ -39,11 +39,11 @@ import heapq
 import operator
 import random
 import numpy
-import colorsys
+import EMAN2.colorsys as colorsys
 import os
 import math
 
-from mpl_toolkits.mplot3d import Axes3D
+from EMAN2.mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 import matplotlib

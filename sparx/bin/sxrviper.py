@@ -5,10 +5,10 @@ from global_def import *
 from mpi import MPI_SUM, mpi_reduce, mpi_init, mpi_finalize, MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size, mpi_barrier, \
 	mpi_comm_split, mpi_bcast, MPI_INT, MPI_CHAR, MPI_FLOAT
 
-from utilities import get_im, string_found_in_file, get_latest_directory_increment_value, store_value_of_simple_vars_in_json_file
-from utilities import cmdexecute, if_error_then_all_processes_exit_program
+from sparx.utilities import get_im, string_found_in_file, get_latest_directory_increment_value, store_value_of_simple_vars_in_json_file
+from sparx.utilities import cmdexecute, if_error_then_all_processes_exit_program
 from utilities import read_text_row, read_text_file, write_text_file, write_text_row, getindexdata, print_program_start_information
-from multi_shc import find_common_subset, do_volume, multi_shc
+from sparx.multi_shc import find_common_subset, do_volume, multi_shc
 
 import string
 import os, sys
@@ -32,7 +32,7 @@ DIR_DELIM = os.sep
 def calculate_list_of_independent_viper_run_indices_used_for_outlier_elimination(no_of_viper_runs_analyzed_together, 
 	no_of_viper_runs_analyzed_together_from_user_options, masterdir, rviper_iter, criterion_name):
 
-	from utilities import combinations_of_n_taken_by_k
+	from sparx.utilities import combinations_of_n_taken_by_k
 
 	# generate all possible combinations of (no_of_viper_runs_analyzed_together - 1) taken (3 - 1) at a time
 	import itertools
@@ -475,9 +475,9 @@ def calculate_volumes_after_rotation_and_save_them(ali3d_options, rviper_iter, m
 
 	if( mpi_rank == 0):
 		# Align all rotated volumes, calculate their average and save as an overall result
-		from utilities import get_params3D, set_params3D, get_im, model_circle
-		from statistics import ave_var
-		from applications import ali_vol
+		from sparx.utilities import get_params3D, set_params3D, get_im, model_circle
+		from sparx.statistics import ave_var
+		from sparx.applications import ali_vol
 		# vls = [None]*no_of_viper_runs_analyzed_together
 		vls = [None]*len(list_of_independent_viper_run_indices_used_for_outlier_elimination)
 		# for i in xrange(no_of_viper_runs_analyzed_together):
@@ -544,8 +544,8 @@ def get_already_processed_viper_runs(run_get_already_processed_viper_runs):
 
 def main():
 
-	from logger import Logger, BaseLogger_Files
-	import user_functions
+	from sparx.logger import Logger, BaseLogger_Files
+	import sparx.user_functions as user_functions
 	from optparse import OptionParser, SUPPRESS_HELP
 	from global_def import SPARXVERSION
 	from EMAN2 import EMData
@@ -736,7 +736,7 @@ output_directory: directory name into which the output files will be written.  I
 				cmd = "{} {} {}".format("e2bdb.py", org_stack_location,"--makevstack=" + bdb_stack_location + "_000")
 				cmdexecute(cmd)
 
-				from applications import header
+				from sparx.applications import header
 				try:
 					header(bdb_stack_location + "_000", params='original_image_index', fprint=True)
 					print "Images were already indexed!"
@@ -750,7 +750,7 @@ output_directory: directory name into which the output files will be written.  I
 				cmd = "{} {} {}".format("sxcpy.py  ", args[0], bdb_stack_location + "_000")
 				cmdexecute(cmd)
 
-				from applications import header
+				from sparx.applications import header
 				try:
 					header(bdb_stack_location + "_000", params='original_image_index', fprint=True)
 					print "Images were already indexed!"

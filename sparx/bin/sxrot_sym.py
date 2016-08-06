@@ -57,9 +57,9 @@ def main():
 		exit(1)
 	else:
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
-		from applications  import  rot_sym
+		from sparx.applications import rot_sym
 		global_def.BATCH = True
 		rot_sym(args[0],args[1],options.sym,options.r,options.phi,options.theta,options.psi,options.phirange,options.thetarange,options.psirange,options.ftol,options.xtol)
 		global_def.BATCH = False

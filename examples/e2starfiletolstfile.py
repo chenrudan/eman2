@@ -13,8 +13,8 @@
 from EMAN2 import *
 import sys
 import os
-from EMAN2star import *
-import pyemtbx.options
+from EMAN2.EMAN2star import *
+import EMAN2.pyemtbx.options as pyemtbx.options
 
 progname = os.path.basename(sys.argv[0])
 usage = """ prog [options] <input star file> <output lst file>

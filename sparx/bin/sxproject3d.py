@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from   global_def import *
-from   optparse import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 
 def main():
@@ -62,9 +62,9 @@ def main():
 			mask = args[2]
 			
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
-		from   applications import project3d
+		from sparx.applications import project3d
 		global_def.BATCH = True
 		project3d(args[0], args[1], mask, options.delta, options.method, options.phiEqpsi, options.symmetry, options.angles, listctfs=options.CTF, noise=options.noise, realsp=options.realspace)
 		global_def.BATCH = False

@@ -3,21 +3,21 @@
 #  10/25/2015
 #  New version.
 #  
-import  os
-import  sys
-import  types
-import  global_def
-from    sparx       import *
-from    global_def  import *
-from    optparse    import OptionParser
-from    numpy       import array
-from    logger      import Logger, BaseLogger_Files
-from    morphology  import 	get_shrink_3dmask
+import os
+import sys
+import types
+import global_def
+from sparx import *
+from global_def import *
+from optparse import OptionParser
+from numpy import array
+from sparx.logger import Logger, BaseLogger_Files
+from sparx.morphology import get_shrink_3dmask
 
 	
 def main():
 	from time import sleep
-	from logger import Logger, BaseLogger_Files
+	from sparx.logger import Logger, BaseLogger_Files
         arglist = []
         i = 0
         while( i < len(sys.argv) ):
@@ -89,13 +89,13 @@ def main():
 		mpi_comm  = MPI_COMM_WORLD
 		main_node = 0
 		# import some utilities
-		from utilities import get_im,bcast_number_to_all,cmdexecute,write_text_file,read_text_file,wrap_mpi_bcast
-		from applications import recons3d_n_MPI, mref_ali3d_MPI, Kmref_ali3d_MPI
-		from statistics import k_means_match_clusters_asg_new,k_means_stab_bbenum
+		from sparx.utilities import get_im,bcast_number_to_all,cmdexecute,write_text_file,read_text_file,wrap_mpi_bcast
+		from sparx.applications import recons3d_n_MPI, mref_ali3d_MPI, Kmref_ali3d_MPI
+		from sparx.statistics import k_means_match_clusters_asg_new,k_means_stab_bbenum
 		from reconstruction import rec3D_MPI_noCTF,rec3D_two_chunks_MPI
-		from applications import mref_ali3d_EQ_Kmeans, ali3d_mref_Kmeans_MPI  
+		from sparx.applications import mref_ali3d_EQ_Kmeans, ali3d_mref_Kmeans_MPI  
 		# Create the main log file
-		from logger import Logger,BaseLogger_Files
+		from sparx.logger import Logger,BaseLogger_Files
 		if myid ==main_node:
 			log_main=Logger(BaseLogger_Files())
 			log_main.prefix=masterdir+"/"
@@ -191,22 +191,22 @@ def main():
 		# import from utilities
 		from utilities import sample_down_1D_curve,get_initial_ID,remove_small_groups,print_upper_triangular_matrix,print_a_line_with_timestamp
 		from utilities import convertasi,prepare_ptp,print_dict,get_resolution_mrk01,partition_to_groups,partition_independent_runs,get_outliers
-		from utilities import merge_groups, save_alist, margin_of_error, get_margin_of_error, do_two_way_comparison, select_two_runs, get_ali3d_params
-		from utilities import counting_projections, unload_dict, load_dict, get_stat_proj, create_random_list, get_number_of_groups, recons_mref
-		from utilities import apply_low_pass_filter, get_groups_from_partition, get_number_of_groups, get_complementary_elements_total, update_full_dict
-		from utilities import count_chunk_members, set_filter_parameters_from_adjusted_fsc, adjust_fsc_down, get_two_chunks_from_stack
+		from sparx.utilities import merge_groups, save_alist, margin_of_error, get_margin_of_error, do_two_way_comparison, select_two_runs, get_ali3d_params
+		from sparx.utilities import counting_projections, unload_dict, load_dict, get_stat_proj, create_random_list, get_number_of_groups, recons_mref
+		from sparx.utilities import apply_low_pass_filter, get_groups_from_partition, get_number_of_groups, get_complementary_elements_total, update_full_dict
+		from sparx.utilities import count_chunk_members, set_filter_parameters_from_adjusted_fsc, adjust_fsc_down, get_two_chunks_from_stack
 		####------------------------------------------------------------------	
 		
 		# another part
-		from utilities import get_class_members, remove_small_groups, get_number_of_groups, get_stable_members_from_two_runs
-		from utilities import two_way_comparison_single, get_leftover_from_stable, get_initial_ID, Kmeans_exhaustive_run
+		from sparx.utilities import get_class_members, remove_small_groups, get_number_of_groups, get_stable_members_from_two_runs
+		from sparx.utilities import two_way_comparison_single, get_leftover_from_stable, get_initial_ID, Kmeans_exhaustive_run
 		from utilities import print_a_line_with_timestamp, split_a_group
 		
 		#
 		# Get the pixel size; if none, set to 1.0, and the original image size
-		from utilities import get_shrink_data_huang
+		from sparx.utilities import get_shrink_data_huang
 		from time import sleep
-		import user_functions
+		import sparx.user_functions as user_functions
 		user_func = user_functions.factory[Tracker["constants"]["user_func"]]
 		if(myid == main_node):
 			line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
@@ -295,7 +295,7 @@ def main():
 	   	total_stack = bcast_number_to_all(total_stack, source_node = main_node)
 	   	"""
 		if myid==main_node:
-	   		from EMAN2db import db_open_dict	
+	   		from EMAN2.EMAN2db import db_open_dict	
 	   		OB = db_open_dict(orgstack)
 	   		DB = db_open_dict(Tracker["constants"]["stack"]) 
 			for i in xrange(total_stack):
@@ -435,7 +435,7 @@ def main():
 			for a in sys.argv: 
 					log_main.add(a)
 			log_main.add("**********************************************************")
-		from filter import filt_tanl
+		from sparx.filter import filt_tanl
 		##################### START 3-D sorting ##########################
 		if myid ==main_node:
 			log_main.add("----------3-D sorting  program------- ")

@@ -69,7 +69,7 @@ def main():
 			mask = args[3]
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		
 	        if options.MPI:
@@ -78,12 +78,12 @@ def main():
 
 		global_def.BATCH = True
 		if options.EQ:
-			from development import mrefeq_ali2df
+			from sparx.development import mrefeq_ali2df
 			#print  "  calling MPI",options.MPI,options.function,options.rand_seed
 			#print  args
 			mrefeq_ali2df(args[0], args[1], mask, options.ir, options.ou, options.rs, options.xr, options.yr, options.ts, options.center, options.maxit, options.CTF, options.snr, options.function, options.rand_seed, options.MPI)
 		else:
-			from applications import mref_ali2d
+			from sparx.applications import mref_ali2d
 			mref_ali2d(args[0], args[1], args[2], mask, options.ir, options.ou, options.rs, options.xr, options.yr, options.ts, options.center, options.maxit, options.CTF, options.snr, options.function, options.rand_seed, options.MPI)
 		global_def.BATCH = False
                 if options.MPI:

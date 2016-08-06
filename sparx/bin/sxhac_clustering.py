@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from   global_def import *
-from   optparse import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 def main():
 	
@@ -64,9 +64,9 @@ def main():
 		else:              maskname = args[2]
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
-		from  applications  import  HAC_clustering
+		from sparx.applications import HAC_clustering
 		global_def.BATCH = True
 		HAC_clustering(args[0], args[1], maskname, options.link, options.dist, options.dissimilar)
 		global_def.BATCH = False

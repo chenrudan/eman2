@@ -7,17 +7,17 @@ import global_def
 from global_def import *
 
 def main(args):
-	from utilities import if_error_then_all_processes_exit_program, write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
-	from logger import Logger, BaseLogger_Files
+	from sparx.utilities import if_error_then_all_processes_exit_program, write_text_row, drop_image, model_gauss_noise, get_im, set_params_proj, wrap_mpi_bcast, model_circle
+	from sparx.logger import Logger, BaseLogger_Files
 	from mpi import mpi_init, mpi_finalize, MPI_COMM_WORLD, mpi_comm_rank, mpi_comm_size, mpi_barrier
-	import user_functions
+	import sparx.user_functions as user_functions
 	import sys
 	import os
-	from applications import MPI_start_end
+	from sparx.applications import MPI_start_end
 	from optparse import OptionParser, SUPPRESS_HELP
 	from global_def import SPARXVERSION
 	from EMAN2 import EMData
-	from multi_shc import multi_shc
+	from sparx.multi_shc import multi_shc
 
 	progname = os.path.basename(sys.argv[0])
 	usage = progname + " stack  [output_directory] --ir=inner_radius --rs=ring_step --xr=x_range --yr=y_range  --ts=translational_search_step  --delta=angular_step --center=center_type --maxit1=max_iter1 --maxit2=max_iter2 --L2threshold=0.1 --ref_a=S --sym=c1"

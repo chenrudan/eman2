@@ -25,10 +25,11 @@ OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py,setuptools""" 
 stdlib27 = stdlib27.replace("\n","").split(",") # clean up and generate list
 
 bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
+sparxlibs = [n.replace(".py","") for n in os.listdir("sparx/libpy/") if "__" not in n]
 
 def main():
 	olddir = os.getcwd()
-	newdir = "../{}_refactor".format(os.path.basename(olddir))
+	newdir = "../{}-refactor".format(os.path.basename(olddir))
 
 	global bindir_files
 	bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
@@ -40,16 +41,24 @@ def main():
 		mkdir_p(newroot)
 
 		for f in files:
-			if os.path.isfile("{}/{}".format(root,f)):
-				if f[-3:] == ".py" and root not in ["doc","images","fonts","recipes"]:
+			if os.path.isfile("{}/{}".format(root,f)): # if this isn't a file, there's a serious problem.
+				# ONLY edit python files. Otherwise, ONLY copy contents of these directories and DONT edit build, setup, or refactor scripts.
+				if f[-3:] == ".py" and root not in ["doc","images","fonts","recipes"] and f not in ["build.py","setup.py","refactor.py"]:
 					with open("{}/{}".format(root,f),'r') as inf:
-						file_content = inf.read()
-					file_content = fix_imports(file_content)
+						file_content = inf.read() # read python file from origin
+					file_content = fix_imports(file_content) # fix import statements in this file
 					with open("{}/{}".format(newroot,f),'w') as outf:
-						outf.write(file_content)
+						outf.write(file_content) # write edited file content to target (newroot)
 				else:
-					try: shutil.copy("{}/{}".format(root,f),"{}/{}".format(newroot,f))
-					except: pass
+					try: 
+						shutil.copy("{}/{}".format(root,f),"{}/{}".format(newroot,f)) # try copying file from origin to target
+					except:
+						try:
+							os.unlink("{}/{}".format(newroot,f)) # probably already exists at location, so we remove it from target
+							shutil.copy("{}/{}".format(root,f),"{}/{}".format(newroot,f)) # and try copying again from origin to target
+						except:
+							print("ERROR COPYING FILE: {}".format(f))
+							sys.exit(1)
 
 	print("Results stored in: {}".format(newdir))
 
@@ -76,47 +85,62 @@ def fix_imports(lines):
 def insert(s,i,x):
 	return s[:x]+i+s[x:]
 
+def split_prefix(imp):
+	loc = [imp.find("from"),imp.find("import")]
+	try: start = min([l for l in loc if l >=0])
+	except:
+		print("NOT AN IMPORT: {}".format(imp))
+		start = 0 # probably not an import statement...
+	return imp[:start],imp[start:]
+
 def get_new_import(imp):
-	#oldimp = oldimp.split("#")[0]
+	prefix,oldimp = split_prefix(imp) # split anything before the actual import statement for easier string comparison
+	#print("prefix: {}\nimp: {}".format(prefix,oldimp))
+	oldimp = " ".join(oldimp.split()) # Extra spaces in import statements make string comparisons annoying. I'm getting rid of them.
 
-	if "try:" in imp: oldimp = imp.replace("try: ","") # remove "try: " from try/except import lines
-	else: oldimp = imp
-
-	oldimp = " ".join(oldimp.split()) # some people seem to add extra spaces in their imports
-
-	if "." in oldimp or ".." in oldimp: newimp = oldimp # leave relative imports alone. pretty sure we want them as-is.
+	if ".." in oldimp:
+		print("RELATIVE IMPORT: {}".format(imp))
+		newimp = oldimp # leave relative imports alone. pretty sure we want them as-is.
+	elif any([s in oldimp for s in sparxlibs]):
+		newimp = fix_import(oldimp,libname="sparx")
 	else:
-		if oldimp.find("from") == 0: # case 1: from
-			if oldimp != "from EMAN2 import *":
-				if not any(["from {}".format(s) in oldimp for s in stdlib27]):
-					if "from EMAN2 import" in oldimp:
-						newimp = oldimp
-					else:
-						if oldimp.split(" ")[1] in bindir_files:
-							newimp = oldimp # program in bin, so import doesn't need to be altered
-						else:
-							newimp = insert(oldimp,"EMAN2.",len("from ")) # replace "from module" with "from EMAN2.module"
-				else:
+		newimp = fix_import(oldimp,libname="EMAN2")
+
+	if oldimp != newimp:
+		print("{:60}\n{:60}\n".format(oldimp,newimp))
+
+	return "{}{}".format(prefix,newimp)
+
+def fix_import(oldimp,libname="EMAN2"):
+	if oldimp.find("from") == 0: # case 1: from module import blah
+		if oldimp != "from {} import *".format(libname):
+			if not any(["from {}".format(s) in oldimp for s in stdlib27]):
+				if "from {} import".format(libname) in oldimp:
 					newimp = oldimp
-			else: newimp = oldimp
-		elif oldimp.find("import") == 0: # case 2: import
-			if oldimp == "import EMAN2": # we just use the existing import
-				newimp = oldimp
-			elif any(["import {}".format(s) in oldimp for s in stdlib27]):
-				newimp = oldimp # if it's important from stdlib, we don't want to change it
-			else:
-				if oldimp.split(" ")[1] in bindir_files:
-					newimp = oldimp # we don't need to change how we import programs in the bin directory
-				elif " as " in oldimp:
-					newimp = insert(oldimp,"EMAN2.",len("import ")) # replace "import module as x" with "import EMAN2.module as x"
 				else:
-					newimp = "import EMAN2.{module} as {module}".format(module=oldimp.replace("import ","")) # replace "import module" with "import EMAN2.module"
-		else: newimp = oldimp # otherwise
-	if "try:" in imp: newimp = "try: " + newimp # add "try" back to try/except imports
-
-	print("{:60}\n{:60}\n".format(imp,newimp))
+					if oldimp.split(" ")[1] in bindir_files:
+						newimp = oldimp # program in bin, so import doesn't need to be altered
+					else:
+						newimp = insert(oldimp,"{}.".format(libname),len("from ")) # replace "from module" with "from libname.module"
+			else:
+				newimp = oldimp
+		else: newimp = oldimp
+	elif oldimp.find("import") == 0: # case 2: import module or import module as blah
+		if oldimp == "import {}".format(libname): # we just use the existing import
+			newimp = oldimp
+		elif any(["import {}".format(s) in oldimp for s in stdlib27]):
+			newimp = oldimp # if it's important from stdlib, we don't want to change it
+		else:
+			if oldimp.split(" ")[1] in bindir_files:
+				newimp = oldimp # we don't need to change how we import programs in the bin directory
+			elif " as " in oldimp:
+				newimp = insert(oldimp,"{}.".format(libname),len("import ")) # replace "import module as x" with "import libname.module as x"
+			else:
+				newimp = "import {lib}.{module} as {module}".format(lib=libname,module=oldimp.replace("import ","")) # replace "import module" with "import libname.module"
+	else: 
+		newimp = oldimp # otherwise leave import alone... this case is likely to unforeseen catch errors.
+		print("POSSIBLE ERROR: {}".format(oldimp))
 	return newimp
-
 
 if __name__ == "__main__":
 	main()

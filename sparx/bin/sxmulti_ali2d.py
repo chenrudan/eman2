@@ -34,9 +34,9 @@
 
 import os
 import global_def
-from   global_def     import *
-from   user_functions import *
-from   optparse       import OptionParser
+from global_def import *
+from sparx.user_functions import *
+from optparse import OptionParser
 import sys
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -71,10 +71,10 @@ def main():
 		if len(args) == 2: mask = None
 		else:              mask = args[2]
 		
-		from development import multi_ali2d
+		from sparx.development import multi_ali2d
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		
 		if options.MPI:

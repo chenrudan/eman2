@@ -111,10 +111,10 @@ Stack Mode - Process a stack (Advanced Option):
 		sys.argv = mpi_init(len(sys.argv), sys.argv)
 		
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from sparx.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	
-	from morphology import cter_mrk
+	from sparx.morphology import cter_mrk
 	global_def.BATCH = True
 	
 	result = cter_mrk(input_image, output_directory, options.wn, pixel_size=options.apix, \

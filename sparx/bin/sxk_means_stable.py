@@ -34,8 +34,8 @@
 
 import os
 import global_def
-from   global_def import *
-from   optparse import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 def main():
 	
@@ -71,7 +71,7 @@ def main():
 			sys.stderr.write('ERROR: nb_part must be > 1 partition\n\n')
 			sys.exit()
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 
 		global_def.BATCH = True
@@ -79,18 +79,18 @@ def main():
 			from mpi import mpi_init
 			sys.argv = mpi_init(len(sys.argv), sys.argv)
 			'''if options.CUDA:
-				from  development import  k_means_stab_MPICUDA_stream_YANG
+				from sparx.development import k_means_stab_MPICUDA_stream_YANG
 				k_means_stab_MPICUDA_stream_YANG(args[0], args[1], mask, options.K, options.nb_part, options.F, options.T0, options.th_nobj, options.rand_seed, options.maxit)
 			else:'''
-			from  statistics import  k_means_stab_MPI_stream
+			from sparx.statistics import k_means_stab_MPI_stream
 			k_means_stab_MPI_stream(args[0], args[1], mask, options.K, options.nb_part, 0.0, 0.0, options.th_nobj, options.rand_seed, "SSE", options.CTF, options.maxit)
 		else:
 			'''if options.CUDA:
-				from  development  import  k_means_stab_CUDA_stream
+				from sparx.development import k_means_stab_CUDA_stream
 				k_means_stab_CUDA_stream(args[0], args[1], mask, options.K, options.nb_part, options.F, options.T0, options.th_nobj, options.rand_seed, options.maxit)
 			else:'''
 			
-			from  statistics  import  k_means_stab_stream
+			from sparx.statistics import k_means_stab_stream
 			k_means_stab_stream(args[0], args[1], mask, options.K, options.nb_part, 0.0, 0.0, options.th_nobj, options.rand_seed, "SSE", options.CTF, options.maxit)
 		global_def.BATCH = False
 

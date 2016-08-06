@@ -32,10 +32,10 @@
 
 from EMAN2 import *
 from PyQt4 import QtCore
-from emfoldhunterstat import *
-from emapplication import get_application
-from empdbvaltool import EMPDBValWidget
-from emplot3d import *
+from EMAN2.emfoldhunterstat import *
+from EMAN2.emapplication import get_application
+from EMAN2.empdbvaltool import EMPDBValWidget
+from EMAN2.emplot3d import *
 import os
 
 class E2ValidateMed():
@@ -124,7 +124,7 @@ class E2ValidateMed():
 		In all the graphs, it graphs all the random transformations as green dots, and the target probe as a red dot, so the user knows how 
 		the target probe fares relative to the random transformations. 
 		'''
-		from pylab import scatter, subplot, show, figure, colorbar
+		from EMAN2.pylab import scatter, subplot, show, figure, colorbar
 		########  Graphing 1  - graph of 2 of the 3 scoring functions plotted against each other
 		
 		g1 = figure(1)
@@ -235,7 +235,7 @@ class E2ValidateMed():
 		#################################################
 
 if __name__ == '__main__':
-	from emapplication import EMApp
+	from EMAN2.emapplication import EMApp
 	em_app = EMApp()
 	window = E2ValidateMed()
 	window.start()

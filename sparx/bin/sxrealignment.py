@@ -34,9 +34,9 @@
 
 import os, sys
 import global_def
-from   global_def     import *
-from   user_functions import *
-from   optparse       import OptionParser
+from global_def import *
+from sparx.user_functions import *
+from optparse import OptionParser
 
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -69,7 +69,7 @@ def main():
     		print "Please run '" + progname + " -h' for detailed options"
 	else:
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 
 		if options.MPI:
@@ -78,10 +78,10 @@ def main():
 
 		global_def.BATCH = True
 		if options.old:
-			from development import realid
+			from sparx.development import realid
 			realid(args[0], args[1], args[2], args[3], options.ou, options.xr, options.ts, options.maxit, options.function, options.snr, options.CTF, options.Fourvar, options.Ng, options.num_ali, options.th_mir, options.th_err, options.dst, options.center, options.CUDA, options.GPUID, options.MPI)
 		else:
-			from development import realignment
+			from sparx.development import realignment
 			realignment(args[0], args[1], args[2], options.ou, options.xr, options.ts, options.maxit, options.function, options.snr, options.CTF, options.Fourvar, options.Ng, options.num_ali, options.err_th, options.K, options.dst, options.center, options.CUDA, options.GPUID, options.MPI)
 		global_def.BATCH = False
 		
