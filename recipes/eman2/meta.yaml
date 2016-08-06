@@ -1,0 +1,61 @@
+package:
+    name: eman2
+    #version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+    version: 2.2.0
+
+source:
+    git_url: git@github.com:cryoem/eman2.git 
+    #path: {{HOME}}/src/eman2-conda
+    git_branch: anaconda
+
+build:
+    number: 0
+
+requirements:
+    build:
+        - zlib
+        - cmake
+        - pyopengl
+        - numpy
+        - ftgl
+        - freetype
+        - gsl
+        - boost
+        - fftw
+        - hdf5
+        - libtiff >4
+        - jpeg >8
+        - libpng
+        - python <3
+    run:
+        - mpi4py
+        - python <3
+        - numpy
+        - matplotlib
+        - gsl
+        - boost
+        - fftw
+        - hdf5
+        - ipython
+        - pyqt
+        - qt
+        - pyopengl
+        - ftgl
+        - bsddb
+        - readline
+        - libtiff >4
+        - jpeg >8
+        - libpng
+
+about:
+  home: http://blake.bcm.edu/emanwiki
+  license: GPL2
+  license_file: LICENSE.txt
+  summary: A scientific image processing software suite with a focus on CryoEM and CryoET
+
+extra:
+  maintainers:
+    - Steve Ludtke
+    - James Michael Bell
+    - Vernon Williams
+    - Tunay Durmaz
