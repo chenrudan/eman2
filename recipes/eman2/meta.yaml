@@ -5,11 +5,10 @@ package:
 
 source:
     git_url: git@github.com:cryoem/eman2.git 
-    #path: {{HOME}}/src/eman2-conda
-    git_branch: anaconda
+    git_branch: conda
 
 build:
-    number: 0
+    number: 1
 
 requirements:
     build:
