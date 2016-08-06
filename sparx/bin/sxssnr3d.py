@@ -33,8 +33,8 @@
 
 import os
 import global_def
-from   global_def import *
-from   optparse import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 
 
@@ -89,10 +89,10 @@ def main():
 			sys.argv = mpi_init(len(sys.argv), sys.argv)
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 
-		from applications import ssnr3d		
+		from sparx.applications import ssnr3d		
 		global_def.BATCH = True
 		ssnr3d(stack, out_vol, ssnr_file, mask, reference, options.ou, options.rw, options.npad, options.CTF, options.sign, options.sym, options.MPI, options.random_angles)
 		global_def.BATCH = False

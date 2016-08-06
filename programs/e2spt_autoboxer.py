@@ -1626,7 +1626,7 @@ def rmsdpruner( datar, options ):
 
 def plothistogram(  options, scores ):	
 	import matplotlib.pyplot as plt
-	import pylab
+	import EMAN2.pylab as pylab
 	import matplotlib
 	
 	std = numpy.std( scores )

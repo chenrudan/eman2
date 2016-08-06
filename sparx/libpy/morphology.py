@@ -74,7 +74,7 @@ def dilation(f, mask = None, morphtype="BINARY"):
 	from EMAN2 import morph_type, filt_dilation_
 
 	if not mask:
-		from utilities import model_blank
+		from sparx.utilities import model_blank
 		nx = f.get_xsize()
 		ny = f.get_ysize()
 		nz = f.get_zsize()
@@ -106,7 +106,7 @@ def erosion(f, mask = None, morphtype="BINARY"):
 	from EMAN2 import morph_type, filt_erosion_
 
 	if not mask:
-		from utilities import model_blank
+		from sparx.utilities import model_blank
 		nx = f.get_xsize()
 		ny = f.get_ysize()
 		nz = f.get_zsize()
@@ -565,8 +565,8 @@ def defocus_get(fnam_roo, volt=300, Pixel_size=1, Cs=2, wgh=.1, f_start=0, f_sto
 		   defocus which matches the extracted CTF imprints 
 	"""
 
-	from math 	import sqrt, atan
-	from utilities 	import read_text_row
+	from math import sqrt, atan
+	from sparx.utilities import read_text_row
 	roo     = []
 	res     = []
 	if(docf == "a"):
@@ -606,7 +606,7 @@ def defocus_gett(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
+	from sparx.utilities import generate_ctf
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 	if f_start == 0 : 	i_start = 0
 	else: 			    i_start = int(Pixel_size*2.*len(roo)*f_start)
@@ -630,10 +630,10 @@ def defocus_gett(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		parent.ctf_data=[roo, Res_roo, Res_TE]
 		parent.i_start = i_start
 		parent.i_stop = i_stop
-		from utilities import write_text_file
+		from sparx.utilities import write_text_file
 		write_text_file([roo, Res_roo, Res_TE, ctf], "procpw.txt")
 	else:
-		from utilities import write_text_file
+		from sparx.utilities import write_text_file
 		write_text_file([roo, Res_roo, Res_TE, ctf], "procpw.txt")
 	return defocus
 
@@ -645,8 +645,8 @@ def defocus_get_Eudis(fnam_roo, volt=300, Pixel_size=1, Cs=2, wgh=.1, f_start=0,
 		   defocus which matches the extracted CTF imprints
 		3. It returns Euclidean distance for defocus selection 
 	"""
-	from math 	import sqrt, atan
-	from utilities 	import read_text_row, generate_ctf
+	from math import sqrt, atan
+	from sparx.utilities import read_text_row, generate_ctf
 	roo     = []
 	res     = []
 	if docf == "a":
@@ -709,7 +709,7 @@ def defocus_guess(Res_roo, Res_TE, volt, Cs, Pixel_size, ampcont=10.0, istart=0,
 	"""
 	
 	from math import sqrt
-	from utilities import generate_ctf
+	from sparx.utilities import generate_ctf
 
 	if istop <= istart : 			istop=len(Res_roo)
 	step = (dz_high-dz_low)/nloop
@@ -774,8 +774,8 @@ def defocus_guess1(Res_roo, Res_TE, volt, Cs, Pixel_size, ampcont=10.0, istart=0
 	"""
 	
 	from math import sqrt
-	from utilities import generate_ctf
-	from morphology import ctf_1d
+	from sparx.utilities import generate_ctf
+	from sparx.morphology import ctf_1d
 
 	if istop <= istart : 			istop=len(Res_roo)
 	step = (dz_high-dz_low)/nloop
@@ -834,7 +834,7 @@ def defocus_get_fast(indir, writetodoc="w", Pixel_size=1, volt=120, Cs=2, wgh=.1
 	"""
 	import os
 	import types
-	from utilities import set_arb_params, get_image
+	from sparx.utilities import set_arb_params, get_image
 	if writetodoc[0]   != "a" and writetodoc[0]   != "l" and writetodoc[0] != "a": 	writetodoc= "a"
 	if print_screen[0] != "p" and print_screen[0] != "n"			     : 	print_screen = "n"
 	if os.path.exists(indir) == False: 	ERROR("roodir doesn't exist", "defocus_get_fast",1)
@@ -1042,7 +1042,7 @@ def defocus_get_slow(indir, writetodoc="w", Pixel_size=1, volt=120, Cs=2, wgh=.1
 		mode=3 output estimated defocus in a text file
 		This is a slow version, more accurate than no s version
 	"""
-	from morphology import defocus_get_Eudis
+	from sparx.morphology import defocus_get_Eudis
 	import os
 	if writetodoc[0]   != "a" and writetodoc[0]   != "l" and writetodoc[0] != "a" : writetodoc   = "a"
 	if print_screen[0] != "p" and print_screen[0] != "n": 				print_screen = "n" 
@@ -1105,8 +1105,8 @@ def flcc(t, e):
 		Fast local cross correlation function 
 		See Alan Roseman's paper in Ultramicroscopy
 	"""
-	from utilities import model_blank
-	from fundamentals import ccf
+	from sparx.utilities import model_blank
+	from sparx.fundamentals import ccf
 	tmp        = EMData()
 	mic_avg_sq = EMData()
 	mic_sq     = EMData()
@@ -1308,8 +1308,8 @@ def adaptive_mask1(vol, nsigma = 1.0, threshold = -9999.0, ndilation = 3, kernel
 		Output
 			mask: The mask will have values one, zero, with Gaussian smooth transition between two regions.
 	"""
-	from utilities  import gauss_edge, model_circle
-	from morphology import binarize, dilation
+	from sparx.utilities import gauss_edge, model_circle
+	from sparx.morphology import binarize, dilation
 	nx = vol.get_xsize()
 	ny = vol.get_ysize()
 	nz = vol.get_zsize()
@@ -1341,8 +1341,8 @@ def adaptive_mask2D(img, nsigma = 1.0, ndilation = 3, kernel_size = 11, gauss_st
 		Output
 			mask: The mask will have values one, zero, with Gaussian smooth transition between two regions.
 	"""
-	from utilities  import gauss_edge, model_circle
-	from morphology import binarize, dilation
+	from sparx.utilities import gauss_edge, model_circle
+	from sparx.morphology import binarize, dilation
 	nx = img.get_xsize()
 	ny = img.get_ysize()
 	mc = model_circle(nx//2, nx, ny) - model_circle(nx//3, nx, ny)
@@ -1361,7 +1361,7 @@ def cosinemask(im, radius = -1, cosine_width = 5, bckg = None, s=999999.0):
 	"""
 	return  Util.cosinemask(im, radius, cosine_width, bckg, s)
 '''
-	from utilities import model_blank
+	from sparx.utilities import model_blank
 	from math import cos, sqrt, pi
 	nx = im.get_xsize()
 	ny = im.get_ysize()
@@ -1422,9 +1422,9 @@ def cosinemask(im, radius = -1, cosine_width = 5, bckg = None, s=999999.0):
 
 
 def get_shrink_3dmask(nxinit, mask_file_name):
-	from utilities import get_im
-	from fundamentals import resample
-	from morphology   import binarize
+	from sparx.utilities import get_im
+	from sparx.fundamentals import resample
+	from sparx.morphology import binarize
 	mask3d = get_im(mask_file_name)
 	nx2 = nxinit
 	nx1 = mask3d.get_xsize()
@@ -1442,8 +1442,8 @@ def get_biggest_cluster(mg):
 	  Output: image that contains the largest connected subset in the input image
 	  This code was written by Wei in C and put in util_sparx.cpp
 	"""
-	from utilities import model_blank
-	from morphology import collapse
+	from sparx.utilities import model_blank
+	from sparx.morphology import collapse
 
 	nx = mg.get_xsize()
 	ny = mg.get_ysize()
@@ -1508,9 +1508,9 @@ def get_biggest_cluster(mg):
 										l.append([iq,jq,kq])
 
 def adaptive_mask(vol, mass=2000, Pixel_size=3.6):
-	from utilities  import gauss_edge, model_blank
-	from morphology import binarize, threshold
-	from filter     import filt_gaussl, filt_dilation
+	from sparx.utilities import gauss_edge, model_blank
+	from sparx.morphology import binarize, threshold
+	from sparx.filter import filt_gaussl, filt_dilation
 	nx = vol.get_xsize()
 	a = filt_gaussl(vol, 0.15, True)
 	TH = a.find_3d_threshold(mass, Pixel_size)
@@ -1526,9 +1526,9 @@ def adaptive_mask(vol, mass=2000, Pixel_size=3.6):
 
 """
 def refine_with_mask(vol):
-	from filter     import filt_dilation
-	from utilities  import model_circle, model_gauss, drop_image
-	from morphology import collapse
+	from sparx.filter import filt_dilation
+	from sparx.utilities import model_circle, model_gauss, drop_image
+	from sparx.morphology import collapse
 	# does not seem to be working all that well
 	nx = vol.get_xsize()
 	outer_radius = nx/2-2
@@ -1567,7 +1567,7 @@ def compute_bfactor(pws, freq_min, freq_max, pixel_size = 1.0):
 		pixel_size   :  in A
 	"""
 	from math import log, sqrt
-	from statistics import linreg
+	from sparx.statistics import linreg
 	nr = len(pws)
 	"""
 	if (idx_freq_min < 0):
@@ -1625,22 +1625,22 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 	    
 	    guimic	 :
 	'''
-	from   EMAN2 import periodogram
-	from   applications import MPI_start_end
-	from   utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
-	from   sys import exit
+	from EMAN2 import periodogram
+	from sparx.applications import MPI_start_end
+	from sparx.utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
+	from sys import exit
 	import numpy as np
 	import os
-	from   mpi  import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
-	from   fundamentals import tilemic, rot_avg_table
-	from   morphology   import threshold, bracket_def, bracket, goldsearch_astigmatism
-	from   morphology   import defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett
-	from   morphology   import defocus_guessn, defocusgett_, defocusget_from_crf, make_real
-	from   morphology   import fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
-	from   alignment    import Numrinit, ringwe
-	from   statistics   import table_stat
-	from   pixel_error  import angle_ave
-	from   global_def   import ERROR
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
+	from sparx.fundamentals import tilemic, rot_avg_table
+	from sparx.morphology import threshold, bracket_def, bracket, goldsearch_astigmatism
+	from sparx.morphology import defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett
+	from sparx.morphology import defocus_guessn, defocusgett_, defocusget_from_crf, make_real
+	from sparx.morphology import fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
+	from sparx.alignment import Numrinit, ringwe
+	from sparx.statistics import table_stat
+	from sparx.pixel_error import angle_ave
+	from global_def import ERROR
 	import global_def
 
 	# Case of a single micrograph from gui mode
@@ -2007,7 +2007,7 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 					if pwrot2[it]>0.5 :
 						ibec = it
 						break
-				from morphology import ctf_1d
+				from sparx.morphology import ctf_1d
 				ct = generate_ctf([ad1, Cs, voltage, Pixel_size, temp, wgh,0.0,0.0])
 				cq = ctf_1d(wn, ct)
 
@@ -2066,7 +2066,7 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 		
 		if stack == None and set_ctf_header:
 			img = get_im(namics[ifi])
-			from utilities import set_ctf
+			from sparx.utilities import set_ctf
 			set_ctf(img, [totresi[-1][1], Cs, voltage, Pixel_size, 0, wgh, totresi[-1][7], totresi[-1][8]])
 			# and rewrite image 
 			img.write_image(namics[ifi])
@@ -2074,7 +2074,7 @@ def cter(stack, outpwrot, outpartres, indir, nameroot, micsuffix, wn,  f_start= 
 			#print  namics[ifi],"     FAILED"
 	#from utilities import write_text_row
 	if MPI:
-		from utilities import wrap_mpi_gatherv
+		from sparx.utilities import wrap_mpi_gatherv
 		totresi = wrap_mpi_gatherv(totresi, 0, MPI_COMM_WORLD)
 	if( myid == 0 ):
 		outf = open( os.path.join(outpartres,"partres.txt"), "w")
@@ -2107,24 +2107,24 @@ def cter_mrk(input_image, output_directory, wn, pixel_size = -1.0, Cs = 2.0, vol
 		input_image       : micrograph list file name (e.g. mic_list.txt), micrograph file name pattern (e.g. 'Micrographs/mic*.mrc'), single micrograph file name (e.g. 'Micrographs/mic0.mrc'), or particle stack file name (e.g. 'bdb:stack'; must be stack_mode = True).
 		output_directory  : output directory
 	"""
-	from   EMAN2 import periodogram
-	from   EMAN2db import db_check_dict, db_parse_path
-	from   applications import MPI_start_end
-	from   utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
-	from   sys import exit
+	from EMAN2 import periodogram
+	from EMAN2.EMAN2db import db_check_dict, db_parse_path
+	from sparx.applications import MPI_start_end
+	from sparx.utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
+	from sys import exit
 	import numpy as np
 	import os
 	import glob
-	from   mpi  import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
-	from   fundamentals import tilemic, rot_avg_table, resample
-	from   morphology   import threshold, bracket_def, bracket, goldsearch_astigmatism
-	from   morphology   import defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett
-	from   morphology   import defocus_guessn, defocusgett_, defocusget_from_crf, make_real
-	from   morphology   import fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
-	from   alignment    import Numrinit, ringwe
-	from   statistics   import table_stat
-	from   pixel_error  import angle_ave
-	from   global_def   import ERROR
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
+	from sparx.fundamentals import tilemic, rot_avg_table, resample
+	from sparx.morphology import threshold, bracket_def, bracket, goldsearch_astigmatism
+	from sparx.morphology import defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett
+	from sparx.morphology import defocus_guessn, defocusgett_, defocusget_from_crf, make_real
+	from sparx.morphology import fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
+	from sparx.alignment import Numrinit, ringwe
+	from sparx.statistics import table_stat
+	from sparx.pixel_error import angle_ave
+	from global_def import ERROR
 	import global_def
 	
 	# Local Constants
@@ -2219,7 +2219,7 @@ def cter_mrk(input_image, output_directory, wn, pixel_size = -1.0, Cs = 2.0, vol
 	if myid == main_node:
 		if os.path.exists(output_directory):
 			error_status = ("Output directory (%s) exists. Please change the name and restart the program." % output_directory, getframeinfo(currentframe()))
-	from utilities import if_error_then_all_processes_exit_program
+	from sparx.utilities import if_error_then_all_processes_exit_program
 	if_error_then_all_processes_exit_program(error_status)
 	
 	# option-related errors
@@ -2671,7 +2671,7 @@ def cter_mrk(input_image, output_directory, wn, pixel_size = -1.0, Cs = 2.0, vol
 					if pwrot2[it] > 0.5 :
 						ibec = it
 						break
-				from morphology import ctf_1d
+				from sparx.morphology import ctf_1d
 				ct = generate_ctf([ad1, Cs, voltage, pixel_size, temp, wgh, 0.0, 0.0])
 				cq = ctf_1d(wn, ct)
 				
@@ -2805,7 +2805,7 @@ def cter_mrk(input_image, output_directory, wn, pixel_size = -1.0, Cs = 2.0, vol
 			fou = os.path.join(outmicthumb, "%s_thumb.hdf" % (img_basename_root))
 			img_micthumb.write_image(fou)
 			if set_ctf_header:
-				from utilities import set_ctf
+				from sparx.utilities import set_ctf
 				set_ctf(img_mic, [totresi[-1][1], Cs, voltage, pixel_size, 0, wgh, totresi[-1][7], totresi[-1][8]])
 				# and rewrite image 
 				img_mic.write_image(namics[ifi])
@@ -2813,7 +2813,7 @@ def cter_mrk(input_image, output_directory, wn, pixel_size = -1.0, Cs = 2.0, vol
 			#print  namics[ifi],"     FAILED"
 	#from utilities import write_text_row
 	if MPI:
-		from utilities import wrap_mpi_gatherv
+		from sparx.utilities import wrap_mpi_gatherv
 		totresi = wrap_mpi_gatherv(totresi, 0, MPI_COMM_WORLD)
 		missing_img_names = wrap_mpi_gatherv(missing_img_names, 0, MPI_COMM_WORLD)
 		rejected_img_names = wrap_mpi_gatherv(rejected_img_names, 0, MPI_COMM_WORLD)
@@ -2945,7 +2945,7 @@ def defocus_baseline_fit(roo, i_start, i_stop, nrank, iswi):
 			The background fit is done between i_start, i_stop, but the entire baseline curve is evaluated and subtracted
 	"""
 	import numpy as np
-	from morphology import imf_params_cl1
+	from sparx.morphology import imf_params_cl1
 	
 	TMP = imf_params_cl1(roo[i_start:i_stop], nrank, iswi)
 	nroo = len(roo)
@@ -2961,8 +2961,8 @@ def defocus_baseline_fit(roo, i_start, i_stop, nrank, iswi):
 
 def simpw1d(defocus, data):
 	import numpy as np
-	from morphology import ctf_2
-	from utilities import generate_ctf
+	from sparx.morphology import ctf_2
+	from sparx.utilities import generate_ctf
 	
 	#[defocus, Cs, volt, Pixel_size, 0.0, ampcont]
 	# data[1] - envelope
@@ -3007,9 +3007,9 @@ def defocusgett(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1, f_s
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
+	from sparx.utilities import generate_ctf
 	import numpy as np
-	from morphology import ctf_2, bracket_def, defocus_baseline_fit, ctflimit, simpw1d, goldsearch_astigmatism
+	from sparx.morphology import ctf_2, bracket_def, defocus_baseline_fit, ctflimit, simpw1d, goldsearch_astigmatism
 
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 
@@ -3062,7 +3062,7 @@ def defocusgett(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1, f_s
 	del defound[3:]
 	def1 = defound[0][1]
 	if adjust_fstop:
-		from morphology import ctflimit
+		from sparx.morphology import ctflimit
 		newstop,fnewstop = ctflimit(nx, def1, Cs, voltage, Pixel_size)
 		if DEBug:  print  "newstop  ",int(newstop*0.7),fnewstop*0.7,i_stop,newstop
 		if( newstop != i_stop):
@@ -3105,7 +3105,7 @@ def defocusgett(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1, f_s
 			if(qt<qm):
 				qm=qt
 				defi = dc
-		from utilities import write_text_row
+		from sparx.utilities import write_text_row
 		write_text_row(toto,"toto1.txt")
 		print " >>>>>>>>>  ",defi,simpw1d(defi, data)#,generate_ctf([defi, Cs, voltage, Pixel_size, 0.0, ampcont])
 		#def1 = defi
@@ -3129,8 +3129,8 @@ def defocus_guessn(roo, volt, Cs, Pixel_size, ampcont, istart, i_stop):
 	"""
 	
 	from math import sqrt
-	from utilities import generate_ctf
-	from morphology import ctf_2
+	from sparx.utilities import generate_ctf
+	from sparx.morphology import ctf_2
 	
 	import numpy as np
 
@@ -3171,8 +3171,8 @@ def defocusgett_(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
-	from morphology import defocus_env_baseline_fit, defocus_guess, ctf_2, defocus_guessn
+	from sparx.utilities import generate_ctf
+	from sparx.morphology import defocus_env_baseline_fit, defocus_guess, ctf_2, defocus_guessn
 	
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 
@@ -3186,10 +3186,10 @@ def defocusgett_(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, wgh=0.1, f_start=0.
 		parent.ctf_data=[roo, Res_roo, Res_TE]
 		parent.i_start = i_start
 		parent.i_stop  = i_stop
-		from utilities import write_text_file
+		from sparx.utilities import write_text_file
 		write_text_file([range(len(roo)), roo, Res_roo, Res_TE, ctf], "procpw.txt")
 	else:
-		from utilities import write_text_file
+		from sparx.utilities import write_text_file
 		write_text_file([range(len(roo)), roo, Res_roo, Res_TE, ctf, TE, Pn1], "procpw.txt")
 	"""
 	return defocus, [], ctf2, [],[],0,0
@@ -3204,8 +3204,8 @@ def defocusget_from_crf(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=10.,
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
-	from morphology import defocus_env_baseline_fit, defocus_guess, defocus_guess1, ctf_1d
+	from sparx.utilities import generate_ctf
+	from sparx.morphology import defocus_env_baseline_fit, defocus_guess, defocus_guess1, ctf_1d
 	
 	#print "CTF params:", voltage, Pixel_size, Cs, wgh, f_start, f_stop, round_off, nr1, nr2, parent
 	if f_start == 0 : 	i_start = 0
@@ -3234,7 +3234,7 @@ def defocusget_from_crf(roo, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=10.,
 
 
 def make_real(t):
-	from utilities import model_blank
+	from sparx.utilities import model_blank
 	
 	nx = t.get_ysize()
 	ny2 = nx//2
@@ -3253,8 +3253,8 @@ def make_real(t):
 
 
 def fastigmatism(amp, data):
-	from morphology import ctf2_rimg
-	from utilities import generate_ctf
+	from sparx.morphology import ctf2_rimg
+	from sparx.utilities import generate_ctf
 	
 	nx = data[0].get_xsize()
 	qt = 0.5*nx**2
@@ -3276,8 +3276,8 @@ def fastigmatism(amp, data):
 
 def fastigmatism1(amp, data):
 	
-	from morphology import ctf_rimg
-	from utilities import generate_ctf
+	from sparx.morphology import ctf_rimg
+	from sparx.utilities import generate_ctf
 	
 	nx = data[0].get_xsize()
 	qt = 0.5*nx**2
@@ -3302,9 +3302,9 @@ def fastigmatism1(amp, data):
 
 def fastigmatism2(amp, data):
 	
-	from morphology import ctf_rimg
-	from utilities import generate_ctf
-	from alignment import ornq
+	from sparx.morphology import ctf_rimg
+	from sparx.utilities import generate_ctf
+	from sparx.alignment import ornq
 	
 	cnx = data[2]//2+1
 	#qt = 0.5*nx**2
@@ -3315,10 +3315,10 @@ def fastigmatism2(amp, data):
 
 
 def fastigmatism3(amp, data):
-	from morphology import ctf2_rimg
-	from utilities  import generate_ctf
-	from alignment  import ornq
-	from math       import sqrt
+	from sparx.morphology import ctf2_rimg
+	from sparx.utilities import generate_ctf
+	from sparx.alignment import ornq
+	from math import sqrt
 	#  data[0] - crefim
 	#  data[1] - numr
 	#  data[2] - nx (image is square)
@@ -3338,8 +3338,8 @@ def fastigmatism3(amp, data):
 
 
 def simctf(amp, data):
-	from morphology import ctf2_rimg
-	from utilities import generate_ctf
+	from sparx.morphology import ctf2_rimg
+	from sparx.utilities import generate_ctf
 	
 	nx = data[2]
 	qt = 0.5*nx**2
@@ -3348,8 +3348,8 @@ def simctf(amp, data):
 	return  -bcc
 
 def simctf2(dz, data):
-	from morphology import ctf2_rimg
-	from utilities import generate_ctf
+	from sparx.morphology import ctf2_rimg
+	from sparx.utilities import generate_ctf
 	
 	#nx = data[2]
 	#qt = 0.5*nx**2
@@ -3361,8 +3361,8 @@ def simctf2(dz, data):
 	return  -bcc
 
 def simctf2out(dz, data):
-	from morphology import ctf2_rimg, localvariance
-	from utilities import generate_ctf, model_blank, pad
+	from sparx.morphology import ctf2_rimg, localvariance
+	from sparx.utilities import generate_ctf, model_blank, pad
 	
 	nx = data[2]
 	qt = 0.5*nx**2
@@ -3386,7 +3386,7 @@ def simctf2out(dz, data):
 
 
 def fupw(args,data):
-	from morphology import fastigmatism3
+	from sparx.morphology import fastigmatism3
 	return -fastigmatism3(args[1],[data[0], data[1], data[2], args[0], data[4], data[5], data[6], data[7], data[8], data[9]])
 
 ########################################
@@ -3398,9 +3398,9 @@ def fupw(args,data):
 ########################################################################
 
 def simpw1d_crf(defocus, data):
-	from morphology import ctf_1d
+	from sparx.morphology import ctf_1d
 	import numpy as np
-	from utilities import generate_ctf
+	from sparx.utilities import generate_ctf
 	
 	#[defocus, Cs, volt, Pixel_size, 0.0, ampcont]
 	# data[1] - envelope
@@ -3423,8 +3423,8 @@ def defocusgett_crf(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1,
 		2. Based one extracted ctf imprints, perform exhaustive defocus searching to get 
 		   defocus which matches the extracted CTF imprints 
 	"""
-	from utilities  import generate_ctf
-	from morphology import bracket_def, goldsearch_astigmatism, ctflimit, simpw1d_crf, ctf_1d
+	from sparx.utilities import generate_ctf
+	from sparx.morphology import bracket_def, goldsearch_astigmatism, ctflimit, simpw1d_crf, ctf_1d
 	import numpy as np
 
 
@@ -3476,7 +3476,7 @@ def defocusgett_crf(roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, ampcont=0.1,
 	del defound[3:]
 	if DEBug:  print  " BEST DEF CANDIDATES",defound
 	if adjust_fstop:
-		from morphology import ctflimit
+		from sparx.morphology import ctflimit
 		newstop,fnewstop = ctflimit(nx, defound[0][1], Cs, voltage, Pixel_size)
 		if DEBug:  
 			print  "newstop  ",int(newstop),fnewstop,i_stop,newstop,nx, defound[0][1]
@@ -3525,8 +3525,8 @@ def envelopegett_crf(defold, roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, amp
 	
 		
 	"""
-	from utilities  import generate_ctf
-	from morphology import ctf_1d
+	from sparx.utilities import generate_ctf
+	from sparx.morphology import ctf_1d
 	import numpy as np
 
 
@@ -3555,7 +3555,7 @@ def envelopegett_crf(defold, roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, amp
 	envelope = []#movingaverage(  abs( np.array(roo, np.float32) )   , nroo//4, 3)
 
 	if adjust_fstop:
-		from morphology import ctflimit
+		from sparx.morphology import ctflimit
 		newstop,fnewstop = ctflimit(nx, defold, Cs, voltage, Pixel_size)
 		if DEBug:  print  "newstop  ",int(newstop*0.7),fnewstop*0.7,i_stop
 	
@@ -3564,7 +3564,7 @@ def envelopegett_crf(defold, roo, nx, voltage=300.0, Pixel_size=1.0, Cs=2.0, amp
 	return envelope, i_start, i_stop
 
 def fufu(args,data):
-	from morphology import fastigmatism2
+	from sparx.morphology import fastigmatism2
 	return -fastigmatism2(args[1],[data[0], data[1], data[2], args[0], data[4], data[5], data[6], data[7], data[8]])
 
 #  
@@ -3582,17 +3582,17 @@ def getastcrfNOE(refvol, datfilesroot, voltage=300.0, Pixel_size= 1.264, Cs = 2.
 
 	"""
 
-	from applications import MPI_start_end
-	from utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
+	from sparx.applications import MPI_start_end
+	from sparx.utilities import read_text_file, write_text_file, get_im, model_blank, model_circle, amoeba, generate_ctf
 	from sys import exit
 	import numpy as np
 	import os
-	from mpi  import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
-	from fundamentals import tilemic, rot_avg_table
-	from morphology import threshold, bracket_def, bracket, goldsearch_astigmatism, defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett, defocus_guessn, defocusgett_, defocusget_from_crf, make_real, fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
-	from alignment import Numrinit, ringwe
-	from statistics import table_stat
-	from pixel_error import angle_ave
+	from mpi import mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD, mpi_barrier
+	from sparx.fundamentals import tilemic, rot_avg_table
+	from sparx.morphology import threshold, bracket_def, bracket, goldsearch_astigmatism, defocus_baseline_fit, simpw1d, movingaverage, localvariance, defocusgett, defocus_guessn, defocusgett_, defocusget_from_crf, make_real, fastigmatism, fastigmatism1, fastigmatism2, fastigmatism3, simctf, simctf2, simctf2out, fupw,ctf2_rimg
+	from sparx.alignment import Numrinit, ringwe
+	from sparx.statistics import table_stat
+	from sparx.pixel_error import angle_ave
 
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
 	ncpu = mpi_comm_size(MPI_COMM_WORLD)

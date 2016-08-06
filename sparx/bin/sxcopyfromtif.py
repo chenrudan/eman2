@@ -33,8 +33,8 @@
 
 
 import global_def
-from global_def 	import *
-from optparse 		import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 import os
 def main():
@@ -62,10 +62,10 @@ def main():
 		else:
 			outdir = args[1]
 
-		from applications import copyfromtif
+		from sparx.applications import copyfromtif
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 
 		if options.MPI:

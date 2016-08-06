@@ -32,17 +32,17 @@
 #
 
 from EMAN2 import get_image_directory, Transform, Region, EMANVERSION, EMData, E2init, E2end, EMArgumentParser
-from EMAN2db import db_open_dict, db_check_dict, db_close_dict
+from EMAN2.EMAN2db import db_open_dict, db_check_dict, db_close_dict
 from math import *
 import sys
 import os
 
 try:
 	from PyQt4 import QtGui, QtCore
-	from emapplication import EMApp, get_application
-	from emimage2d import EMImage2DWidget
-	from emselector import EMSelectorDialog
-	from emshape import EMShape, EMShapeDict
+	from EMAN2.emapplication import EMApp, get_application
+	from EMAN2.emimage2d import EMImage2DWidget
+	from EMAN2.emselector import EMSelectorDialog
+	from EMAN2.emshape import EMShape, EMShapeDict
 	
 	ENABLE_GUI = True
 	
@@ -339,7 +339,7 @@ def get_rotated_particles( micrograph, helix_coords, px_dst = None, px_length = 
 		else:
 			try:
 				from EMAN2 import Util
-				from fundamentals import rot_shift2D
+				from sparx.fundamentals import rot_shift2D
 				ptcl = Util.window( micrograph, sidepadded, sidepadded, 1, int(round(centroid[0] - nxc)), int(round(centroid[1] - nyc)), 0) 
 				ptcl = Util.window( rot_shift2D(ptcl, -rot_angle, interpolation_method="gridding"), side1, side1, 1, 0, 0, 0)
 				ptcl["ptcl_helix_coords"] = tuple(helix_coords)
@@ -695,7 +695,7 @@ def db_save_particle_coords(micrograph_filepath, output_filepath = None, px_dst 
 	save_particle_coords(helix_particle_coords_dict, output_filepath, micrograph_filepath, px_length, px_width)
 	
 def db_save_particles(micrograph_filepath, ptcl_filepath = None, px_dst = None, px_length = None, px_width = None, rotated = True, do_edge_norm = False, gridding = False, stack_file_mode = "multiple", do_filt = True, filt_freq = -1):
-	from filter 		import filt_gaussh
+	from sparx.filter import filt_gaussh
 	
 	micrograph_filename = os.path.basename(micrograph_filepath)
 	micrograph_name = os.path.splitext( micrograph_filename )[0]
@@ -1296,7 +1296,7 @@ if ENABLE_GUI:
 		def calc_ctf_cter(self):
 			# calculate ctf of ORIGINAL micrograph using cter in gui mode
 			# this must mean cter is being calculated on a single micrograph!
-			from utilities import get_im
+			from sparx.utilities import get_im
 			
 			print "starting cter"
 			
@@ -1332,7 +1332,7 @@ if ENABLE_GUI:
 				print "Please remove or rename %s and or %s"%(outpwrot,outpartres)
 				return
 			
-			from morphology import cter
+			from sparx.morphology import cter
 			defocus, ast_amp, ast_agl, error_defocus, error_astamp, error_astagl = cter(None, outpwrot, outpartres, None, None, ctf_window_size, voltage=ctf_volt, Pixel_size=input_pixel_size, Cs = ctf_cs, wgh=ctf_ampcont, kboot=ctf_kboot, MPI=False, DEBug= False, overlap_x = ctf_overlap_size, overlap_y = ctf_overlap_size, edge_x = ctf_edge_size, edge_y = ctf_edge_size, guimic=image_name)
 		
 			self.estdef.setText(str(defocus))
@@ -1355,7 +1355,7 @@ if ENABLE_GUI:
 			
 			# XXX: wgh?? amp_cont static to 0?
 			# set image properties, in order to save ctf values
-			from utilities import set_ctf
+			from sparx.utilities import set_ctf
 			set_ctf(img, [defocus, ctf_cs, ctf_volt, input_pixel_size, 0, ctf_ampcont, ast_amp, ast_agl])
 			# and rewrite image 
 			img.write_image(image_name)
@@ -1527,8 +1527,8 @@ if ENABLE_GUI:
 					micrograph = EMData(self.micrograph_filepath)
 					
 					if self.invert_contrast:
-						from utilities import info, model_blank
-						from EMAN2 	   import Util
+						from sparx.utilities import info, model_blank
+						from EMAN2 import Util
 						# invert contrast of micrograph so average remains unchanged
 						print "Inverting contrast of micrograph"
 						mnx = micrograph.get_xsize()
@@ -1962,8 +1962,8 @@ def windowallmic(dirid, micid, micsuffix, outdir, pixel_size, boxsize=256, minse
 	'''
 	import os
 	from utilities      import print_begin_msg, print_end_msg, print_msg
-	from sxhelixboxer	import windowmic
-	from EMAN2 	        import EMUtil, Util
+	from EMAN2.sxhelixboxer import windowmic
+	from EMAN2 import EMUtil, Util
 	
 	print_begin_msg("windowallmic\n")
 	
@@ -2049,7 +2049,7 @@ def windowallmic(dirid, micid, micsuffix, outdir, pixel_size, boxsize=256, minse
 	if len(cutoffhistogram) > 0:		#@ming
 		lhist = 3
 		if len(cutoffhistogram) >= lhist:
-			from statistics import hist_list
+			from sparx.statistics import hist_list
 			region,hist = hist_list(cutoffhistogram,lhist)	
 			msg = "      Histogram of cut off frequencies\n      ERROR       number of frequencies\n"
 			print_msg(msg)
@@ -2102,11 +2102,11 @@ def windowmic(outstacknameall, micpath, outdir, micname, hcoordsname, pixel_size
 	       	    
 	'''
 	from utilities    import pad, model_blank, read_text_row, get_im, print_msg
-	from fundamentals import ramp, resample
-	from filter	  	  import filt_gaussh,filt_tanl 
-	from pixel_error  import getnewhelixcoords
-	from EMAN2 	      import EMUtil, Util
-	from subprocess   import call
+	from sparx.fundamentals import ramp, resample
+	from sparx.filter import filt_gaussh,filt_tanl 
+	from sparx.pixel_error import getnewhelixcoords
+	from EMAN2 import EMUtil, Util
+	from subprocess import call
 	
 	# micname is full path name
 	# smic[-1] is micrograph name minus path
@@ -2140,7 +2140,7 @@ def windowmic(outstacknameall, micpath, outdir, micname, hcoordsname, pixel_size
 
 	## Cut off frequency components higher than CTF limit   @ming
 	img = get_im(micname)
-	from morphology import ctflimit
+	from sparx.morphology import ctflimit
 	if limitctf:
 # 			Cut off frequency components higher than CTF limit 
 		q1, q2 = ctflimit(boxsize,ctfs[0],ctfs[1],ctfs[2],new_pixel_size)
@@ -2221,7 +2221,7 @@ def windowmic(outstacknameall, micpath, outdir, micname, hcoordsname, pixel_size
 	#try:      iseg = EMUtil.get_image_count(outstacknameall)
 	#except:   iseg = 0
 	if importctf:
-		from utilities import generate_ctf
+		from sparx.utilities import generate_ctf
 		ctfs = generate_ctf(ctfs)
 	#for h in xrange(nhelices):
 	h=0                                                           ## added by@ming

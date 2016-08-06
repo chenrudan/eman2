@@ -33,8 +33,8 @@
 
 import os
 import global_def
-from   global_def import *
-from   optparse import OptionParser
+from global_def import *
+from optparse import OptionParser
 import sys
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -48,9 +48,9 @@ def main():
 		print "Please run '" + progname + " -h' for detailed options"
 	else:
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
-		from applications  import  prepare_2d_forPCA
+		from sparx.applications import prepare_2d_forPCA
 		global_def.BATCH = True
 		prepare_2d_forPCA(args[0], args[1], args[2], options.avg, options.CTF)
 		global_def.BATCH = False

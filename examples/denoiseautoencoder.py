@@ -7,9 +7,9 @@ import time
 import random
 import numpy as np
 from EMAN2 import *
-import theano
-import theano.tensor as T
-from theano.tensor.shared_randomstreams import RandomStreams
+import EMAN2.theano as theano
+import EMAN2.theano.tensor as T
+from EMAN2.theano.tensor.shared_randomstreams import RandomStreams
 import cPickle
 
 def main():

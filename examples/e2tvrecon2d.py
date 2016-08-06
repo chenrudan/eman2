@@ -35,7 +35,7 @@ import os
 import sys
 import scipy
 import time
-import ntpath
+import EMAN2.ntpath as ntpath
 import numpy as np
 from scipy import sparse
 from scipy import ndimage

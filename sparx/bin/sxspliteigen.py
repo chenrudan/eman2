@@ -32,9 +32,9 @@
 #
 
 import global_def
-from   global_def import *
+from global_def import *
 
-from   optparse import OptionParser
+from optparse import OptionParser
 
 
 from EMAN2 import *

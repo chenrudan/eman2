@@ -36,7 +36,7 @@ import unittest
 import os
 import random
 import math
-import testlib
+import EMAN2.testlib as testlib
 from optparse import OptionParser
 
 IS_TEST_EXCEPTION = False
