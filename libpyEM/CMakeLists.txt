@@ -17,19 +17,19 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 		ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})		
 		TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 		INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/release/${libname}.dll
-				DESTINATION	lib
+			DESTINATION	${EMAN_INSTALL_PREFIX}/EMAN2/lib
 				RENAME lib${libname}.pyd)
 	ELSE(WIN32)
 		IF(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
-				DESTINATION	lib
+				DESTINATION	${EMAN_INSTALL_PREFIX}/EMAN2/lib
 				RENAME lib${libname}.so)	
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
-			INSTALL(TARGETS ${libname} DESTINATION lib)
+			INSTALL(TARGETS ${libname} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/lib)
 		ENDIF(APPLE)
 	ENDIF(WIN32)
 ENDMACRO(ADD_PYSTE_LIB_WITH_SRC)
@@ -84,6 +84,6 @@ FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(FILES ${empythonlibs} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2)
 
 FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-INSTALL(FILES ${headerfiles} DESTINATION include)
+INSTALL(FILES ${headerfiles} DESTINATION ${EMAN_INSTALL_PREFIX}/include)
 
 ADD_SUBDIRECTORY(qtgui)

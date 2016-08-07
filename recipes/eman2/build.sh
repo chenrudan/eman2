@@ -12,5 +12,5 @@ make -j
 make install
 
 #RECIPE DIR: ${HOME}/src/eman2-conda/recipes/eman2
-$PYTHON "${RECIPE_DIR}/setup.py" install # relative to build environment
+$PYTHON "${RECIPE_DIR}/setup.py" install
 
