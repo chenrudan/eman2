@@ -3,9 +3,9 @@ import glob
 
 scripts = [name for name in glob.glob('lib/bin/*.py')]
 
-eman2_pkg_data = ['*.so','*.dylib','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
+e2_package_data = ['*.so','*.dylib','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
 
-sparx_pkg_data = ['*.so','*.dylib','pyemtbx/*','include/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
+sx_package_data = ['*.so','*.dylib','pyemtbx/*','include/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
 
 setup(
     name="eman2",
@@ -17,7 +17,7 @@ setup(
     url="http://blake.bcm.edu/emanwiki/EMAN2",
     package_dir={'EMAN2':'libeman/EMAN2','sparx':'libeman/sparx'},
     packages=['EMAN2','sparx'],
-    package_data={'EMAN2':eman2_pkg_data,'sparx':sparx_pkg_data},
+    package_data={'EMAN2':e2_package_data,'sparx':sx_package_data},
     include_package_data = True,
     scripts=scripts,
     zip_safe = False,
