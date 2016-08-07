@@ -26,7 +26,7 @@ requirements:
         - fftw
         - hdf5
         - libtiff >4
-        - jpeg <9
+        - jpeg <9 # issue with bools that we can fix later
         - libpng
         - python <3
     run:
@@ -44,7 +44,7 @@ requirements:
         - bsddb
         - readline
         - libtiff >4
-        - jpeg <9
+        - jpeg <9 # issue with bools that we can fix later
         - libpng
         - gsl
         - hdf5
