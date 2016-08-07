@@ -1,2 +1,2 @@
-INSTALL(FILES DejaVuSerif.ttf readme.txt
-    	DESTINATION ${EMAN_INSTALL_PREFIX}/fonts)
+INSTALL(FILES DejaVuSerif.ttf readme.txt DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/fonts)
+INSTALL(FILES DejaVuSerif.ttf readme.txt DESTINATION ${EMAN_INSTALL_PREFIX}/sparx/fonts)
