@@ -22,11 +22,15 @@ SimpleXMLRPCServer,site,sitecustomize,smtpd,smtplib,socket,SocketServer,sqlite3,
 StringIO,struct,subprocess,sys,sysconfig,tabnanny,tarfile,tempfile,textwrap,threading,time,
 timeit,trace,traceback,unittest,urllib,urllib2,urlparse,usercustomize,uuid,warnings,weakref,
 webbrowser,whichdb,xml,xmlrpclib,zipfile,zipimport,zlib,builtins,__builtin__,bsddb,PyQt4,
-OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py,setuptools,theano"""
+OpenGL,numpy,scipy,matplotlib,readline,ipython,IPython,mpi,mpi4py,setuptools,theano,build,pylab,
+pywin32,colorsys,wx,psutil,imp,sets,testlib,function,fcntl,msvcrt,ntpath,new,win32api"""
 pylibs = pylibs.replace("\n","").split(",") # clean up and convert to list
 
 bindir_files = [i.replace(".py","") for i in os.listdir("./programs")]
-sparxlibs = [n.replace(".py","") for n in os.listdir("sparx/libpy/") if "__" not in n]
+sparxlibs = [n.replace(".py","") for n in os.listdir("sparx/libpy/") if "__" not in n] + ["amoeba","reconstructions"]
+
+donotedit = ["build.py","setup.py","refactor.py","install-dependencies.py"]
+donotenter = ["doc","images","fonts","recipes","build","latex","modular_class_html"]
 
 def main():
 	olddir = os.getcwd()
@@ -44,7 +48,7 @@ def main():
 		for f in files:
 			if os.path.isfile("{}/{}".format(root,f)): # if this isn't a file, there's a serious problem.
 				# ONLY edit python files. Otherwise, ONLY copy contents of these directories and DONT edit build, setup, or refactor scripts.
-				if f[-3:] == ".py" and root not in ["doc","images","fonts","recipes"] and f not in ["build.py","setup.py","refactor.py"]:
+				if f[-3:] == ".py" and root not in donotenter and f not in donotedit:
 					with open("{}/{}".format(root,f),'r') as inf:
 						file_content = inf.read() # read python file from origin
 					file_content = fix_imports(file_content) # fix import statements in this file
@@ -71,16 +75,15 @@ def mkdir_p(path):
 
 def fix_imports(lines):
 	newlines = lines.split("\n")
+	flag = False
 	for i,l in enumerate(newlines):
 		if l != "" and l.strip() != "": # we don't care about blank lines
 			if l.strip()[0] != "#": # we don't want whole line comments
 				if "import " in l and l.strip()[0] != "#": # is this an import statement?
-					if any(s in l for s in progs_contain):  # is this an EMAN2 program
-						if '"""' not in l and "=" not in l and "print" not in l: # import statements don't contain = or multiline comments.
-							if len(l) < 500: #They're also *relatively* short.
-								old = l.strip()
-								new = get_new_import(old)
-								newlines[i] = l.replace(old,new)
+					if "=" not in l: # import statements don't contain =
+						old = l.strip()
+						new = get_new_import(old)
+						newlines[i] = l.replace(old,new)
 	return "\n".join(newlines)
 
 def insert(s,i,x):
@@ -90,8 +93,8 @@ def split_prefix(imp):
 	loc = [imp.find("from"),imp.find("import")]
 	try: start = min([l for l in loc if l >=0])
 	except:
-		print("NOT AN IMPORT: {}".format(imp))
-		start = 0 # probably not an import statement...
+		print("PROBABLY NOT AN IMPORT: {}".format(imp))
+		start = 0 
 	return imp[:start],imp[start:]
 
 def get_new_import(imp):
@@ -102,30 +105,40 @@ def get_new_import(imp):
 	if ".." in oldimp:
 		print("RELATIVE IMPORT: {}".format(imp))
 		newimp = oldimp # leave relative imports alone. pretty sure we want them as-is.
+	elif "-" in oldimp:
+		newimp = oldimp
+		print("NOT AN IMPORT: {}".format(newimp))
+	elif any([s in oldimp for s in bindir_files]):  
+		newimp = oldimp # program in bin, so import doesn't need to be altered
+		print("BIN PROGRAM: {}".format(newimp))
 	elif any([s in oldimp for s in sparxlibs]):
-		newimp = fix_import(oldimp,libname="sparx")
+		if "libpy" in oldimp:
+			newimp = "from sparx import *"
+		else:
+			newimp = fix_import(oldimp,"sparx")
 	else:
-		newimp = fix_import(oldimp,libname="EMAN2")
-
-	if oldimp != newimp:
-		print("{:60}\n{:60}\n".format(oldimp,newimp))
-
+		newimp = fix_import(oldimp,"EMAN2")
 	return "{}{}".format(prefix,newimp)
 
-def fix_import(oldimp,libname="EMAN2"):
+def fix_import(oldimp,libname):
 	if oldimp.find("from") == 0: # case 1: from module import blah
 		if oldimp != "from {} import *".format(libname):
 			if not any(["from {}".format(s) in oldimp for s in pylibs]):
 				if "from {} import".format(libname) in oldimp:
 					newimp = oldimp
+					print("FROM IMPORT: {}".format(newimp))
 				else:
-					if oldimp.split(" ")[1] in bindir_files:
-						newimp = oldimp # program in bin, so import doesn't need to be altered
-					else:
-						newimp = insert(oldimp,"{}.".format(libname),len("from ")) # replace "from module" with "from libname.module"
+					newimp = insert(oldimp,"{}.".format(libname),len("from ")) # replace "from module" with "from libname.module"
+					print("FROM INSERT: {}".format(newimp))
+			elif any([s in oldimp for s in sparxlibs]):
+				newimp = insert(oldimp,"{}.".format(libname),len("from ")) # replace "from module import blah" with "from libname.module import blah"
+				print("SPARXLIB: {}".format(newimp))
 			else:
 				newimp = oldimp
-		else: newimp = oldimp
+				print("STDLIB: {}".format(newimp)) # leave non-EMAN/sparx imports alone.
+		else: 
+			newimp = oldimp
+			print("GLOB FROM IMPORT: {}".format(oldimp))
 	elif oldimp.find("import") == 0: # case 2: import module or import module as blah
 		if oldimp == "import {}".format(libname): # we just use the existing import
 			newimp = oldimp
@@ -136,8 +149,30 @@ def fix_import(oldimp,libname="EMAN2"):
 				newimp = oldimp # we don't need to change how we import programs in the bin directory
 			elif " as " in oldimp:
 				newimp = insert(oldimp,"{}.".format(libname),len("import ")) # replace "import module as x" with "import libname.module as x"
+				print("IMPORT INSERT: {}".format(newimp))
 			else:
-				newimp = "import {lib}.{module} as {module}".format(lib=libname,module=oldimp.replace("import ","")) # replace "import module" with "import libname.module"
+				m = oldimp.replace("import ","")
+				if "," in m:
+					if "\\" in oldimp or '"' in oldimp or "(" in oldimp or ")" in oldimp:
+						newimp = oldimp 
+						print("PUNCTUATION: {}".format(newimp))
+					else:
+						newimp = "from {} import {}".format(libname,m)
+						print("COMMA IMPORT: {}".format(newimp))
+				else:
+					if len(m.split(".")) > 1:
+						#import pyemtbx.options -> from EMAN2.pyemtbx import options
+						module = ".".join(m.split(".")[:-1])
+						submod = m.split(".")[-1]
+						newimp = "from {lib}.{parent} import {child}".format(lib=libname,parent=module,child=submod)
+						print("LONG IMPORT {}".format(newimp))
+					else:
+						if "\\" in oldimp or '"' in oldimp or "(" in oldimp or ")" in oldimp:
+							newimp = oldimp 
+							print("PUNCTUATION: {}".format(newimp))
+						else:
+							newimp = "import {lib}.{module} as {module}".format(lib=libname,module=m)
+							print("SHORT IMPORT: {}".format(newimp))
 	else: 
 		newimp = oldimp # otherwise leave import alone... this case is likely to unforeseen catch errors.
 		print("POSSIBLE ERROR: {}".format(oldimp))

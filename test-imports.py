@@ -30,20 +30,20 @@
 #
 #
 
-import libpyAligner2
-import libpyAverager2
-import libpyCmp2
-import libpyEMObject2
-import libpyFundamentals2
-import libpyGeometry2
-import libpyPointArray2
-import libpyPolarData2
-import libpyProcessor2
-import libpyProjector2
-import libpyReconstructor2
-import libpyTransform2
-import libpyUtils2
+import EMAN2.libpyAligner2 as libpyAligner2
+import EMAN2.libpyAverager2 as libpyAverager2
+import EMAN2.libpyCmp2 as libpyCmp2
+import EMAN2.libpyEMObject2 as libpyEMObject2
+import EMAN2.libpyFundamentals2 as libpyFundamentals2
+import EMAN2.libpyGeometry2 as libpyGeometry2
+import EMAN2.libpyPointArray2 as libpyPointArray2
+import EMAN2.libpyPolarData2 as libpyPolarData2
+import EMAN2.libpyProcessor2 as libpyProcessor2
+import EMAN2.libpyProjector2 as libpyProjector2
+import EMAN2.libpyReconstructor2 as libpyReconstructor2
+import EMAN2.libpyTransform2 as libpyTransform2
+import EMAN2.libpyUtils2 as libpyUtils2
 
-import libpyTypeConverter2
-import libpyEMData2
-import libpyAnalizer2
+import EMAN2.libpyTypeConverter2 as libpyTypeConverter2
+import EMAN2.libpyEMData2 as libpyEMData2
+import EMAN2.libpyAnalizer2 as libpyAnalizer2

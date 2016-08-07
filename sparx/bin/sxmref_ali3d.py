@@ -34,7 +34,7 @@
 
 import os
 import global_def
-from global_def import *
+from sparx.global_def import *
 from optparse import OptionParser
 import sys
 def main():
@@ -91,7 +91,7 @@ def main():
 			maskfile = args[3]
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		
 		global_def.BATCH = True
@@ -99,19 +99,19 @@ def main():
 			from mpi import mpi_init
 			sys.argv = mpi_init(len(sys.argv),sys.argv)
 			if options.kmeans:
-				from applications import Kmref_ali3d_MPI
+				from sparx.applications import Kmref_ali3d_MPI
 				Kmref_ali3d_MPI(args[0], args[1], args[2], maskfile, options.focus, options.maxit, options.ir, options.ou, options.rs, \
 				options.xr, options.yr, options.ts, options.delta, options.an, options.center, \
 				options.nassign, options.nrefine, options.CTF, options.snr, options.ref_a, options.sym, \
 				options.function,  options.npad, options.debug, options.fourvar, options.stoprnct, mpi_comm=None, log=None)
 			else:
-				from applications import mref_ali3d_MPI
+				from sparx.applications import mref_ali3d_MPI
 				mref_ali3d_MPI(args[0], args[1], args[2], maskfile, options.focus, options.maxit, options.ir, options.ou, options.rs, \
 				options.xr, options.yr, options.ts, options.delta, options.an, options.center, \
 				options.nassign, options.nrefine, options.CTF, options.snr, options.ref_a, options.sym, \
 				options.function,  options.npad, options.debug, options.fourvar, options.stoprnct, mpi_comm = None, log = None)
 		else:
-			from applications import mref_ali3d
+			from sparx.applications import mref_ali3d
 			mref_ali3d(args[0], args[1], args[2], maskfile, options.focus, options.maxit, options.ir, options.ou, options.rs, 
 			options.xr, options.yr, options.ts, options.delta, options.an, options.center,
 			options.nassign, options.nrefine, options.CTF, options.snr, options.ref_a, options.sym,

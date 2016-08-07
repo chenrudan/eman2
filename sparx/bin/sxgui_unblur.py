@@ -19,7 +19,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 from matplotlib import pylab
 from matplotlib.backends.backend_qt4agg \
-    import FigureCanvasQTAgg, NavigationToolbar2QTAgg
+    from EMAN2 import FigureCanvasQTAgg, NavigationToolbar2QTAgg
 import os
 import sys
 import glob

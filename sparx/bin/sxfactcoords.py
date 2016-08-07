@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import global_def
-from global_def import *
+from sparx.global_def import *
 from optparse import OptionParser
-from EMAN2_cppwrap import *
+from EMAN2.EMAN2_cppwrap import *
 
 import os
 import sys
@@ -35,19 +35,19 @@ def main():
 			print "Error: mask radius is not given"
 			sys.exit(-1)
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		if options.MPI:
 			from mpi import mpi_init
 			sys.argv = mpi_init(len(sys.argv), sys.argv)
 
-		from utilities import get_im
+		from sparx.utilities import get_im
 		global_def.BATCH = True
 		if( get_im( stacks[0]).get_zsize() == 1 and get_im( eigvol).get_zsize() > 1):
-			from applications import factcoords_prj
+			from sparx.applications import factcoords_prj
 			factcoords_prj(stacks, avgvol, eigvol, output, options.rad, options.neigvol, options.fl, options.aa, options.CTF, options.MPI)
 		else:
-			from applications import factcoords_vol
+			from sparx.applications import factcoords_vol
 			factcoords_vol(stacks, avgvol, eigvol, output, options.rad, options.neigvol, options.fl, options.aa, options.MPI)
 		global_def.BATCH = False
 		

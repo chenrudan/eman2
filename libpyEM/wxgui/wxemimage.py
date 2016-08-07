@@ -38,8 +38,8 @@ import sys
 import wx
 from time import time
 from weakref import WeakKeyDictionary
-from imagecontrol import *
-from libpyGLUtils2 import GLUtil
+from EMAN2.imagecontrol import *
+from EMAN2.libpyGLUtils2 import GLUtil
 
 ts0,ts1,ts2=0,0,0
 

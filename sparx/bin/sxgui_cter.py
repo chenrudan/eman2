@@ -30,7 +30,7 @@
 #
 
 from EMAN2 import *
-from EMAN2db import db_open_dict, db_close_dict, db_check_dict, db_list_dicts
+from EMAN2.EMAN2db import db_open_dict, db_close_dict, db_check_dict, db_list_dicts
 from OpenGL import GL,GLUT
 from math import *
 import os
@@ -42,9 +42,9 @@ try:
 	from PyQt4 import QtCore, QtGui, QtOpenGL
 	from PyQt4.QtCore import Qt
 	from PyQt4.QtCore import QTimer
-	from emshape import *
-	from valslider import *
-	from emplot2d import EMPlot2DWidget
+	from EMAN2.emshape import *
+	from EMAN2.valslider import *
+	from EMAN2.emplot2d import EMPlot2DWidget
 except:
 	print "Warning: PyQt4 must be installed"
 	sys.exit(1)
@@ -66,7 +66,7 @@ def main():
 		print "see usage " + usage
 		sys.exit()
 	
-	from emapplication import EMApp
+	from EMAN2.emapplication import EMApp
 	app=EMApp()
 	
 	cter_ctf_file = None
@@ -1216,7 +1216,7 @@ class SXGuiCter(QtGui.QWidget):
 		n_bin = len(self.cter_entry_list)/ self.curentryperbin
 		assert len(val_list) >= n_bin
 		assert n_bin > 0
-		from statistics import hist_list
+		from sparx.statistics import hist_list
 		hist_x_list, hist_y_list = hist_list(val_list, n_bin)
 		
 		# Pad with zero for better visual impression...

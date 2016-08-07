@@ -27,7 +27,7 @@ from sys import argv
 from os import mkdir, path, system
 from glob import glob
 import global_def
-from global_def import SPARXVERSION, ERROR
+from sparx.global_def import SPARXVERSION, ERROR
 from optparse import OptionParser, SUPPRESS_HELP
 
 

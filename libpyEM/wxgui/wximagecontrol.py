@@ -4,7 +4,7 @@
 
 import wx
 from math import *
-from emimagecanvas import *
+from EMAN2.emimagecanvas import *
 
 class ImageControl(wx.Dialog):
 	def __init__(self, *args, **kwds):

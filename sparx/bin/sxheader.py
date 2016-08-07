@@ -34,7 +34,7 @@ def main():
 	import os
 	import sys
 	from optparse import OptionParser
-	from global_def import SPARXVERSION
+	from sparx.global_def import SPARXVERSION
 	import global_def
 	arglist = []
 	for arg in sys.argv:
@@ -70,9 +70,9 @@ def main():
 		exit(-1)
 
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from sparx.utilities import disable_bdb_cache
 		disable_bdb_cache()
-        from applications import header
+        from sparx.applications import header
 	header(args[0], options.params, options.zero, options.one, options.set, options.randomize, options.rand_alpha, options.fimport, options.fexport, \
 	options.fprint, options.backup, options.suffix, options.restore, options.delete, options.consecutive)
 
