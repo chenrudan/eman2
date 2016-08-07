@@ -15,7 +15,7 @@ setup(
     packages=['EMAN2','sparx'],
     package_data={'EMAN2':['*.so','*.dylib','pmconfig/*','pyemtbx/*'],
     	    '':['include/*.h','include/gorgon/*.h','include/plugins/*.h',
-    	    	    'examples/*.py','fonts/*.txt','fonts/*.tff',
+    	    	    'examples/*.py','fonts/*.txt','fonts/*.ttf',
     	    	    'images/*.png','images/*.ico','doc/*','test/rt/*.py']},
     include_package_data = True,
     scripts=scripts,
