@@ -1,7 +1,7 @@
-CONTENT OBSOLETE AFTER TRANSITION TO ANACONDA PYTHON LIBRARY.
-TO INSTALL, INSTALL ANACONDA AND RUN: conda install eman2
+To install EMAN2 and/or SPARX, install the anaconda package management system (https://www.continuum.io/downloads) and run: 
+conda install eman2
 
-
+REMAINING FILE CONTENT OBSOLETE:
 
 EMAN 2
 ------
