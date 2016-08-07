@@ -3,6 +3,11 @@ import glob
 
 scripts = [name for name in glob.glob('lib/bin/*.py')]
 
+eman2_pkg_data = ['*.so','*.dylib','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*','doc/*','test/rt/*.py']
+
+sparx_pkg_data = ['*.so','*.dylib','pyemtbx/*','include/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*','doc/*','test/rt/*.py']
+
+
 setup(
     name="eman2",
     version="3.0.0",
@@ -16,7 +21,8 @@ setup(
     package_data={'EMAN2':['*.so','*.dylib','pmconfig/*','pyemtbx/*',
     	    'include/*.h','include/gorgon/*.h','include/plugins/*.h',
     	    'include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf',
-    	    'images/*.png','images/*.ico','doc/*','test/rt/*.py']},
+    	    'images/*.png','images/*.ico','doc/*','test/rt/*.py'],
+    	    'sparx':[]},
     include_package_data = True,
     scripts=scripts,
     zip_safe = False,
