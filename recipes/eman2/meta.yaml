@@ -20,7 +20,7 @@ requirements:
         - pyopengl <3.1
         - numpy
         - ftgl
-        - freetype
+        - freetype >2.5
         - gsl
         - boost
         - fftw
@@ -33,6 +33,7 @@ requirements:
         - mpi4py
         - python <3
         - numpy
+        - freetype >2.5
         - matplotlib
         - boost
         - fftw
