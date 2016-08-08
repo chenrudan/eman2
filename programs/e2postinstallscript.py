@@ -46,3 +46,4 @@ e2ver.close()
 ### remove this file since we do not want user to run this script after installation
 try: os.remove("{}/bin/e2postinstallscript.py".format(emandir))
 except: pass
+

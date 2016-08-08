@@ -35,6 +35,11 @@
 Python layer for scripting and interactive use.
 """
 
+import os
+from site import getsitepackages
+os.environ["SPARXDIR"] = "{}/sparx".format(getsitepackages()[0])
+os.environ["EMAN2DIR"] = "{}/EMAN2".format(getsitepackages()[0])
+
 from sparx.utilities import *
 from sparx.filter import *
 from sparx.projection import *
@@ -47,3 +52,4 @@ from sparx.applications import *
 from sparx.global_def import *
 from sparx.pixel_error import *
 from sparx.development import *
+
