@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #
-# Do not run this script directly. You could run this as 
+# Do not run this script directly. You could run this as
 # ipython --gui=qt -i e2_real.py
 # otherwise it is normally run via the e2.py script
 #
@@ -37,8 +37,6 @@
 import EMAN2
 from EMAN2 import *
 
-
-
 GUIUSE=True
 try:
 	if get_platform()=="Linux" and os.getenv("DISPLAY")==None: raise Exception
@@ -59,16 +57,18 @@ try:
 	ipytimer = QtCore.QTimer()
 	ipytimer.timeout.connect(ipy_on_timer)
 	ipytimer.start(200)
-	
+
 	EMAN2.GUIMode=True
 	EMAN2.app=app
 except:
 	GUIUSE=False
 
 from sparx import *
-import global_def
+from sparx import global_def
+
 if GUIUSE:
 	print "Welcome to the interactive SPARX-GUI Python interface, provided by ipython"
 else:
 	print "Welcome to the interactive SPARX-NoGUI Python interface, provided by ipython"
 print  "  ",global_def.SPARXVERSION
+
