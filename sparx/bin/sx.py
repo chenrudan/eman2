@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import os
+from site import getsitepackages
 
-e2real=os.getenv("EMAN2DIR")+"/bin/sx_real.py"
-os.execlp("ipython","ipython","-i",e2real)
+sxreal = "{}/sparx/bin/sx_real.py".format(getsitepackages()[0])
+os.execlp("ipython","ipython","-i",sxreal)
+
+

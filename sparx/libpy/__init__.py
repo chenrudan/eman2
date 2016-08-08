@@ -28,11 +28,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 
-from utilities       import *
-from filter          import *
-from projection      import *
-from fundamentals    import *
-from statistics      import *
+import os
+from site import getsitepackages
+os.environ["SPARXDIR"] = "{}/sparx".format(getsitepackages()[0])
+os.environ["EMAN2DIR"] = "{}/EMAN2".format(getsitepackages()[0])
+
 from alignment       import *
 from morphology      import *
 from reconstruction  import *

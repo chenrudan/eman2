@@ -30,10 +30,14 @@
 #
 #
 
+import os
+from site import getsitepackages
+os.environ["SPARXDIR"] = "{}/sparx".format(getsitepackages()[0])
+os.environ["EMAN2DIR"] = "{}/EMAN2".format(getsitepackages()[0])
+
 import sys
 from math import *
 from sys import exit
-import os
 import time
 import shelve
 import re
@@ -52,9 +56,6 @@ import glob
 import threading
 
 HOMEDB=None
-
-from site import getsitepackages
-os.environ["EMAN2DIR"] = "{}/EMAN2".format(getsitepackages()[0])
 
 # Without this, in many countries Qt will set things so "," is used as a decimal
 # separator by sscanf and other functions, which breaks CTF reading and some other things
