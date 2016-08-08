@@ -51,7 +51,7 @@ about:
   home: http://blake.bcm.edu/emanwiki
   license: GPL2
   license_file: LICENSE.txt
-  summary: A scientific image processing software suite with a focus on CryoEM and CryoET
+  summary: A scientific image processing software suite with a focus on CryoEM and CryoET.
 
 extra:
   maintainers:
