@@ -54,9 +54,7 @@ import threading
 HOMEDB=None
 
 from site import getsitepackages
-spdir = getsitepackages()[0]
-egginfo = [i for i in os.listdir(spdir) if "eman2" in i if "egg-info" in i][0]
-os.environ["EMAN2DIR"] = "{}/{}/scripts".format(spdir,egginfo)
+os.environ["EMAN2DIR"] = "{}/EMAN2".format(getsitepackages()[0])
 
 # Without this, in many countries Qt will set things so "," is used as a decimal
 # separator by sscanf and other functions, which breaks CTF reading and some other things
