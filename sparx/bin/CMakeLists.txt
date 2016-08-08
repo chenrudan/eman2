@@ -3,3 +3,6 @@ FILE(GLOB sxfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(PROGRAMS ${sxfiles}
   DESTINATION    bin
 )
+INSTALL(PROGRAMS ${sxfiles}
+  	DESTINATION    ${EMAN_INSTALL_PREFIX}/sparx/bin
+)
