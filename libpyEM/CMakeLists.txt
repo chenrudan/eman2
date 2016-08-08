@@ -30,11 +30,9 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
 				DESTINATION lib/python2.7/site-packages/EMAN2
 				RENAME lib${libname}.so)
-			)
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
 				DESTINATION lib/python2.7/site-packages/sparx
 				RENAME lib${libname}.so)
-			)
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
