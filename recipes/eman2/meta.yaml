@@ -24,7 +24,7 @@ requirements:
         - hdf5
         - libtiff >4
         - jpeg >8
-        - libpng
+        - libpng >1.6.22
         - python <3
     run:
         - mpi4py
@@ -45,7 +45,7 @@ requirements:
         - readline
         - libtiff >4
         - jpeg >8
-        - libpng
+        - libpng >1.6.22
 
 about:
   home: http://blake.bcm.edu/emanwiki
