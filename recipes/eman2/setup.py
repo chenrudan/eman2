@@ -9,7 +9,7 @@ sx_package_data = ['*.so','*.dylib','pyemtbx/*','include/*.h','include/plugins/*
 
 setup(
     name="eman2",
-    version="3.0.0",
+    version="3.0",
     description="A scientific image processing software suite with a focus on CryoEM and CryoET",
     author="Steve Ludtke",
     author_email="sludtke@bcm.edu",
