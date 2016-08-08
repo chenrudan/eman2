@@ -17,12 +17,6 @@ INSTALL(PROGRAMS ${e2programs}
 #)
 
 IF(WIN32)
-	#INSTALL(FILES e2boxer.py
-	#	DESTINATION bin
-	#	RENAME	e2boxer.pyw)	
-	#INSTALL(FILES e2display.py
-	#	DESTINATION bin
-	#	RENAME	e2display.pyw)
 	INSTALL(FILES e2boxer.py
 		DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/bin
 		RENAME e2boxer.pyw)

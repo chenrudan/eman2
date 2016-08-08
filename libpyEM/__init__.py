@@ -31,9 +31,7 @@
 #
 
 import os
-from site import getsitepackages
-os.environ["SPARXDIR"] = "{}/sparx".format(getsitepackages()[0])
-os.environ["EMAN2DIR"] = "{}/EMAN2".format(getsitepackages()[0])
+os.environ["EMAN2DIR"] = os.path.dirname(os.path.abspath(__file__))
 
 import sys
 from math import *

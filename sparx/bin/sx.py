@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import os
-from site import getsitepackages
-
-sxreal = "{}/sparx/bin/sx_real.py".format(getsitepackages()[0])
+sxreal = "{}/sx_real.py".format(os.path.dirname(os.path.abspath(__file__)))
 os.execlp("ipython","ipython","-i",sxreal)
 
