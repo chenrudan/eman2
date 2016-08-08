@@ -15,9 +15,14 @@ install_manifest.txt
 *.ipynb_checkpoints/
 *.pyc
 
+# Browser
+.browsercache.json
+.eman2settings
+
 # EMAN2 libs
 lib/
 libpy*.dylib
+libpy*.so
 
 # horatio's .gitignore options
 .idea/
