@@ -29,11 +29,11 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
 				DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2
-				#RENAME lib${libname}.so
+				RENAME lib${libname}.so
 			)	
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
 				DESTINATION ${EMAN_INSTALL_PREFIX}/sparx
-				#RENAME lib${libname}.so
+				RENAME lib${libname}.so
 			)	
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
@@ -94,7 +94,8 @@ FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(FILES ${empythonlibs} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2)
 INSTALL(FILES ${empythonlibs} DESTINATION ${EMAN_INSTALL_PREFIX}/sparx)
 
-#FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-#INSTALL(FILES ${headerfiles} DESTINATION ${EMAN_INSTALL_PREFIX}/include)
+FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+INSTALL(FILES ${headerfiles} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/include)
+INSTALL(FILES ${headerfiles} DESTINATION ${EMAN_INSTALL_PREFIX}/sparx/include)
 
 ADD_SUBDIRECTORY(qtgui)
