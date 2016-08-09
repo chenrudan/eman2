@@ -18,7 +18,7 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.so
 				DESTINATION	lib/python2.7/site-packages/EMAN2
-				RENAME lib${libname}.so)
+				)
 		ENDIF(APPLE)
 ENDMACRO(ADD_PYSTE_LIB_WITH_SRC)
 
