@@ -18,7 +18,7 @@ requirements:
         - zlib
         - cmake
         - pyopengl
-        - numpy
+        - numpy <1.10
         - ftgl
         - freetype >2.5
         - gsl <1.17
@@ -32,7 +32,7 @@ requirements:
     run:
         - mpi4py
         - python <3
-        - numpy
+        - numpy <1.10
         - freetype >2.5
         - matplotlib
         - gsl <1.17
