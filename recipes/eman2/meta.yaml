@@ -21,7 +21,7 @@ requirements:
         - numpy
         - ftgl
         - freetype >2.5
-        - gsl
+        - gsl <1.17
         - boost
         - fftw
         - hdf5
@@ -47,7 +47,7 @@ requirements:
         - libtiff >4
         - jpeg >8
         - libpng
-        - gsl
+        - gsl <1.17
         - hdf5
 
 about:
