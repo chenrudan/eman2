@@ -1,0 +1,27 @@
+package:
+  name: boost
+  version: 1.51.0
+
+source:
+  fn:  boost_1_51_0.tar.bz2
+  url: https://sourceforge.net/projects/boost/files/boost/1.51.0/boost_1_51_0.tar.bz2
+  md5: 4b6bd483b692fd138aef84ed2c8eb679
+
+requirements:
+  build:
+    - python
+    - icu               [unix]
+    - bzip2             [unix]
+    - zlib
+
+  run:
+    # python dependency is here due to libboost-python library that depends on
+    # python version
+    - python
+    - icu               [unix]
+    - zlib
+
+about:
+  home: http://www.boost.org/
+  license: Boost-1.0
+
