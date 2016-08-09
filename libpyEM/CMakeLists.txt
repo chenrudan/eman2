@@ -34,6 +34,7 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 				RENAME lib${libname}.so)
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
+			set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
 			INSTALL(TARGETS ${libname} 
 				DESTINATION lib/python2.7/site-packages/EMAN2)
