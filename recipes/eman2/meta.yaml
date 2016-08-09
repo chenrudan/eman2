@@ -21,7 +21,7 @@ requirements:
         - numpy
         - ftgl
         - freetype >2.5
-        - gsl =1.16
+        - gsl <1.17
         - boost <1.55
         - fftw
         - hdf5
@@ -35,7 +35,7 @@ requirements:
         - numpy
         - freetype >2.5
         - matplotlib
-        - gsl =1.16
+        - gsl <1.17
         - boost <1.55
         - fftw
         - hdf5
