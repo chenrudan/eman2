@@ -8,7 +8,7 @@ source:
     git_branch: conda
 
 build:
-    number: 14
+    number: 15
     rpaths:
         - lib/python2.7/site-packages/EMAN2
         - lib/python2.7/site-packages/sparx
