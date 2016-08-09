@@ -17,19 +17,20 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 		ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})		
 		TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 		INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/release/${libname}.dll
-				DESTINATION	lib
+				DESTINATION	lib/python2.7/site-packages/EMAN2
 				RENAME lib${libname}.pyd)
 	ELSE(WIN32)
 		IF(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
-				DESTINATION	lib
+				DESTINATION	lib/python2.7/site-packages/EMAN2
 				RENAME lib${libname}.so)
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
-			INSTALL(TARGETS ${libname} DESTINATION lib)
+			INSTALL(TARGETS ${libname} 
+				DESTINATION lib/python2.7/site-packages/EMAN2)
 		ENDIF(APPLE)
 	ENDIF(WIN32)
 ENDMACRO(ADD_PYSTE_LIB_WITH_SRC)
@@ -81,7 +82,7 @@ IF(ENABLE_OPENGL)
 ENDIF(ENABLE_OPENGL)
 
 FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
-INSTALL(FILES ${empythonlibs} DESTINATION lib)
+INSTALL(FILES ${empythonlibs} DESTINATION lib/python2.7/site-packages/EMAN2)
 
 FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 INSTALL(FILES ${headerfiles} DESTINATION include)
