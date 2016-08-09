@@ -2,13 +2,11 @@ from setuptools import setup
 import glob
 
 #scripts = [name for name in glob.glob('lib/bin/*.py')] # separated EMAN and sparx programs into respective libs
-sx_scripts = [name for name in glob.glob('libeman/EMAN2/bin/*.py')]
-e2_scripts = [name for name in glob.glob('libeman/sparx/bin/*.py')]
-scripts = sx_scripts + e2_scripts
+scripts = [name for name in glob.glob('bin/*.py')]
 
-e2_pkgdata = ['*.so','*.dylib','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py','bin/*.py']
+e2_pkgdata = ['*.so','*.dylib','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
 
-sx_pkgdata = ['*.so','*.dylib','pyemtbx/*','include/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py','bin/*.py']
+sx_pkgdata = ['*.so','*.dylib','pyemtbx/*','include/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
 
 setup(
     name="eman2",

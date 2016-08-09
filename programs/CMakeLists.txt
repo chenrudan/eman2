@@ -6,7 +6,7 @@ LIST(REMOVE_ITEM e2programs ${exclusion_list})
 #  DESTINATION    bin
 #)
 INSTALL(PROGRAMS ${e2programs}
-	DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/bin
+	DESTINATION bin
 )
 #INSTALL(PROGRAMS    e2boxer.py 
 #                    e2version.py 
@@ -18,10 +18,10 @@ INSTALL(PROGRAMS ${e2programs}
 
 IF(WIN32)
 	INSTALL(FILES e2boxer.py
-		DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/bin
+		DESTINATION bin
 		RENAME e2boxer.pyw)
 	INSTALL(FILES e2display.py
-		DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/bin
+		DESTINATION bin
 		RENAME e2display.pyw)
 ENDIF(WIN32)
 
