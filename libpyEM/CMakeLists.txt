@@ -28,16 +28,16 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 			#set_target_properties(${libname} PROPERTIES SUFFIX .so)
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
-				DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2 #lib/python2.7/site-packages/EMAN2
+				DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2
 				RENAME lib${libname}.so)
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
-				DESTINATION ${EMAN_INSTALL_PREFIX}/sparx #lib/python2.7/site-packages/sparx
+				DESTINATION ${EMAN_INSTALL_PREFIX}/sparx
 				RENAME lib${libname}.so)
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
 			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
-			INSTALL(TARGETS ${libname} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2) #lib/python2.7/site-packages/EMAN2)
-			INSTALL(TARGETS ${libname} DESTINATION ${EMAN_INSTALL_PREFIX}/sparx) #lib/python2.7/site-packages/sparx)
+			INSTALL(TARGETS ${libname} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2)
+			INSTALL(TARGETS ${libname} DESTINATION ${EMAN_INSTALL_PREFIX}/sparx)
 		ENDIF(APPLE)
 	ENDIF(WIN32)
 ENDMACRO(ADD_PYSTE_LIB_WITH_SRC)
@@ -91,12 +91,7 @@ ENDIF(ENABLE_OPENGL)
 FILE(GLOB empythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(FILES ${empythonlibs} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2)
 
-#FILE(GLOB sxpythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
-#LIST(REMOVE_ITEM sxpythonlibs "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py")
-#INSTALL(FILES ${sxpythonlibs} DESTINATION ${EMAN_INSTALL_PREFIX}/sparx)
-
 FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 INSTALL(FILES ${headerfiles} DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/include)
-#INSTALL(FILES ${headerfiles} DESTINATION ${EMAN_INSTALL_PREFIX}/sparx/include)
 
 ADD_SUBDIRECTORY(qtgui)
