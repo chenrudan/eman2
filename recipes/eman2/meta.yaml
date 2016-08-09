@@ -1,6 +1,5 @@
 package:
     name: eman2
-    #version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
     version: 3.0.0
 
 source:
@@ -8,10 +7,10 @@ source:
     git_branch: conda
 
 build:
-    number: 15
+    number: 17
     rpaths:
-        - lib/python2.7/site-packages/EMAN2
-        - lib/python2.7/site-packages/sparx
+        - lib/python2.7/site-packages/EMAN2/
+        - lib/python2.7/site-packages/sparx/
         - lib/
 
 requirements:
@@ -22,8 +21,8 @@ requirements:
         - numpy
         - ftgl
         - freetype >2.5
-        - gsl <1.17
-        - boost <1.60
+        - gsl =1.16
+        - boost <1.55
         - fftw
         - hdf5
         - libtiff >4
@@ -36,8 +35,8 @@ requirements:
         - numpy
         - freetype >2.5
         - matplotlib
-        - gsl <1.17
-        - boost <1.60
+        - gsl =1.16
+        - boost <1.55
         - fftw
         - hdf5
         - ipython
