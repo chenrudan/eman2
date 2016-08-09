@@ -13,35 +13,26 @@ IF(CMAKE_SYSTEM MATCHES "IRIX.*")
 ENDIF(CMAKE_SYSTEM MATCHES "IRIX.*")
 
 MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
-	IF(WIN32)
-		ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})		
-		TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
-		INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/release/${libname}.dll
-				DESTINATION	lib/python2.7/site-packages/EMAN2
-				RENAME lib${libname}.pyd)
-		INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/release/${libname}.dll
-				DESTINATION	lib/python2.7/site-packages/sparx
-				RENAME lib${libname}.pyd)
-	ELSE(WIN32)
-		IF(APPLE)
-			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
-			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
-			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
-				DESTINATION	lib/python2.7/site-packages/EMAN2
-				RENAME lib${libname}.so)
-			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.dylib
-				DESTINATION	lib/python2.7/site-packages/sparx
-				RENAME lib${libname}.so)
-		ELSE(APPLE)
-			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
-			set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
-			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
-			INSTALL(TARGETS ${libname} 
-				DESTINATION lib/python2.7/site-packages/EMAN2)
-			INSTALL(TARGETS ${libname} 
-				DESTINATION lib/python2.7/site-packages/sparx)
-		ENDIF(APPLE)
-	ENDIF(WIN32)
+	ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
+	
+	if(WIN32)
+		set(suffix .pyd)
+	else()
+		set(suffix .so)
+	endif()
+
+	set_target_properties(${libname}
+			PROPERTIES
+			PREFIX lib
+			SUFFIX ${suffix}
+			)
+	
+	set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
+	TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
+	INSTALL(TARGETS ${libname} 
+		DESTINATION lib/python2.7/site-packages/EMAN2)
+	INSTALL(TARGETS ${libname} 
+		DESTINATION lib/python2.7/site-packages/sparx)
 ENDMACRO(ADD_PYSTE_LIB_WITH_SRC)
 
 
