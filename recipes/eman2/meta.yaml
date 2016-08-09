@@ -27,7 +27,7 @@ requirements:
         - hdf5
         - libtiff >4
         - jpeg >8
-        - libpng >1.6.22
+        - libpng
         - python <3
     run:
         - mpi4py
@@ -38,15 +38,15 @@ requirements:
         - boost
         - fftw
         - ipython
-        - pyqt
-        - qt
+        - pyqt >4.10
+        - qt <5
         - pyopengl <3.1
         - ftgl
         - bsddb
         - readline
         - libtiff >4
         - jpeg >8
-        - libpng >1.6.22
+        - libpng
         - gsl
         - hdf5
 
