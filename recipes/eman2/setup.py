@@ -1,8 +1,7 @@
 from setuptools import setup
 import glob
 
-#scripts = [name for name in glob.glob('lib/bin/*.py')] # separated EMAN and sparx programs into respective libs
-scripts = [name for name in glob.glob('bin/*.py')]
+scripts = [name for name in glob.glob('lib/bin/*.py')]
 
 e2_pkgdata = ['*.so','*.dylib','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
 
