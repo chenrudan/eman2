@@ -22,7 +22,7 @@ requirements:
         - ftgl
         - freetype >2.5
         - gsl <1.17
-        - boost
+        - boost <1.60
         - fftw
         - hdf5
         - libtiff >4
@@ -35,7 +35,7 @@ requirements:
         - numpy <1.10
         - freetype >2.5
         - matplotlib
-        - boost
+        - boost <1.60
         - fftw
         - ipython
         - pyqt >4.10
