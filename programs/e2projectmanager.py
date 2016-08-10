@@ -31,7 +31,6 @@
 #
 
 from EMAN2 import *
-import EMAN2
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 from EMAN2.pmicons import *
@@ -1053,7 +1052,7 @@ class TheHelp(QtGui.QWidget):
 		helplabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
 		hbox = QtGui.QHBoxLayout()
-		hbox.addWidget(PMIcon("{}/images/SirEMAN2.png".format(os.path.dirname(EMAN2.__init__))
+		hbox.addWidget(PMIcon("{}/images/SirEMAN2.png".format(EMAN2DIR)))
 		hbox.addWidget(helplabel)
 		hbox.setContentsMargins(0,0,0,0)
 		grid.addLayout(hbox,0, 0)
