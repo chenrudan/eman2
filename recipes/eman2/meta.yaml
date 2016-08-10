@@ -17,7 +17,7 @@ requirements:
     build:
         - zlib
         - cmake
-        - pyopengl =3.1.0
+        - pyopengl 3.1.0
         - numpy <1.10
         - ftgl
         - freetype >2.5
@@ -42,7 +42,7 @@ requirements:
         - ipython
         - pyqt >4.10
         - qt <5
-        - pyopengl =3.1.0
+        - pyopengl 3.1.0
         - ftgl
         - bsddb
         - readline
