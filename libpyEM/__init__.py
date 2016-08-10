@@ -314,12 +314,12 @@ This function will get an application default by first checking the local direct
 
 def e2getinstalldir() :
 	"""platform independent path with '/'"""
-	if(sys.platform != 'win32'):
-		url=os.getenv("EMAN2DIR")
-	else:
-		url=os.getenv("EMAN2DIR")
-		url=url.replace("\\","/")
-	return url
+	#if(sys.platform != 'win32'):
+	#	url=os.getenv("EMAN2DIR")
+	#else:
+	#	url=os.getenv("EMAN2DIR")
+	#	url=url.replace("\\","/")
+	return EMAN2DIR #url
 
 
 def numbered_path(prefix,makenew):
@@ -366,12 +366,12 @@ def get_prefixed_directories(prefix,wd=e2getcwd()):
 	return dirs
 
 def get_image_directory():
-	pf = get_platform()
-	dtag = get_dtag()
-	if pf != "Windows":
-		return os.getenv("EMAN2DIR")+ dtag + "images" + dtag + "macimages" + dtag
-	else:
-		return os.getenv("EMAN2DIR")+ dtag + "images" + dtag
+	#pf = get_platform()
+	#dtag = get_dtag()
+	#if pf != "Windows":
+		#return os.getenv("EMAN2DIR")+ dtag + "images" + dtag + "macimages" + dtag
+	#else:
+        return "{}/images/".format(EMAN2DIR)
 
 def get_dtag():
 #	pfrm = get_platform()
@@ -1754,7 +1754,7 @@ def get_3d_font_renderer():
 		font_renderer.set_using_display_lists(True)
 		font_renderer.set_depth(2)
 		pfm = get_platform()
-		if pfm in ["Linux","Darwin"]: font_renderer.set_font_file_name("{}/fonts/DejaVuSerif.ttf".format(os.getenv("EMAN2DIR")))
+		if pfm in ["Linux","Darwin"]: font_renderer.set_font_file_name("{}/fonts/DejaVuSerif.ttf".format(EMAN2DIR)))
 		elif pfm == "Windows": font_renderer.set_font_file_name("C:\\WINDOWS\\Fonts\\arial.ttf")
 		else:
 			print "unknown platform:",pfm
