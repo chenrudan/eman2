@@ -1,3 +1,5 @@
+# symlink this file to ~/.condarc
+
 channels:
   - jmbell
   - conda-forge
