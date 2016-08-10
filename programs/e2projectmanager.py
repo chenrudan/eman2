@@ -31,6 +31,7 @@
 #
 
 from EMAN2 import *
+import EMAN2
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 from EMAN2.pmicons import *
@@ -48,7 +49,7 @@ class EMProjectManager(QtGui.QMainWindow):
 		# default PM attributes
 		self.pm_cwd = os.getcwd()
 		self.pn_project_name_default='Unknown'
-		self.pm_icon = self.pm_icon_default = os.getenv("EMAN2DIR")+"/images/EMAN2Icon.png"
+		self.pm_icon = self.pm_icon_default = "{}/images/EMAN2Icon.png".format(EMAN2DIR)
 		self.setWindowIcon(QtGui.QIcon(QtGui.QPixmap(pmicon)))
 
 		# Set Defaults
@@ -122,9 +123,7 @@ class EMProjectManager(QtGui.QMainWindow):
 		Load icons used for the tree. Additonal icons can be added using icons.json
 		"""
 		self.icons = {}
-		EMAN2DIR = os.getenv("EMAN2DIR")
-
-		jsonfile = open(os.getenv("EMAN2DIR")+'/pmconfig/icons.json', 'r')
+                jsonfile = open('{}/pmconfig/icons.json'.format(EMAN2DIR), 'r')
 		data = jsonfile.read()
 		data = self.json_strip_comments(data)
 		tree = json.loads(data)
@@ -273,12 +272,12 @@ class EMProjectManager(QtGui.QMainWindow):
 		"""
 		self.tree_stacked_widget = QtGui.QStackedWidget()
 		self.tree_stacked_widget.setMinimumWidth(300)
-		self.tree_stacked_widget.addWidget(self.makeTreeWidget(os.getenv("EMAN2DIR")+'/pmconfig/spr.json', 'SPR'))
+		self.tree_stacked_widget.addWidget(self.makeTreeWidget('{}/pmconfig/spr.json'.format(EMAN2DIR), 'SPR'))
 		#self.tree_stacked_widget.addWidget(self.makeTreeWidget(os.getenv("EMAN2DIR")+'/pmconfig/spt.json', 'SPT'))
 
-		self.tree_stacked_widget.addWidget(self.makeTreeWidget(os.getenv("EMAN2DIR")+'/pmconfig/tomo.json', 'Tomography'))
+		self.tree_stacked_widget.addWidget(self.makeTreeWidget'{}/pmconfig/tomo.json'.format(EMAN2DIR), 'Tomography'))
 		try :
-			self.tree_stacked_widget.addWidget(self.makeTreeWidget(os.getenv("EMAN2DIR")+'/pmconfig/tomosegpanel.json', 'TomogramSegmentation'))
+			self.tree_stacked_widget.addWidget(self.makeTreeWidget('{}/pmconfig/tomosegpanel.json'.format(EMAN2DIR), 'TomogramSegmentation'))
 		except :
 			pass
 		#Jesus
@@ -468,7 +467,7 @@ class EMProjectManager(QtGui.QMainWindow):
 		Load the wizard from a filebox
 		"""
 
-		jsonfile = open(os.getenv("EMAN2DIR")+self.getProgramWizardFile(), 'r')
+		jsonfile = open("{}/{}".format(EMAN2DIR,self.getProgramWizardFile()), 'r')
 		data = jsonfile.read()
 		data = self.json_strip_comments(data)
 		wizarddata = json.loads(data)
@@ -564,7 +563,7 @@ class EMProjectManager(QtGui.QMainWindow):
 		Read in and return the usage from an e2program
 		"""
 		try:
-			f = open(os.getenv("EMAN2DIR")+"/bin/"+program,"r")
+			f = open("{}/{}".format(os.path.dirname(os.path.realpath(__file__)),program),"r")
 		except:
 			self.statusbar.setMessage("Can't open usage file '%s'"%program,"color:red;")
 			return
@@ -709,7 +708,7 @@ class EMProjectManager(QtGui.QMainWindow):
 		"""
 		parser = EMArgumentParser()
 		try:
-			f = open(os.getenv("EMAN2DIR")+"/bin/"+e2program,"r")
+			f = open("{}/{}".format(os.path.dirname(os.path.realpath(__file__)),e2program),"r")
 		except:
 			self.statusbar.setMessage("Can't open file '%s'"%e2program,"color:red;")
 			return
@@ -1054,7 +1053,7 @@ class TheHelp(QtGui.QWidget):
 		helplabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
 		hbox = QtGui.QHBoxLayout()
-		hbox.addWidget(PMIcon(os.getenv("EMAN2DIR")+"/images/SirEMAN2.png"))
+		hbox.addWidget(PMIcon("{}/images/SirEMAN2.png".format(os.path.dirname(EMAN2.__init__))
 		hbox.addWidget(helplabel)
 		hbox.setContentsMargins(0,0,0,0)
 		grid.addLayout(hbox,0, 0)

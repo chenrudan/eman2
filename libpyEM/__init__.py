@@ -31,7 +31,7 @@
 #
 
 import os
-os.environ["EMAN2DIR"] = os.path.dirname(os.path.abspath(__file__))
+EMAN2DIR = os.path.dirname(os.path.abspath(__file__))
 
 import sys
 from math import *
