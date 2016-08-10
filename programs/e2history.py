@@ -47,22 +47,22 @@ def main():
 	usage = progname + """ [options]
 	A tool for displaying EMAN2 command history
 	"""
-	
+
 	parser = EMArgumentParser(usage=usage)
 	parser.add_argument("--gui", "-g",default=False, action="store_true",help="Open history in an interface with a sortable table.")
 	parser.add_argument("--all", "-a",default=False, action="store_true",help="Show for all directories.")
 	parser.add_argument("--ppid", type=int, help="Set the PID of the parent process, used for cross platform PPID",default=-1)
 	parser.add_argument("--verbose", "-v", dest="verbose", action="store", metavar="n", type=int, default=0, help="verbose level [0-9], higner number means higher level of verboseness")
-	
+
 	(options, args) = parser.parse_args()
-	
+
 	if options.gui:
 		from EMAN2.emapplication import EMApp
 		app = EMApp()
 		hist = HistoryForm(app,os.getcwd())
 		app.show()
 		app.execute()
-		
+
 	else: print_to_std_out(options.all)
 
 class HistoryForm:
@@ -71,18 +71,18 @@ class HistoryForm:
 		wd is the working directory
 		'''
 		self.wd = wd
-		
+
 		from EMAN2.emform import EMFormWidget
 		self.form = EMFormWidget(params=self.get_history_table())
 		self.form.setWindowTitle("EMAN2 history")
-		
+
 		from PyQt4 import QtGui,QtCore
-		self.form.setWindowIcon(QtGui.QIcon(os.getenv("EMAN2DIR")+"/images/feather.png"))
+		self.form.setWindowIcon(QtGui.QIcon("{}/images/feather.png".format(EMAN2DIR)))
 		self.form.resize(640,480)
 		QtCore.QObject.connect(self.form,QtCore.SIGNAL("emform_ok"),self.on_ok)
 		QtCore.QObject.connect(self.form,QtCore.SIGNAL("emform_cancel"),self.on_cancel)
-		
-		
+
+
  	def get_history_table(self):
  		from EMAN2.emdatastorage import ParamDef
  		try:
@@ -91,14 +91,14 @@ class HistoryForm:
 			db.open_dict("history")
 		except:
 			db=None
-		
+
 		params = []
-		
+
 		try:
 			n=int(db.history["count"])
 		except:
 			n = 0
-		
+
 		if db == None or n == 0:
 			params.append(ParamDef(name="blurb",vartype="text",desc_short="",desc_long="",property=None,defaultunits="There appears to be no history in this directory",choices=None))
 		else:
@@ -108,14 +108,14 @@ class HistoryForm:
 			prgargs = []
 			cmd = []
 			full_cmd = []
-			
+
 			params.append(ParamDef(name="blurb",vartype="text",desc_short="",desc_long="",property=None,defaultunits="Use this form to examine the EMAN2 commands that have occurred in this directory.",choices=None))
-			p = EMParamTable(name="commands",desc_short="Historical table of EMAN2 commands",desc_long="") 
-			
+			p = EMParamTable(name="commands",desc_short="Historical table of EMAN2 commands",desc_long="")
+
 			for i in range(n):
 				try: h=db.history[i+1]
 				except: continue
-				
+
 				if h != None and h.has_key("path") and h["path"]==self.wd:
 					start.append(local_datetime(h["start"]))
 					if h.has_key("end") :
@@ -127,8 +127,8 @@ class HistoryForm:
 							except:
 								duration.append("incomplete")
 						else: duration.append("incomplete")
-					
-					
+
+
 					args = h["args"]
 					if len(args) > 0:
 						cmd.append(base_name(args[0]))
@@ -140,32 +140,32 @@ class HistoryForm:
 						cmd.append("")
 						full_cmd.append("")
 						prgargs.append("")
-						
-				
+
+
 			pcmd = ParamDef(name="cmd",vartype="stringlist",desc_short="Program",desc_long="A shortened version of the name of a Python program that was executed",property=None,defaultunits=None,choices=cmd)
 			pstart = ParamDef(name="start",vartype="stringlist",desc_short="Start time",desc_long="The time when the command was first executed",property=None,defaultunits=None,choices=start)
 			pduration = ParamDef(name="duration",vartype="stringlist",desc_short="Duration",desc_long="The time taken to execute this command",property=None,defaultunits=None,choices=duration)
 			pfull_cmd = ParamDef(name="fullcmd",vartype="stringlist",desc_short="File path",desc_long="The location of program on disk",property=None,defaultunits=None,choices=full_cmd)
 			pargs = ParamDef(name="args",vartype="stringlist",desc_short="Arguments",desc_long="The arguments that were given to the program",property=None,defaultunits=None,choices=prgargs)
-			
-	
+
+
 			p.append(pcmd)
 			p.append(pstart)
 			p.append(pduration)
 			p.append(pargs)
 			p.append(pfull_cmd)
 			params.append(p)
-	
-	
+
+
  		return params
- 	
+
  	def on_ok(self):
  		self.form.close()
- 		
+
  	def on_cancel(self):
  		self.form.close()
- 			
-	
+
+
 def local_datetime(secs):
 	from time import localtime
 	t=localtime(secs)
@@ -199,14 +199,14 @@ def print_to_std_out(all):
 		db.open_dict("history")
 	except:
 		db=None
-	
+
 	if db:
 		try:
 			n=int(db.history["count"])
 		except:
 			print "no logfile"
 			sys.exit(0)
-		
+
 		if all  :
 			ah={}
 			for i in range(n):
@@ -235,19 +235,19 @@ def print_to_std_out(all):
 		except:
 			print "no logfile"
 			sys.exit(0)
-		
+
 		for i in range(n-1):
 			print " ".join(db[str(i+1)]["args"])
 		print "done"
-		
+
 	try:
 		fin=file(".eman2log.txt","r")
 		print "----- .eman2log.txt"
 		for l in fin: print l
-		
+
 	except: pass
-	
+
 	print "NOTICE: While e2history.py continues to function, log files are now stored in plain text in .eman2log.txt in each directory, and can just be examined directly. e2history.py is primarily useful for looking at historical logfiles."
-		
+
 if __name__ == '__main__':
 	main()
