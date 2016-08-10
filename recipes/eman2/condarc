@@ -1,0 +1,12 @@
+channels:
+  - jmbell
+  - conda-forge
+  - defaults
+
+create_default_packages:
+  - ipython
+
+update_dependencies: True
+
+anaconda_upload: True
+
