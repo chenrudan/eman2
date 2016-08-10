@@ -3,11 +3,10 @@ package:
     version: 3.0.0
 
 source:
-    git_url: git@github.com:cryoem/eman2.git 
-    git_branch: conda-wip
+    path: {{HOME}}/workspace/EMAN2
 
 build:
-    number: 0
+    number: 37
     rpaths:
         - lib/python2.7/site-packages/EMAN2
         - lib/python2.7/site-packages/sparx
