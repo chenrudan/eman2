@@ -1,13 +1,15 @@
 from setuptools import setup, find_packages
 import glob
+import os
 
-scripts = [name for name in glob.glob('lib/bin/*.py')]
+libdir='install_dir'
+scripts = [name for name in glob.glob(os.path.join(libdir,'bin', '*.py'))]
 
 setup(
     name="eman2",
     version="2.2",
 
-    package_dir={'EMAN2':'libeman/EMAN2'},
+    package_dir={'EMAN2':os.path.join(libdir, 'EMAN2')},
     # packages=find_packages('EMAN2'),
     packages={'EMAN2':'EMAN2'},
     package_data={'EMAN2':['*.so']},
