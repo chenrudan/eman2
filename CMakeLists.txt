@@ -10,7 +10,7 @@ cmake_policy(SET CMP0042 NEW)
 
 SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install_dir CACHE INTERNAL "installation prefix")
 
-SET(LIBRARY_OUTPUT_PATH ${EMAN_BINARY_DIR}/lib CACHE PATH "output directory for building all libraries.")
+SET(LIBRARY_OUTPUT_PATH ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
 
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
 
