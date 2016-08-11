@@ -36,7 +36,8 @@ Python layer for scripting and interactive use.
 """
 
 import os
-os.environ["SPARXDIR"] = os.path.dirname(os.path.abspath(__file__))
+SPARXDIR = os.path.dirname(os.path.realpath(__file__))
+EMAN2DIR = SPARXDIR.replace("sparx","EMAN2")
 
 from sparx.utilities import *
 from sparx.filter import *
