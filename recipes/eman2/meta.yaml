@@ -18,7 +18,7 @@ requirements:
         - zlib
         - cmake
         - pyopengl
-        - numpy <1.10
+        - numpy
         - ftgl
         - freetype >2.5
         - gsl <1.17
@@ -32,7 +32,7 @@ requirements:
     run:
         - mpi4py
         - python <3
-        - numpy <1.10
+        - numpy
         - freetype >2.5
         - matplotlib
         - boost <1.60
@@ -53,7 +53,7 @@ requirements:
 about:
   home: http://blake.bcm.edu/emanwiki
   license: GPL2
-  license_file: LICENSE.txt
+  license_file: LICENSE
   summary: A scientific image processing software suite with a focus on CryoEM and CryoET.
 
 extra:
