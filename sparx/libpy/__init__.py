@@ -29,9 +29,7 @@
 #
 
 import os
-from site import getsitepackages
-os.environ["SPARXDIR"] = "{}/sparx".format(getsitepackages()[0])
-os.environ["EMAN2DIR"] = "{}/EMAN2".format(getsitepackages()[0])
+os.environ["SPARXDIR"] = os.path.dirname(os.path.abspath(__file__))
 
 from alignment       import *
 from morphology      import *
