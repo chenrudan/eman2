@@ -13,6 +13,7 @@ SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install_dir CACHE INTERNAL "insta
 SET(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
 
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
+SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation prefix")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
@@ -362,6 +363,7 @@ IF(ENABLE_ACML_FFT)
 	FIND_LIBRARY(G2C_LIBRARY NAMES g2c PATHS
 		/usr/lib64
 		/usr/lib
+		$ENV{PREFIX}/lib
 		/usr/local/lib
 		$ENV{HOME}/lib )
 	ADD_DEFINITIONS(-DACML)
@@ -390,12 +392,12 @@ ENDIF(ENABLE_DJBFFT)
 
 IF(ENABLE_OPTPP)
     FIND_PATH(OPTPP_INCLUDE_PATH Opt.h /usr/include /usr/include/opt++
-              /usr/local/include /usr/local/include/opt++ $ENV{HOME}/include
-             $ENV{HOME}/include/opt++)
+            /usr/local/include /usr/local/include/opt++ $ENV{PREFIX}/include
+            $ENV{PREFIX}/include/opt++ $ENV{HOME}/include $ENV{HOME}/include/opt++)
     FIND_PATH(NEWMAT_INCLUDE_PATH newmat.h /usr/include /usr/include/opt++
               /usr/include/newmat /usr/local/include/newmat
-              /usr/local/include /usr/local/include/opt++ $ENV{HOME}/include
-             $ENV{HOME}/include/opt++)
+              /usr/local/include /usr/local/include/opt++ $ENV{PREFIX}/include
+              $ENV{PREFIX}/include/opt++ $ENV{HOME}/include $ENV{HOME}/include/opt++)
     FIND_LIBRARY(OPTPP_LIBRARY NAMES opt-linux PATHS /usr/lib /usr/local/lib)
     FIND_LIBRARY(NEWMAT_LIBRARY NAMES newmat-linux PATHS /usr/lib /usr/local/lib)
 
@@ -459,9 +461,7 @@ IF(ENABLE_PNG)
 ENDIF(ENABLE_PNG)
 
 FIND_PATH(NUMPY_INCLUDE_PATH numpy/arrayobject.h
-    $ENV{PREFIX}/lib/python2.7/site-packages/numpy/core/include
-    $ENV{PYTHON_ROOT}/lib/python2.7/site-packages/numpy/core/include
-    $ENV{PYTHON_ROOT}/lib/python2.6/site-packages/numpy/core/include
+	$ENV{SP_DIR}/numpy/core/include
 	$ENV{PYTHON_ROOT}/lib/python2.5/site-packages/numpy/core/include
 	$ENV{PYTHON_ROOT}/lib/python2.4/site-packages/numpy/core/include
 	/usr/local/lib/python2.7/site-packages/numpy/core/include
@@ -553,7 +553,6 @@ ADD_SUBDIRECTORY(libEM)
 ADD_SUBDIRECTORY(libpyEM)
 ADD_SUBDIRECTORY(pyemtbx)
 ADD_SUBDIRECTORY(sparx)
-ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(examples)
 ADD_SUBDIRECTORY(programs)
 ADD_SUBDIRECTORY(doc)

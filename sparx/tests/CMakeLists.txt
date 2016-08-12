@@ -1,0 +1,5 @@
+FILE(GLOB sxtests "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
+
+INSTALL(PROGRAMS ${sxtests}
+  	DESTINATION    ${EMAN_INSTALL_PREFIX}/sparx/test
+)

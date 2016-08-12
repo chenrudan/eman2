@@ -1,0 +1,5 @@
+FILE(GLOB sxdocs "${CMAKE_CURRENT_SOURCE_DIR}/*.txt")
+
+INSTALL(PROGRAMS ${sxdocs}
+  	DESTINATION    ${EMAN_INSTALL_PREFIX}/sparx/doc
+)
