@@ -1,2 +1,2 @@
 INSTALL(FILES DejaVuSerif.ttf readme.txt
-    	DESTINATION fonts)
+    	DESTINATION ${EMAN_INSTALL_PREFIX}/EMAN2/fonts)
