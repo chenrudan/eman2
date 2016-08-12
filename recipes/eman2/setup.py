@@ -19,4 +19,10 @@ setup(
     scripts=scripts,
     
     zip_safe = False,
+
+	description="A scientific image processing software suite with a focus on CryoEM and CryoET",
+	author="Steve Ludtke",
+	author_email="sludtke@bcm.edu",
+	license="GNU General Public License, Version 2",
+	url="http://blake.bcm.edu/emanwiki/EMAN2",
 )
