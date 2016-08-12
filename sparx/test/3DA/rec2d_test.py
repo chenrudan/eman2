@@ -3,7 +3,7 @@
 from EMAN2 import *
 from sparx import *
 from math import cos, sin, pi
-from reconstruction import rec2D
+from sparx.reconstruction import rec2D
 
 M_PI = pi
 

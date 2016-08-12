@@ -33,7 +33,7 @@
 
 
 from EMAN2 import *
-from EMAN2db import db_open_dict, db_list_dicts
+from EMAN2.EMAN2db import db_open_dict, db_list_dicts
 from optparse import OptionParser
 from math import *
 from os import remove
@@ -151,9 +151,9 @@ def main():
 		try: os.mkdir(options.path)
 		except: pass
 
-	if options.centeracf : 
+	if options.centeracf :
 		print "Warning: the --centeracf option has been removed from e2refine2d in favor of a new centering scheme. Ignoring option."
-		
+
 	logid=E2init(sys.argv,options.ppid)
 
 	fit=1
@@ -264,7 +264,7 @@ def main():
 
        	# now extract most different refs. ninput eliminates ~2/3 particles with lowest 'quality' from consideration
 #		run("e2stacksort.py %s/allrefs_%02d.hdf %s/aliref_%02d.hdf --reverse --ninput=%d --nsort=%d --simcmp=ccc --simalign=rotate_translate_flip"%(options.path,it,options.path,it,ncheck,options.naliref));
-	
+
 		run("e2stacksort.py %s/tmp.hdf %s/tmp2.hdf --reverse --ninput=%d --nsort=%d --simcmp=ccc"%(options.path,options.path,ncheck,options.naliref))
 		run("e2stacksort.py %s/tmp2.hdf %s/aliref_%02d.hdf --simalign rotate_translate_flip --useali"%(options.path,options.path,it))		# previous alignment may not have been best for reduced number
 		proc_tally += 1.0

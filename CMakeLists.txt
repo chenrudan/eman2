@@ -6,18 +6,23 @@ IF(COMMAND cmake_policy)
        cmake_policy(SET CMP0003 NEW)
        cmake_policy(SET CMP0002 OLD)
 ENDIF(COMMAND cmake_policy)
-cmake_policy(SET CMP0042 NEW)
 
-SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install_dir CACHE INTERNAL "installation prefix")
+MARK_AS_ADVANCED(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
+MARK_AS_ADVANCED(CLEAR CMAKE_VERBOSE_MAKEFILE)
+OPTION(CMAKE_VERBOSE_MAKEFILE "if all commands will be echoed to the console during the make" ON)
 
-SET(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
-
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
+#SET(EMAN_INSTALL_PREFIX $ENV{HOME}/EMAN2 CACHE PATH "installation prefix")
+SET(EMAN_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/libeman CACHE PATH "installation prefix")
+#SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
 SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation prefix")
 
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+MARK_AS_ADVANCED(CLEAR EMAN_INSTALL_PREFIX)
+
+SET(EXECUTABLE_OUTPUT_PATH ${EMAN_BINARY_DIR}/bin CACHE PATH "output directory for building all executables.")
+SET(LIBRARY_OUTPUT_PATH ${EMAN_BINARY_DIR}/lib CACHE PATH "output directory for building all libraries.")
+SET(EMAN_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}")
+SET(EMAN_LIBRARY_PATH "${LIBRARY_OUTPUT_PATH}")
+MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 
 OPTION(ENABLE_AUTODOC "enable latex/doxygen document generation and etc. " OFF)
 
@@ -193,7 +198,7 @@ ENDIF(ENABLE_IOCACHE)
 # ENDIF(ENABLE_HDFIOCACHE)
 
 SET(INCLUDE_DIRS 
-	${EMAN_SOURCE_DIR}/libEM
+	${EMAN_SOURCE_DIR}/libEM 
 	$ENV{PREFIX}/include
 	$ENV{HOME}/include 
 	$ENV{FFTWDIR}/include 
@@ -462,6 +467,8 @@ ENDIF(ENABLE_PNG)
 
 FIND_PATH(NUMPY_INCLUDE_PATH numpy/arrayobject.h
 	$ENV{SP_DIR}/numpy/core/include
+	$ENV{PYTHON_ROOT}/lib/python2.7/site-packages/numpy/core/include
+	$ENV{PYTHON_ROOT}/lib/python2.6/site-packages/numpy/core/include
 	$ENV{PYTHON_ROOT}/lib/python2.5/site-packages/numpy/core/include
 	$ENV{PYTHON_ROOT}/lib/python2.4/site-packages/numpy/core/include
 	/usr/local/lib/python2.7/site-packages/numpy/core/include
@@ -519,7 +526,6 @@ INCLUDE_DIRECTORIES(.
 	    ${BOOST_INCLUDE_PATH}
 	    ${PYTHON_INCLUDE_PATH}
 	    ${FREETYPE_INCLUDE_PATH}		
-		${INCLUDE_DIRS}
             )
 #            /usr/include/freetype2
 #            /usr/local/include/freetype2

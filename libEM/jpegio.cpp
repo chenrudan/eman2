@@ -68,7 +68,7 @@ void JpegIO::init()
 	initialized = true;
 
 	bool is_new_file = false;
-	jpeg_file = sfopen(filename, rw_mode, &is_new_file, true);
+	jpeg_file = sfopen(filename, rw_mode, &is_new_file, TRUE);
 
 	if (! is_new_file) {
 		throw ImageReadException(filename, "JPEG reading not supported");

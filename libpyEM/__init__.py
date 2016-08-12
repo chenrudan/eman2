@@ -31,7 +31,7 @@
 #
 
 import os
-os.environ["EMAN2DIR"] = os.path.dirname(os.path.abspath(__file__))
+EMAN2DIR = os.path.dirname(os.path.abspath(__file__))
 
 import sys
 from math import *
@@ -43,11 +43,11 @@ import cPickle
 import zlib
 import socket
 import subprocess
-from EMAN2_cppwrap import *
-from pyemtbx.imagetypes import *
-from pyemtbx.box import *
+from EMAN2.EMAN2_cppwrap import *
+from EMAN2.pyemtbx.imagetypes import *
+from EMAN2.pyemtbx.box import *
 from e2version import *
-from EMAN2 import EMAN2db, EMAN2jsondb
+from EMAN2 import EMAN2db
 from EMAN2 import EMAN2jsondb
 import argparse, copy
 import glob
@@ -68,7 +68,7 @@ except: pass
 #try:
 #import EMAN2db
 from EMAN2db import EMAN2DB,db_open_dict,db_close_dict,db_remove_dict,db_list_dicts,db_check_dict,db_parse_path,db_convert_path,db_get_image_info,e2gethome, e2getcwd
-from EMAN2jsondb import JSDict,js_open_dict,js_close_dict,js_remove_dict,js_list_dicts,js_check_dict,js_one_key
+from EMAN2.EMAN2jsondb import JSDict,js_open_dict,js_close_dict,js_remove_dict,js_list_dicts,js_check_dict,js_one_key
 #except:
 #	HOMEDB=None
 
@@ -314,12 +314,7 @@ This function will get an application default by first checking the local direct
 
 def e2getinstalldir() :
 	"""platform independent path with '/'"""
-	if(sys.platform != 'win32'):
-		url=os.getenv("EMAN2DIR")
-	else:
-		url=os.getenv("EMAN2DIR")
-		url=url.replace("\\","/")
-	return url
+	return EMAN2DIR #url
 
 
 def numbered_path(prefix,makenew):
@@ -366,12 +361,7 @@ def get_prefixed_directories(prefix,wd=e2getcwd()):
 	return dirs
 
 def get_image_directory():
-	pf = get_platform()
-	dtag = get_dtag()
-	if pf != "Windows":
-		return os.getenv("EMAN2DIR")+ dtag + "images" + dtag + "macimages" + dtag
-	else:
-		return os.getenv("EMAN2DIR")+ dtag + "images" + dtag
+        return "{}/images/".format(EMAN2DIR)
 
 def get_dtag():
 #	pfrm = get_platform()
@@ -701,7 +691,7 @@ def display(img,force_2d=False,force_plot=False):
 	"""Generic display function for images or sets of images. You can force images to be displayed in 2-D or as a plot with
 	the optional flags"""
 	if GUIMode:
-		import emimage
+		import EMAN2.emimage as emimage
 		if isinstance(img,tuple) : img=list(img)
 		image = emimage.EMImageWidget(img,None,app,force_2d,force_plot)
 		image.show()
@@ -747,7 +737,7 @@ def euler_display(emdata_list):
 
 def browse():
 	if GUIMode:
-		from emselector import EMBrowser
+		from EMAN2.emselector import EMBrowser
 		browser = EMBrowser()
 		browser.show()
 		#app.attach_child(browser)
@@ -762,7 +752,7 @@ class EMImage(object):
 		old= is provided, and of the appropriate type, it will be used rather than creating
 		a new instance."""
 		if GUIMode:
-			import emimage
+			import EMAN2.emimage as emimage
 			image = emimage.EMImageWidget(data,old,app)
 			image.show()
 			#app.show_specific(image)
@@ -791,7 +781,7 @@ def plot_image_similarity(im1,im2,skipzero=True,skipnearzero=False):
 def plot(data,data2=None,data3=None,show=1,size=(800,600),path="plot.png"):
 	"""plots an image or an array using the matplotlib library"""
 	if GUIMode:
-		from emplot2d import EMPlot2DWidget
+		from EMAN2.emplot2d import EMPlot2DWidget
 		plotw=EMPlot2DWidget(application=app)
 		plotw.set_data(data,"interactive")
 		if data2!=None : plotw.set_data(data2,"interactive2")
@@ -1748,13 +1738,13 @@ def test_image_3d(type=0,size=(128,128,128)):
 # get a font renderer
 def get_3d_font_renderer():
 	try:
-		from libpyGLUtils2 import EMFTGL
+		from EMAN2.libpyGLUtils2 import EMFTGL
 		font_renderer = EMFTGL()
 		font_renderer.set_face_size(32)
 		font_renderer.set_using_display_lists(True)
 		font_renderer.set_depth(2)
 		pfm = get_platform()
-		if pfm in ["Linux","Darwin"]: font_renderer.set_font_file_name("{}/fonts/DejaVuSerif.ttf".format(os.getenv("EMAN2DIR")))
+		if pfm in ["Linux","Darwin"]: font_renderer.set_font_file_name("{}/fonts/DejaVuSerif.ttf".format(EMAN2DIR))
 		elif pfm == "Windows": font_renderer.set_font_file_name("C:\\WINDOWS\\Fonts\\arial.ttf")
 		else:
 			print "unknown platform:",pfm

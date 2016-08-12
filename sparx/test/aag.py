@@ -1,7 +1,7 @@
 #!/bin/env python
 
-from EMAN2  import *
-from sparx  import *
+from EMAN2 import *
+from sparx import *
 
 from random import seed,gauss,uniform
 from math import sqrt

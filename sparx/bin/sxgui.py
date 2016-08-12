@@ -34,13 +34,13 @@
 import sys
 import os
 from subprocess import *
-from functools import partial  # Use to connect event-source widget and event handler
+from functools import partial # Use to connect event-source widget and event handler
 from PyQt4.Qt import *
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from EMAN2 import *
-from EMAN2_cppwrap import *
-from global_def import *
+from EMAN2.EMAN2_cppwrap import *
+from sparx.global_def import *
 from sparx import *
 
 # ========================================================================================
@@ -1504,7 +1504,7 @@ class SXCmdTab(QWidget):
 			else: # assert(self.sxcmdwidget.sxcmd.is_submittable == False)
 				assert(self.sxcmdwidget.sxcmd.mpi_support == False)
 				self.qsub_script_edit.setText("N/A")
-			self.qsub_script_edit.setToolTip("File name of submission script template (e.g. $SPARXDIR/bin/msgui_qsub.sh)")
+			self.qsub_script_edit.setToolTip("File name of submission script template (e.g. SPARXDIR/bin/msgui_qsub.sh)")
 			submit_layout.addWidget(self.qsub_script_edit, grid_row, grid_col_origin + token_label_col_span, token_widget_row_span, token_widget_col_span)
 
 			self.qsub_script_open_btn = QPushButton("Select Template")

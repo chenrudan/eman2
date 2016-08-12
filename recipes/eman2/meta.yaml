@@ -4,13 +4,13 @@ package:
 
 source:
     git_url: git@github.com:cryoem/eman2.git 
-    git_branch: anaconda
+    git_branch: conda
 
 build:
-    number: 0
+    number: 18
     rpaths:
-        - lib/python2.7/site-packages/EMAN2
-        - lib/python2.7/site-packages/sparx
+        - lib/python2.7/site-packages/EMAN2/
+        - lib/python2.7/site-packages/sparx/
         - lib/
 
 requirements:
@@ -35,8 +35,10 @@ requirements:
         - numpy <1.10
         - freetype >2.5
         - matplotlib
+        - gsl <1.17
         - boost <1.55
         - fftw
+        - hdf5
         - ipython
         - pyqt >4.10
         - qt <5
@@ -47,8 +49,6 @@ requirements:
         - libtiff >4
         - jpeg >8
         - libpng
-        - gsl <1.17
-        - hdf5
 
 about:
   home: http://blake.bcm.edu/emanwiki

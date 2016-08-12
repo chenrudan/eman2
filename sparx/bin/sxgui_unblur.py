@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# sxgui_drift for analyzing drift parameters made by Unblur
 # Copyright (C) 2016  Markus Stabrin (markus.stabrin@mpi-dortmund.mpg.de)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +18,7 @@
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 from matplotlib import pylab
-from matplotlib.backends.backend_qt4agg \
-    import FigureCanvasQTAgg, NavigationToolbar2QTAgg
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg, NavigationToolbar2QTAgg
 import os
 import sys
 import glob
@@ -2377,12 +2377,7 @@ class SXDriftUnblur(QtGui.QMainWindow, Ui_MSMainWidget):
                         angleCos = 1
                     else:
                         angleCos = fltPointProduct / fltAbsProduct
-                    if angleCos > 1:
-                        angleCos = 1
-                    elif angleCos < -1:
-                        angleCos = -1
                     angleRad = numpy.arccos(angleCos)
-
                     angleDeg = angleRad * 180 / numpy.pi
 
                     # Save calculations of angles
@@ -3658,36 +3653,22 @@ class SXDriftUnblur(QtGui.QMainWindow, Ui_MSMainWidget):
             os.mkdir('unblur_GUI_output')
 
         # Create output directory
-        strOutput = '{:s}/{:s}'.format(
+        strOutput = '{:s}/{:s}/{:s}'.format(
+            os.getcwd(),
             self.outputDir,
-            str(self.leOutputName.text()).replace('.txt', '')
+            str(self.leOutputName.text())
             )
 
         # Write output
-        with open('{:s}_uncorrected.txt'.format(strOutput), 'w') as f:
+        with open(strOutput, 'w') as f:
             for name in sorted(self.listChecked):
                 arrCurrentEntry = self.arrData[self.arrData[self.dFile] == name]
-                strDirectory = arrCurrentEntry[self.dMic][0].replace('Temp', 'Doseuncorrected')
-                f.write(
-                    '{:s}\n'.format(
-                        os.path.relpath(strDirectory)
-                        )
-                    )
-
-        with open('{:s}_corrected.txt'.format(strOutput), 'w') as f:
-            for name in sorted(self.listChecked):
-                arrCurrentEntry = self.arrData[self.arrData[self.dFile] == name]
-                strDirectory = arrCurrentEntry[self.dMic][0].replace('Temp', 'Dosecorrected')
-                f.write(
-                    '{:s}\n'.format(
-                        os.path.relpath(strDirectory)
-                        )
-                    )
+                f.write('{:s}\n'.format(arrCurrentEntry[self.dMic][0]))
 
         # Show message with the save path
         messageBox = QtGui.QMessageBox(self)
         messageBox.setText(
-            'File saved!\n{0:s}_corrected.txt and {0:s}_uncorrected.txt'.format(strOutput)
+            'File saved!\n{:s}'.format(strOutput)
             )
         messageBox.exec_()
 

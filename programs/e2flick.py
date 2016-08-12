@@ -33,8 +33,8 @@
 
 
 #from EMAN2 import *
-#from emimage import EMImage
-#from emimageutil import EMParentWin
+#from EMAN2.emimage import EMImage
+#from EMAN2.emimageutil import EMParentWin
 import sys
 import os
 #from optparse import OptionParser
@@ -42,55 +42,55 @@ import os
 #from PyQt4.QtCore import Qt
 #from OpenGL import GL,GLU,GLUT
 
-#from emimagemxrotor import * #emimagemxrotor was deprecated and removed from CVS
-#from emapplication import EMStandAloneApplication #EMStandAloneApplication was deprecated and removed from CVS
+#from EMAN2.emimagemxrotor import * #emimagemxrotor was deprecated and removed from CVS
+#from EMAN2.emapplication import EMStandAloneApplication #EMStandAloneApplication was deprecated and removed from CVS
 from optparse import OptionParser
 
 def main():
 	progname = os.path.basename(sys.argv[0])
 	usage = """prog [options] <image file> ...
-	
+
 	An interactive interface for viewing and cleaning large sets of images.
 
 	Uses a local database to remember which images have previously been deleted.
 
 	Execute e2flick.py with no function arguments to see an example.
-	
+
 """
 
 	print "WARNING: This program is currently broken. We intend to ressurect it in future."
 	sys.exit(1)
 
 	parser = EMArgumentParser(usage=usage,version=EMANVERSION)
-	
+
 	parser.add_argument("--ppid", type=int, help="Set the PID of the parent process, used for cross platform PPID",default=-1)
 	parser.add_argument("--verbose", "-v", dest="verbose", action="store", metavar="n", type=int, default=0, help="verbose level [0-9], higner number means higher level of verboseness")
 
 	(options, args) = parser.parse_args()
 
 	logid=E2init(sys.argv,options.ppid)
-	
-	
+
+
 	app = EMStandAloneApplication()
 	window = EMImageMXRotorModule(application=app)
-	
-	if len(sys.argv)==1 : 
+
+	if len(sys.argv)==1 :
 		data = []
 		for i in range(0,500):
 			e = test_image(Util.get_irand(0,9))
 			if ( Util.get_irand(0,4) == 0):	e.set_attr("excluded",True)
 			data.append(e)
-			
+
 		window.set_data(data)
 	else :
 		window.set_image_file_name(sys.argv[1])
-		
+
 	app.show()
 	app.execute()
-	
+
 	E2end(logid)
-	
+
 # If executed as a program
 if __name__ == '__main__':
-	main()	
+	main()
 

@@ -35,9 +35,9 @@
 
 import os
 import global_def
-from   global_def     import *
-from   user_functions import *
-from   optparse       import OptionParser
+from sparx.global_def import *
+from sparx.user_functions import *
+from optparse import OptionParser
 import sys
 
 def main():
@@ -70,7 +70,7 @@ def main():
 		else:              mask = args[1]
 			
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		
 		from mpi import mpi_init
@@ -87,20 +87,20 @@ def main():
 		mpi_finalize()
 
 def shiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fourvar=False, search_rng=-1, oneDx=False, search_rng_y=-1):  
-	from applications import MPI_start_end
-	from utilities    import model_circle, model_blank, get_image, peak_search, get_im
-	from utilities    import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type, bcast_number_to_all, bcast_list_to_all
-	from statistics   import varf2d_MPI
-	from fundamentals import fft, ccf, rot_shift3D, rot_shift2D
-	from utilities    import get_params2D, set_params2D
-	from utilities    import print_msg, print_begin_msg, print_end_msg
+	from sparx.applications import MPI_start_end
+	from sparx.utilities import model_circle, model_blank, get_image, peak_search, get_im
+	from sparx.utilities import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type, bcast_number_to_all, bcast_list_to_all
+	from sparx.statistics import varf2d_MPI
+	from sparx.fundamentals import fft, ccf, rot_shift3D, rot_shift2D
+	from sparx.utilities import get_params2D, set_params2D
+	from sparx.utilities import print_msg, print_begin_msg, print_end_msg
 	import os
 	import sys
-	from mpi 	  	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
-	from mpi 	  	  import MPI_SUM, MPI_FLOAT, MPI_INT
-	from EMAN2	  	  import Processor
-	from time         import time	
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT
+	from EMAN2 import Processor
+	from time import time	
 	
 	number_of_proc = mpi_comm_size(MPI_COMM_WORLD)
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
@@ -115,7 +115,7 @@ def shiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fourvar=Fa
 
 	if myid == main_node:
 		if ftp == "bdb":
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			dummy = db_open_dict(stack, True)
 		nima = EMUtil.get_image_count(stack)
 	else:
@@ -151,14 +151,14 @@ def shiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fourvar=Fa
 		mask = get_im(maskfile)
 
 	if CTF:
-		from filter import filt_ctf
-		from morphology   import ctf_img
+		from sparx.filter import filt_ctf
+		from sparx.morphology import ctf_img
 		ctf_abs_sum = EMData(nx, ny, 1, False)
 		ctf_2_sum = EMData(nx, ny, 1, False)
 	else:
 		ctf_2_sum = None
 
-	from global_def import CACHE_DISABLE
+	from sparx.global_def import CACHE_DISABLE
 	if CACHE_DISABLE:
 		data = EMData.read_images(stack, list_of_particles)
 	else:
@@ -343,12 +343,12 @@ def shiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fourvar=Fa
 	mpi_barrier(MPI_COMM_WORLD)
 	par_str = ["xform.align2d", "ID"]
 	if myid == main_node:
-		from utilities import file_type
+		from sparx.utilities import file_type
 		if(file_type(stack) == "bdb"):
-			from utilities import recv_attr_dict_bdb
+			from sparx.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		else:
-			from utilities import recv_attr_dict
+			from sparx.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, image_start, image_end, number_of_proc)
 		
 	else:           send_attr_dict(main_node, data, par_str, image_start, image_end)
@@ -357,21 +357,21 @@ def shiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fourvar=Fa
 
 		
 def helicalshiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fourvar=False, search_rng=-1):
-	from applications import MPI_start_end
-	from utilities    import model_circle, model_blank, get_image, peak_search, get_im, pad
-	from utilities    import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type, bcast_number_to_all, bcast_list_to_all
-	from statistics   import varf2d_MPI
-	from fundamentals import fft, ccf, rot_shift3D, rot_shift2D, fshift
-	from utilities    import get_params2D, set_params2D, chunks_distribution
-	from utilities    import print_msg, print_begin_msg, print_end_msg
+	from sparx.applications import MPI_start_end
+	from sparx.utilities import model_circle, model_blank, get_image, peak_search, get_im, pad
+	from sparx.utilities import reduce_EMData_to_root, bcast_EMData_to_all, send_attr_dict, file_type, bcast_number_to_all, bcast_list_to_all
+	from sparx.statistics import varf2d_MPI
+	from sparx.fundamentals import fft, ccf, rot_shift3D, rot_shift2D, fshift
+	from sparx.utilities import get_params2D, set_params2D, chunks_distribution
+	from sparx.utilities import print_msg, print_begin_msg, print_end_msg
 	import os
 	import sys
-	from mpi 	  	  import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
-	from mpi 	  	  import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
-	from mpi 	  	  import MPI_SUM, MPI_FLOAT, MPI_INT
-	from time         import time	
-	from pixel_error  import ordersegments
-	from math         import sqrt, atan2, tan, pi
+	from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
+	from mpi import mpi_reduce, mpi_bcast, mpi_barrier, mpi_gatherv
+	from mpi import MPI_SUM, MPI_FLOAT, MPI_INT
+	from time import time	
+	from sparx.pixel_error import ordersegments
+	from math import sqrt, atan2, tan, pi
 	
 	nproc = mpi_comm_size(MPI_COMM_WORLD)
 	myid = mpi_comm_rank(MPI_COMM_WORLD)
@@ -454,8 +454,8 @@ def helicalshiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fou
 		data[im] = rot_shift2D(data[im], p['alpha'], p['tx'], p['ty'], p['mirror'], p['scale'])
 
 	if CTF:
-		from filter import filt_ctf
-		from morphology   import ctf_img
+		from sparx.filter import filt_ctf
+		from sparx.morphology import ctf_img
 		ctf_abs_sum = EMData(nx, ny, 1, False)
 		ctf_2_sum = EMData(nx, ny, 1, False)
 	else:
@@ -464,7 +464,7 @@ def helicalshiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fou
 
 
 
-	from utilities import info
+	from sparx.utilities import info
 
 	for im in xrange(ldata):
 		data[im].set_attr('ID', list_of_particles[im])
@@ -665,12 +665,12 @@ def helicalshiftali_MPI(stack, maskfile=None, maxit=100, CTF=False, snr=1.0, Fou
 	mpi_barrier(MPI_COMM_WORLD)
 	par_str = ["xform.align2d", "ID"]
 	if myid == main_node:
-		from utilities import file_type
+		from sparx.utilities import file_type
 		if(file_type(stack) == "bdb"):
-			from utilities import recv_attr_dict_bdb
+			from sparx.utilities import recv_attr_dict_bdb
 			recv_attr_dict_bdb(main_node, stack, data, par_str, 0, ldata, nproc)
 		else:
-			from utilities import recv_attr_dict
+			from sparx.utilities import recv_attr_dict
 			recv_attr_dict(main_node, stack, data, par_str, 0, ldata, nproc)
 	else:           send_attr_dict(main_node, data, par_str, 0, ldata)
 	if myid == main_node: print_end_msg("helical-shiftali_MPI")				
