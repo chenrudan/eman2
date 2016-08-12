@@ -1,7 +1,7 @@
 FILE(GLOB testprograms "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(PROGRAMS ${testprograms}
-  	DESTINATION    ${EMAN_INSTALL_PREFIX}/EMAN2/test/rt
+  	DESTINATION    ${CMAKE_INSTALL_PREFIX}/EMAN2/test/rt
 )
 INSTALL(PROGRAMS ${testprograms}
-  	DESTINATION    ${EMAN_INSTALL_PREFIX}/sparx/test/rt
+  	DESTINATION    ${CMAKE_INSTALL_PREFIX}/sparx/test/rt
 )

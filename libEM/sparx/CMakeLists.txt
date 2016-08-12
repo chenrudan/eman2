@@ -1,7 +1,7 @@
 FILE(GLOB headerfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 INSTALL(FILES ${headerfiles}
-  	DESTINATION    ${EMAN_INSTALL_PREFIX}/sparx/include
+  	DESTINATION    ${CMAKE_INSTALL_PREFIX}/sparx/include
 )
 INSTALL(FILES ${headerfiles}
-  	DESTINATION    ${EMAN_INSTALL_PREFIX}/EMAN2/include
+  	DESTINATION    ${CMAKE_INSTALL_PREFIX}/EMAN2/include
 )
