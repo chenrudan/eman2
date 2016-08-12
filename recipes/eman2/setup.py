@@ -11,10 +11,10 @@ setup(
 
     package_dir={'EMAN2':'libeman/EMAN2','sparx':'libeman/sparx'},
     packages=['EMAN2','sparx'],
-    package_data={'EMAN2':['*.so','*.dylib','pmconfig/*','pyemtbx/*'],
-    	    '':['include/*.h','include/gorgon/*.h','include/plugins/*.h',
-    	    	    'examples/*.py','fonts/*.txt','fonts/*.ttf',
-    	    	    'images/*.png','images/*.ico','doc/*','test/rt/*.py']},
+    package_data={'EMAN2':['*.so','*.dylib','pmconfig/*','pyemtbx/*',
+    	    'include/*.h','include/gorgon/*.h','include/plugins/*.h',
+    	    'include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf',
+    	    'images/*.png','images/*.ico','doc/*','test/rt/*.py']},
     include_package_data = True,
     scripts=scripts,
     
