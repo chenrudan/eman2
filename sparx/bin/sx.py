@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+sxreal = "{}/sx_real.py".format(os.path.dirname(os.path.abspath(__file__)))
+os.execlp("ipython","ipython","-i",sxreal)
 
-e2real=os.getenv("EMAN2DIR")+"/bin/sx_real.py"
-os.execlp("ipython","ipython","-i",e2real)
+

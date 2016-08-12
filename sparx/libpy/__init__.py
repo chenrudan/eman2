@@ -28,11 +28,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 
-from utilities       import *
-from filter          import *
-from projection      import *
-from fundamentals    import *
-from statistics      import *
+import os
+os.environ["SPARXDIR"] = os.path.dirname(os.path.abspath(__file__))
+
 from alignment       import *
 from morphology      import *
 from reconstruction  import *
