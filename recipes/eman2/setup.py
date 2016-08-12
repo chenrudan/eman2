@@ -3,8 +3,8 @@ import glob
 import os
 
 libdir='lib'
-sx_scripts = [name for name in glob.glob(os.path.join(libdir,'EMAN2','bin','*.py'))]
-e2_scripts = [name for name in glob.glob(os.path.join(libdir,'sparx','bin','*.py'))]
+sx_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','*.py'))]
+e2_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','*.py'))]
 
 e2_pkgdata = ['*.so','*.dylib','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
 
