@@ -16,12 +16,12 @@ requirements:
     build:
         - zlib
         - cmake
-        - pyopengl 3.1.0
-        - numpy <1.10
+        - pyopengl
+        - numpy
         - ftgl
-        - freetype >2.5
-        - gsl <1.17
-        - boost <1.55
+        - freetype
+        - gsl
+        - boost
         - fftw
         - hdf5
         - libtiff >4
@@ -31,22 +31,21 @@ requirements:
     run:
         - mpi4py
         - python <3
-        - numpy <1.10
-        - freetype >2.5
+        - numpy
+        - freetype
         - matplotlib
-        - boost <1.55
+        - boost
         - fftw
         - ipython
-        - pyqt >4.10
-        - qt <5
-        - pyopengl 3.1.0
+        - pyqt
+        - pyopengl
         - ftgl
         - bsddb
         - readline
         - libtiff >4
         - jpeg >8
         - libpng
-        - gsl <1.17
+        - gsl
         - hdf5
 
 about:
