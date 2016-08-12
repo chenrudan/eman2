@@ -6,8 +6,8 @@ libdir='lib'
 sx_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','*.py'))]
 e2_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','*.py'))]
 
-e2_pkgdata = ['*.so','pmconfig/*','pyemtbx/*','include/*.h','include/gorgon/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
-sx_pkgdata = ['*.so','pyemtbx/*','include/*.h','include/plugins/*.h','include/sparx/*.h','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
+e2_pkgdata = ['*.so','pmconfig/*','pyemtbx/*','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
+sx_pkgdata = ['*.so','pyemtbx/*','examples/*.py','fonts/*.txt','fonts/*.ttf','images/*.png','images/*.ico','images/macimages/*.png','doc/*','test/rt/*.py']
 
 setup(
 	name="eman2",
