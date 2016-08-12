@@ -1,4 +1,4 @@
 FILE(GLOB testprograms "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 INSTALL(PROGRAMS ${testprograms}
-  	DESTINATION    ${CMAKE_INSTALL_PREFIX}/test/rt
+  	DESTINATION    ${EMAN_INSTALL_PREFIX}/test/rt
 )
