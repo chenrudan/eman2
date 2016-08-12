@@ -1,11 +1,10 @@
 package:
     name: eman2
-    #version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
-    version: 2.2
+    version: 3.0.0
 
 source:
-  git_url: git@github.com:cryoem/eman2.git
-  git_tag: dist
+    git_url: git@github.com:cryoem/eman2.git 
+    git_branch: anaconda
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
@@ -31,6 +30,7 @@ requirements:
         - libpng
         - python <3
     run:
+        - mpi4py
         - python <3
         - numpy
         - matplotlib
