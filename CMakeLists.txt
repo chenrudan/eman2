@@ -8,12 +8,11 @@ IF(COMMAND cmake_policy)
 ENDIF(COMMAND cmake_policy)
 cmake_policy(SET CMP0042 NEW)
 
-SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install_dir CACHE INTERNAL "installation prefix")
+SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation prefix")
 
 SET(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
 
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
-SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation prefix")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
