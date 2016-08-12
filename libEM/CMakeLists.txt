@@ -107,7 +107,7 @@ ELSE(WIN32)
     ADD_LIBRARY(EM2 SHARED ${LIB_EM_SOURCE})
     ADD_LIBRARY(GLEM2 SHARED ${LIB_GLEM_SOURCE})
     if(APPLE)
-    	    set_target_properties(EM GLEM PROPERTIES SUFFIX .so)
+    	    set_target_properties(EM2 GLEM2 PROPERTIES SUFFIX .so)
     endif(APPLE)
     
     IF(ENABLE_FFTW2 OR ENABLE_FFTW3)
