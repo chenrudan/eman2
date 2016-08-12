@@ -567,7 +567,7 @@ ADD_CUSTOM_COMMAND(
 	TARGET unittest
 	POST_BUILD
 	COMMAND python 
-	ARGS ${CMAKE_INSTALL_PREFIX}/test/rt/rt.py
+	ARGS ${EMAN_INSTALL_PREFIX}/test/rt/rt.py
 )
 
 #set the list of unit test to run
@@ -599,7 +599,7 @@ FOREACH (TEST ${TESTS})
 	#
 	ADD_CUSTOM_COMMAND(
         OUTPUT ${TEST}.DoUnitTest
-		COMMAND ${CMAKE_COMMAND} ARGS -E time ${CMAKE_INSTALL_PREFIX}/test/rt/${TEST}.py
+		COMMAND ${CMAKE_COMMAND} ARGS -E time ${EMAN_INSTALL_PREFIX}/test/rt/${TEST}.py
 		DEPENDS	${TEST}.PRINT_SPACE
 	)
 	

@@ -1,4 +1,4 @@
 FILE(GLOB pngfiles "${CMAKE_CURRENT_SOURCE_DIR}/*.png")
 INSTALL(FILES ${pngfiles} 
-  	DESTINATION    ${CMAKE_INSTALL_PREFIX}/images/macimages
+  	DESTINATION    ${EMAN_INSTALL_PREFIX}/images/macimages
 )
