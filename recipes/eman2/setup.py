@@ -5,7 +5,7 @@ import os
 libdir='lib'
 e2_scripts = [os.path.join(libdir,'bin',name) for name in ['e2.py','e2_real.py']]
 
-e2_pkgdata = ['libpyAligner2.so']
+e2_pkgdata = ['*.so']
 
 setup(
 	name="eman2",
