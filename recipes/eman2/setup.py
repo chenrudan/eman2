@@ -3,7 +3,7 @@ import glob
 import os
 
 libdir='lib'
-e2_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','*.py'))]
+e2_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','e2.py'))]
 
 e2_pkgdata = ['libpyAligner2.so']
 
