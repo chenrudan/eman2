@@ -116,6 +116,7 @@ ELSE(WIN32)
             PROPERTIES
             PREFIX lib
             SUFFIX ${suffix}
+            INSTALL_RPATH "@loader_path/../../../;@loader_path/."
             )
     
     IF(ENABLE_FFTW2 OR ENABLE_FFTW3)
