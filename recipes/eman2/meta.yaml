@@ -20,13 +20,13 @@ requirements:
         - numpy
         - ftgl
         - freetype
-        - gsl
+        - gsl 2.1
         - boost
-        - fftw
+        - fftw 3.3.5
         - hdf5
         - libtiff >4
         - jpeg >8
-        - libpng
+        - libpng 1.6.22
         - python <3
     run:
         - mpi4py
@@ -35,7 +35,7 @@ requirements:
         - freetype
         - matplotlib
         - boost
-        - fftw
+        - fftw 3.3.5
         - ipython
         - pyqt
         - pyopengl
@@ -44,8 +44,8 @@ requirements:
         - readline
         - libtiff >4
         - jpeg >8
-        - libpng
-        - gsl
+        - libpng 1.6.22
+        - gsl 2.1
         - hdf5
 
 about:
