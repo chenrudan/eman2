@@ -11,9 +11,9 @@ make
 make install
 
 # Long double precision (fftw libraries have "l" suffix)
-$CONFIGURE --enable-long-double
-make
-make install
+#$CONFIGURE --enable-long-double --enable-shared
+#make
+#make install
 
 # Double precision (fftw libraries have no precision suffix)
 $CONFIGURE --enable-sse2 --enable-avx
@@ -21,11 +21,10 @@ make
 make install
 
 # Test suite
-# tests are performed during building as they are not available in the
-# installed package.
-# Additional tests can be run with make smallcheck and make bigcheck
+# Tests are performed during building as they are not available in the installed package.
 cd tests && make check-local
-# Additional tests can be run using the next two lines
+
+# Additional tests can be run with make smallcheck and makebigcheck using the next two lines
 #make smallcheck
 #make bigcheck
 
