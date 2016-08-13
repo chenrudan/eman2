@@ -3,7 +3,6 @@ import glob
 import os
 
 libdir='lib'
-sx_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','*.py'))]
 e2_scripts = [name for name in glob.glob(os.path.join(libdir,'bin','*.py'))]
 
 e2_pkgdata = ['libpyAligner2.so']
@@ -12,8 +11,8 @@ setup(
 	name="eman2",
 	version="3.0.0",
 
-    package_dir={'EMAN2':os.path.join(libdir,'EMAN2'),'sparx':os.path.join(libdir,'sparx')},
-    packages=['EMAN2','sparx'],
+    package_dir={'EMAN2':os.path.join(libdir,'EMAN2'),},
+    packages=['EMAN2',],
     package_data={'EMAN2':e2_pkgdata,},
     include_package_data = True,
     scripts = e2_scripts,
