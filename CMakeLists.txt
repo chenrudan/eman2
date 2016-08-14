@@ -7,7 +7,6 @@ IF(COMMAND cmake_policy)
        cmake_policy(SET CMP0002 OLD)
 ENDIF(COMMAND cmake_policy)
 
-OPTION(CMAKE_VERBOSE_MAKEFILE "if all commands will be echoed to the console during the make" ON)
 
 SET(EMAN_INSTALL_PREFIX $ENV{HOME}/EMAN2 CACHE PATH "installation prefix")
 SET(CMAKE_INSTALL_PREFIX ${EMAN_INSTALL_PREFIX} CACHE INTERNAL "installation prefix")
