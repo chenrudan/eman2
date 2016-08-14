@@ -1,0 +1,17 @@
+package:
+  name: libpng
+  version: 1.6.24
+
+source:
+  fn: libpng-1.6.24.tar.gz
+  url: https://sourceforge.net/projects/libpng/files/libpng16/1.6.24/libpng-1.6.24.tar.gz/download
+
+requirements:
+  build:
+    - zlib
+  run:
+    - zlib
+
+about:
+  home: http://www.libpng.org/pub/png/libpng.html
+  license: Open Source (http://www.libpng.org/pub/png/src/libpng-LICENSE.txt)
