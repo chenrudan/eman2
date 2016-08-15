@@ -28,17 +28,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
-from __future__ import print_function
+from EMAN2.__future__ import print_function
 import os, sys
 import json
 import glob
 
 from optparse import OptionParser, SUPPRESS_HELP
 from EMAN2 import *
-from EMAN2db import *
-from EMAN2jsondb import *
+from EMAN2.EMAN2db import *
+from EMAN2.EMAN2jsondb import *
 from sparx import *
-from applications import MPI_start_end
+from sparx.applications import MPI_start_end
 
 def check_options(options, progname):
 
@@ -447,7 +447,7 @@ If micrograph list file name is not provided, all files matched with the microgr
 			mic_img += 2 * mic_stats[0]
 		
 		if options.import_ctf:
-			from utilities import generate_ctf
+			from sparx.utilities import generate_ctf
 			ctf_obj = generate_ctf(ctf_params) # indexes 0 to 7 (idx_cter_def to idx_cter_astig_ang) must be same in cter format & ctf object format.
 		
 		# Prepare loop variables
@@ -565,7 +565,7 @@ If micrograph list file name is not provided, all files matched with the microgr
 
 			n_bins = 10
 			if len(cutoff_histogram) >= n_bins:
-				from statistics import hist_list
+				from sparx.statistics import hist_list
 				cutoff_region, cutoff_counts = hist_list(cutoff_histogram, n_bins)
 				print("      Histogram of cut-off frequency")
 				print("      cut-off       counts")

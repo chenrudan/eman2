@@ -36,7 +36,7 @@ import sys
 import random
 
 import global_def
-from   global_def import *
+from sparx.global_def import *
 from optparse import OptionParser, SUPPRESS_HELP
 import ConfigParser
 from inspect import currentframe, getframeinfo
@@ -44,17 +44,17 @@ from inspect import currentframe, getframeinfo
 # from __future__ import print_function
 from EMAN2 import *
 from sparx import *
-from logger import Logger, BaseLogger_Files
+from sparx.logger import Logger, BaseLogger_Files
 import global_def
 
-from mpi   import  *
-from math  import  *
+from mpi import *
+from math import *
 
-from utilities import send_string_to_all
+from sparx.utilities import send_string_to_all
 
-from applications import  ali2d_base
+from sparx.applications import ali2d_base
 
-from utilities import program_state_stack
+from sparx.utilities import program_state_stack
 
 NAME_OF_JSON_STATE_FILE = "my_state.json"
 NAME_OF_ORIGINAL_IMAGE_INDEX = "originalid"
@@ -124,13 +124,13 @@ def main(args):
 		sys.exit()
 	
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from sparx.utilities import disable_bdb_cache
 		disable_bdb_cache()
 	global_def.BATCH = True
 	
-	from isac import iter_isac
-	from fundamentals import rot_shift2D, resample
-	from utilities import pad, combine_params2
+	from sparx.isac import iter_isac
+	from sparx.fundamentals import rot_shift2D, resample
+	from sparx.utilities import pad, combine_params2
 
 	command_line_provided_stack_filename = args[0]
 	
@@ -166,7 +166,7 @@ def main(args):
 	stop_after_candidates = options.stop_after_candidates
 	# program_state_stack.restart_location_title_from_command_line = options.restart_section
 	
-	from utilities import qw
+	from sparx.utilities import qw
 	program_state_stack.PROGRAM_STATE_VARIABLES = set(qw("""
 		isac_generation
 	"""))
@@ -294,7 +294,7 @@ def main(args):
 	
 		if(myid == 0):
 			import subprocess
-			from logger import Logger, BaseLogger_Files
+			from sparx.logger import Logger, BaseLogger_Files
 			#  Create output directory
 			log2d = Logger(BaseLogger_Files())
 			log2d.prefix = os.path.join(init2dir)
@@ -533,7 +533,7 @@ def main(args):
 		if( myid == main_node ):
 			for i in range(number_of_images_in_stack):  aligned_images[i].write_image(stack_processed_by_ali2d_base__filename,i)
 			#  It has to be explicitly closed
-			from EMAN2db import db_open_dict
+			from EMAN2.EMAN2db import db_open_dict
 			DB = db_open_dict(stack_processed_by_ali2d_base__filename)
 			DB.close()
 	

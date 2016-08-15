@@ -34,9 +34,9 @@
 
 import os
 import global_def
-from   global_def     import *
-from   user_functions import *
-from   optparse       import OptionParser
+from sparx.global_def import *
+from sparx.user_functions import *
+from optparse import OptionParser
 import sys
 def main():
 	progname = os.path.basename(sys.argv[0])
@@ -74,7 +74,7 @@ def main():
 		print "usage: " + usage
 		print "Please run '" + progname + " -h' for detailed options"
 	elif(options.rotational):
-		from applications import ali2d_rotationaltop
+		from sparx.applications import ali2d_rotationaltop
 		global_def.BATCH = True
 		ali2d_rotationaltop(args[1], args[0], options.randomize, options.orient, options.ir, options.ou, options.rs, options.psi_max, options.mode, options.maxit)
 	else:
@@ -86,12 +86,12 @@ def main():
 		
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		
 		global_def.BATCH = True
 		if  options.MPI:
-			from applications import ali2d_base
+			from sparx.applications import ali2d_base
 			from mpi import mpi_init, mpi_comm_size, mpi_comm_rank, MPI_COMM_WORLD
 			sys.argv = mpi_init(len(sys.argv),sys.argv)
 
@@ -101,7 +101,7 @@ def main():
 
 			if(myid == main_node):
 				import subprocess
-				from logger import Logger, BaseLogger_Files
+				from sparx.logger import Logger, BaseLogger_Files
 				#  Create output directory
 				log = Logger(BaseLogger_Files())
 				log.prefix = os.path.join(outdir)
@@ -111,7 +111,7 @@ def main():
 			else:
 				outcome = 0
 				log = None
-			from utilities       import bcast_number_to_all
+			from sparx.utilities import bcast_number_to_all
 			outcome  = bcast_number_to_all(outcome, source_node = main_node)
 			if(outcome == 1):
 				ERROR('Output directory exists, please change the name and restart the program', "ali2d_MPI", 1, myid)
@@ -125,7 +125,7 @@ def main():
 		else:
 			print " Non-MPI is no more in use, try MPI option, please."
 			"""
-			from applications import ali2d
+			from sparx.applications import ali2d
 			ali2d(args[0], outdir, mask, options.ir, options.ou, options.rs, options.xr, options.yr, \
 				options.ts, options.nomirror, options.dst, \
 				options.center, options.maxit, options.CTF, options.snr, options.Fourvar, \

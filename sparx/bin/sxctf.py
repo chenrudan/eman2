@@ -35,10 +35,10 @@
 # This is a program for determining CTF parameters
 
 import global_def
-from global_def import *
+from sparx.global_def import *
 
 from EMAN2 import *
-from EMAN2db import db_open_dict, db_check_dict
+from EMAN2.EMAN2db import db_open_dict, db_check_dict
 from sparx import *
 from optparse import OptionParser
 from OpenGL import GL,GLUT
@@ -46,9 +46,9 @@ from numpy import *
 import os
 import sys
 import weakref
-from emapplication import EMApp
+from EMAN2.emapplication import EMApp
 
-from Simplex import Simplex
+from EMAN2.Simplex import Simplex
 
 debug=False
 logid=None
@@ -95,7 +95,7 @@ images far from focus."""
 	if len(args)<1 : parser.error("Input image required")
 	
 	if global_def.CACHE_DISABLE:
-		from utilities import disable_bdb_cache
+		from sparx.utilities import disable_bdb_cache
 		disable_bdb_cache()
 
 	if options.auto_fit:
@@ -827,7 +827,7 @@ def ctf_env_points(im_1d,bg_1d,ctf) :
 try:
 	from PyQt4 import QtCore, QtGui, QtOpenGL
 	from PyQt4.QtCore import Qt
-	from valslider import ValSlider
+	from EMAN2.valslider import ValSlider
 except:
 	print "Warning: PyQt4 must be installed to use the --gui option"
 	class dummy:
@@ -850,7 +850,7 @@ class GUIctf(QtGui.QWidget):
 			print "Cannot import EMAN image GUI objects (EMImage2DWidget)"
 			sys.exit(1)
 		try: 
-			from emplot2d import EMPlot2DWidget
+			from EMAN2.emplot2d import EMPlot2DWidget
 		except:
 			print "Cannot import EMAN plot GUI objects (is matplotlib installed?)"
 			sys.exit(1)
@@ -1000,7 +1000,7 @@ class GUIctf(QtGui.QWidget):
 #	def get_output_params(self):
 	
 	def on_output(self):
-		from emsprworkflow import E2CTFOutputTaskGeneral
+		from EMAN2.emsprworkflow import E2CTFOutputTaskGeneral
 		self.form = E2CTFOutputTaskGeneral()
 		self.form.run_form()
 	

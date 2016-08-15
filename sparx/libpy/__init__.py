@@ -31,12 +31,12 @@
 import os
 os.environ["SPARXDIR"] = os.path.dirname(os.path.abspath(__file__))
 
-from alignment       import *
-from morphology      import *
-from reconstruction  import *
-from applications    import *
-from user_functions  import *
-from global_def      import *
-from pixel_error     import *
-from development     import *
-from multi_shc       import *
+from sparx.alignment import *
+from sparx.morphology import *
+from sparx.reconstruction import *
+from sparx.applications import *
+from sparx.user_functions import *
+from sparx.global_def import *
+from sparx.pixel_error import *
+from sparx.development import *
+from sparx.multi_shc import *

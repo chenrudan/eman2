@@ -31,8 +31,8 @@
 #
 #
 
-from   EMAN2        import *
-from   sparx        import *
+from EMAN2 import *
+from sparx import *
 import sys
 
 if len(sys.argv) != 5:
