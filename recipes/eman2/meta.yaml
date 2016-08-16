@@ -19,11 +19,11 @@ requirements:
         - cmake
         - pyopengl
         - numpy
-        - ftgl 2.1.3
+        - ftgl
         - freetype
-        - gsl 2.1
+        - gsl
         - boost
-        - fftw 3.3.4
+        - fftw
         - hdf5
         - libtiff
         - jpeg
@@ -35,17 +35,17 @@ requirements:
         - freetype
         - matplotlib
         - boost
-        - fftw 3.3.4
+        - fftw
         - ipython
         - pyqt
         - pyopengl
-        - ftgl 2.1.3
+        - ftgl
         - bsddb
         - readline
         - libtiff
         - jpeg
         - libpng
-        - gsl 2.1
+        - gsl
         - hdf5
 
 about:
