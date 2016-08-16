@@ -34,13 +34,13 @@
 import sys
 import os
 from subprocess import *
-from functools import partial  # Use to connect event-source widget and event handler
+from functools import partial # Use to connect event-source widget and event handler
 from PyQt4.Qt import *
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from EMAN2 import *
-from EMAN2_cppwrap import *
-from global_def import *
+from EMAN2.EMAN2_cppwrap import *
+from sparx.global_def import *
 from sparx import *
 
 # ========================================================================================

@@ -36,7 +36,7 @@ def main():
 	import os
 	import sys
 	from optparse import OptionParser
-	from global_def import SPARXVERSION
+	from sparx.global_def import SPARXVERSION
 	import global_def
         arglist = []
         for arg in sys.argv:
@@ -96,7 +96,7 @@ def main():
 		rminp = int((float(options.rmin)/options.apix) + 0.5)
 		rmaxp = int((float(options.rmax)/options.apix) + 0.5)
 		
-		from utilities import get_input_from_string, get_im
+		from sparx.utilities import get_input_from_string, get_im
 
 		xr = get_input_from_string(options.xr)
 		txs = get_input_from_string(options.txs)
@@ -122,10 +122,10 @@ def main():
 			sys.argv = mpi_init(len(sys.argv), sys.argv)
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 
-		from applications import ihrsr
+		from sparx.applications import ihrsr
 		global_def.BATCH = True
 		if len(args) < 4:  mask = None
 		else:               mask = args[3]

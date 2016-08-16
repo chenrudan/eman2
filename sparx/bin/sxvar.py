@@ -36,10 +36,10 @@
 import sys
 import os
 import global_def
-from global_def import *
+from sparx.global_def import *
 
 def main():
-	from   optparse       import OptionParser
+	from optparse import OptionParser
 	progname = os.path.basename(sys.argv[0])
 	usage = progname + " filelist outdir  --fl=filter_low_value --aa=filter_fall_off --radccc=radius_ccc  -repair=repairfile --pca --pcamask --pcanvec --MPI"
 	parser = OptionParser(usage,version=SPARXVERSION)
@@ -63,7 +63,7 @@ def main():
 		outdir = args[-1]
 
 		if global_def.CACHE_DISABLE:
-			from utilities import disable_bdb_cache
+			from sparx.utilities import disable_bdb_cache
 			disable_bdb_cache()
 		if options.MPI:
 			from mpi import mpi_init
@@ -77,10 +77,10 @@ def main():
 			global_def.BATCH = True
 			
 			if(options.n):
-				from development import var_mpi_new
+				from sparx.development import var_mpi_new
 				var_mpi_new( files[0], outdir, options.scratch, options.fl, options.aa, options.radccc, False, False, options.repair, options.pca, options.pcamask, options.pcanvec)
 			else:
-				from applications import var_mpi
+				from sparx.applications import var_mpi
 				var_mpi( files, outdir, options.fl, options.aa, options.radccc, options.repair, options.pca, options.pcamask, options.pcanvec)
 
 			global_def.BATCH = False
@@ -89,7 +89,7 @@ def main():
 		else:
 			global_def.BATCH = True
 			ERROR("Please use MPI version","sxvar",1)
-			from applications import defvar
+			from sparx.applications import defvar
 			defvar(  files, outdir, options.fl, options.aa, options.radccc, options.repair, options.pca, options.pcamask, options.pcanvec)
 			global_def.BATCH = False
 

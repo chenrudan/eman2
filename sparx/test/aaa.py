@@ -31,14 +31,14 @@
 #
 #
 
-from EMAN2  import *
-from sparx  import *
-import sparx.libpy
+from EMAN2 import *
+from sparx import *
+from sparx import *
 
 # For convenience, import all functions into the top-level namespace. 
 for nm in dir(sparx.libpy):
     if nm.startswith("__"): continue
-    exec "from %s import *" % nm
+    exec "from EMAN2.%s import *" % nm
 	    
     
     

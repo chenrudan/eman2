@@ -28,17 +28,17 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 
-from utilities       import *
-from filter          import *
-from projection      import *
-from fundamentals    import *
-from statistics      import *
-from alignment       import *
-from morphology      import *
-from reconstruction  import *
-from applications    import *
-from user_functions  import *
-from global_def      import *
-from pixel_error     import *
-from development     import *
-from multi_shc       import *
+from sparx.utilities import *
+from sparx.filter import *
+from sparx.projection import *
+from sparx.fundamentals import *
+from sparx.statistics import *
+from sparx.alignment import *
+from sparx.morphology import *
+from sparx.reconstruction import *
+from sparx.applications import *
+from sparx.user_functions import *
+from sparx.global_def import *
+from sparx.pixel_error import *
+from sparx.development import *
+from sparx.multi_shc import *

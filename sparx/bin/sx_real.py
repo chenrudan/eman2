@@ -44,14 +44,14 @@ try:
 	if get_platform()=="Linux" and os.getenv("DISPLAY")==None: raise Exception
 
 	from PyQt4 import QtCore, QtGui, QtOpenGL
-	from emapplication import EMApp
+	from EMAN2.emapplication import EMApp
 	import IPython.lib.inputhook
 
 
 	app=EMApp()
 	IPython.lib.inputhook.enable_qt4(app)
 
-	from emimage import image_update
+	from EMAN2.emimage import image_update
 
 	def ipy_on_timer():
 		image_update()
@@ -66,7 +66,8 @@ except:
 	GUIUSE=False
 
 from sparx import *
-import global_def
+from sparx import global_def
+
 if GUIUSE:
 	print "Welcome to the interactive SPARX-GUI Python interface, provided by ipython"
 else:

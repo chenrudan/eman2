@@ -1,8 +1,7 @@
-#! /usr/bin/env python
-
+#!/usr/bin/env python
 #
-# Author: Pawel A.Penczek, 09/09/2006 (Pawel.A.Penczek@uth.tmc.edu)
-# Copyright (c) 2000-2006 The University of Texas - Houston Medical School
+# Author: Steven Ludtke, 04/10/2003 (sludtke@bcm.edu)
+# Copyright (c) 2000-2006 Baylor College of Medicine
 #
 # This software is issued under a joint BSD/GNU license. You may use the
 # source code in this file under either license. However, note that the
@@ -27,35 +26,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  2111-1307 USA
 #
 #
 
+import EMAN2.libpyAligner2 as libpyAligner2
+import EMAN2.libpyAverager2 as libpyAverager2
+import EMAN2.libpyCmp2 as libpyCmp2
+import EMAN2.libpyEMObject2 as libpyEMObject2
+import EMAN2.libpyFundamentals2 as libpyFundamentals2
+import EMAN2.libpyGeometry2 as libpyGeometry2
+import EMAN2.libpyPointArray2 as libpyPointArray2
+import EMAN2.libpyPolarData2 as libpyPolarData2
+import EMAN2.libpyProcessor2 as libpyProcessor2
+import EMAN2.libpyProjector2 as libpyProjector2
+import EMAN2.libpyReconstructor2 as libpyReconstructor2
+import EMAN2.libpyTransform2 as libpyTransform2
+import EMAN2.libpyUtils2 as libpyUtils2
 
-import os
-import global_def
-from sparx.global_def import *
-from optparse import OptionParser
-import sys
-def main():
-	
-	progname = os.path.basename(sys.argv[0])
-	usage    = progname + " stack dendoname averages_name --K=number_of_groups"
-	parser   = OptionParser(usage,version=SPARXVERSION)
-	parser.add_option("--K", type="int", default=2, help="Number of classes (default 2)")
-	
-	(options, args) = parser.parse_args()
-    	if len(args) != 3:
-		print "usage: " + usage
-		print "Please run '" + progname + " -h' for detailed options"
-	else:
-		if global_def.CACHE_DISABLE:
-			from sparx.utilities import disable_bdb_cache
-			disable_bdb_cache()
-		from sparx.applications import HAC_averages
-		global_def.BATCH = True
-		HAC_averages(args[0], args[1], args[2], options.K)
-		global_def.BATCH = False
-
-if __name__ == "__main__":
-	        main()
+import EMAN2.libpyTypeConverter2 as libpyTypeConverter2
+import EMAN2.libpyEMData2 as libpyEMData2
+import EMAN2.libpyAnalizer2 as libpyAnalizer2

@@ -9,16 +9,16 @@ import os
 import sys
 import types
 import global_def
-from   global_def import *
-from   optparse   import OptionParser
-from   sparx      import *
-from   EMAN2      import *
-from   numpy      import array
-from   logger     import Logger, BaseLogger_Files
+from sparx.global_def import *
+from optparse import OptionParser
+from sparx import *
+from EMAN2 import *
+from numpy import array
+from sparx.logger import Logger, BaseLogger_Files
 
 
 def main():
-	from logger import Logger, BaseLogger_Files
+	from sparx.logger import Logger, BaseLogger_Files
         arglist = []
         i = 0
         while( i < len(sys.argv) ):
@@ -86,12 +86,12 @@ def main():
 		mpi_comm = MPI_COMM_WORLD
 		main_node= 0
 		# import some utilities
-		from utilities import get_im,bcast_number_to_all,cmdexecute,write_text_file,read_text_file,wrap_mpi_bcast, get_params_proj, write_text_row
-		from applications import recons3d_n_MPI, mref_ali3d_MPI, Kmref_ali3d_MPI
-		from statistics import k_means_match_clusters_asg_new,k_means_stab_bbenum
-		from applications import mref_ali3d_EQ_Kmeans, ali3d_mref_Kmeans_MPI  
+		from sparx.utilities import get_im,bcast_number_to_all,cmdexecute,write_text_file,read_text_file,wrap_mpi_bcast, get_params_proj, write_text_row
+		from sparx.applications import recons3d_n_MPI, mref_ali3d_MPI, Kmref_ali3d_MPI
+		from sparx.statistics import k_means_match_clusters_asg_new,k_means_stab_bbenum
+		from sparx.applications import mref_ali3d_EQ_Kmeans, ali3d_mref_Kmeans_MPI  
 		# Create the main log file
-		from logger import Logger,BaseLogger_Files
+		from sparx.logger import Logger,BaseLogger_Files
 		if myid ==main_node:
 			log_main=Logger(BaseLogger_Files())
 			log_main.prefix = masterdir+"/"
@@ -184,16 +184,16 @@ def main():
 		Tracker["orgstack"]        = orgstack
 		#--------------------------------------------------------------------
 		# import from utilities
-		from utilities import sample_down_1D_curve,get_initial_ID,remove_small_groups,print_upper_triangular_matrix,print_a_line_with_timestamp
-		from utilities import print_dict,get_resolution_mrk01,partition_to_groups,partition_independent_runs,get_outliers
-		from utilities import merge_groups, save_alist, margin_of_error, get_margin_of_error, do_two_way_comparison, select_two_runs, get_ali3d_params
-		from utilities import counting_projections, unload_dict, load_dict, get_stat_proj, create_random_list, get_number_of_groups, recons_mref
-		from utilities import apply_low_pass_filter, get_groups_from_partition, get_number_of_groups, get_complementary_elements_total, update_full_dict
-		from utilities import count_chunk_members, set_filter_parameters_from_adjusted_fsc, adjust_fsc_down, get_two_chunks_from_stack
+		from sparx.utilities import sample_down_1D_curve,get_initial_ID,remove_small_groups,print_upper_triangular_matrix,print_a_line_with_timestamp
+		from sparx.utilities import print_dict,get_resolution_mrk01,partition_to_groups,partition_independent_runs,get_outliers
+		from sparx.utilities import merge_groups, save_alist, margin_of_error, get_margin_of_error, do_two_way_comparison, select_two_runs, get_ali3d_params
+		from sparx.utilities import counting_projections, unload_dict, load_dict, get_stat_proj, create_random_list, get_number_of_groups, recons_mref
+		from sparx.utilities import apply_low_pass_filter, get_groups_from_partition, get_number_of_groups, get_complementary_elements_total, update_full_dict
+		from sparx.utilities import count_chunk_members, set_filter_parameters_from_adjusted_fsc, adjust_fsc_down, get_two_chunks_from_stack
 		####------------------------------------------------------------------
 		#
 		# Get the pixel size; if none, set to 1.0, and the original image size
-		from utilities import get_shrink_data_huang
+		from sparx.utilities import get_shrink_data_huang
 		if(myid == main_node):
 			line = strftime("%Y-%m-%d_%H:%M:%S", localtime()) + " =>"
 			print(line+"Initialization of 3-D sorting")
@@ -278,7 +278,7 @@ def main():
 		from random import shuffle
 		# Compute the resolution 
 		#### make chunkdir dictionary for computing margin of error
-		import user_functions
+		import sparx.user_functions as user_functions
 		user_func  = user_functions.factory[Tracker["constants"]["user_func"]]
 		chunk_dict = {}
 		chunk_list = []
@@ -380,7 +380,7 @@ def main():
 		if myid == main_node:
 			log_main.add("number of cpus used in this run is %d"%Tracker["constants"]["nproc"])
 			log_main.add("**********************************************************")
-		from filter import filt_tanl
+		from sparx.filter import filt_tanl
 		### START 3-D sorting
 		if myid ==main_node:
 			log_main.add("----------3-D sorting  program------- ")
@@ -391,10 +391,10 @@ def main():
 			for index in xrange(2):
 				filt_tanl(get_im(os.path.join(masterdir,"vol%01d.hdf"%index)), Tracker["low_pass_filter"],Tracker["falloff"]).write_image(os.path.join(masterdir, "volf%01d.hdf"%index))
 		mpi_barrier(MPI_COMM_WORLD)
-		from utilities import get_input_from_string
+		from sparx.utilities import get_input_from_string
 		delta       = get_input_from_string(Tracker["constants"]["delta"])
 		delta       = delta[0]
-		from utilities import even_angles
+		from sparx.utilities import even_angles
 		n_angles    = even_angles(delta, 0, 180)
 		this_ali3d  = Tracker["constants"]["ali3d"]
 		sampled     = get_stat_proj(Tracker,delta,this_ali3d)
