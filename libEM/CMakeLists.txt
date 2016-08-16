@@ -109,7 +109,7 @@ ELSE(WIN32)
     ADD_LIBRARY(EM2 SHARED ${LIB_EM_SOURCE})
     ADD_LIBRARY(GLEM2 SHARED ${LIB_GLEM_SOURCE})
     
-    set_target_properties(EM GLEM 
+    set_target_properties(EM2 GLEM2 
     	    PROPERTIES
     	    PREFIX lib
     	    SUFFIX ${suffix}
