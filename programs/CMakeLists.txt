@@ -22,6 +22,9 @@ IF(WIN32)
 		RENAME e2display.pyw)
 ENDIF(WIN32)
 
-# string(TIMESTAMP date "%Y-%m-%d %H:%M")
+string(TIMESTAMP EMAN_TIMESTAMP "%Y-%m-%d %H:%M")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/e2version.py.in
+				${CMAKE_INSTALL_PREFIX}/bin/e2version.py
+				)
 # install (CODE "execute_process(COMMAND sed -i.bk \"s/BUILD_DATE/${date}/g\" ${CMAKE_INSTALL_PREFIX}/bin/e2version.py)")
 # install (CODE "execute_process(COMMAND rm ${CMAKE_INSTALL_PREFIX}/bin/e2version.py.bk)")
