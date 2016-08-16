@@ -4,7 +4,7 @@ package:
 
 source:
     git_url: git@github.com:cryoem/eman2.git 
-    git_branch: anaconda
+    git_branch: conda-wip
 
 build:
     number: 0
