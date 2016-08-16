@@ -96,6 +96,7 @@ SET(LIB_GLEM_SOURCE
 		emftgl.cpp)
 
 IF(WIN32)
+    set(suffix .pyd)
     ADD_LIBRARY(EM2 STATIC ${LIB_EM_SOURCE})
     ADD_LIBRARY(GLEM2 STATIC ${LIB_GLEM_SOURCE})
     TARGET_LINK_LIBRARIES(EM2 ${FFTW_LIBRARIES} ${GSL_LIBRARY} ${GSL_CBLAS_LIBRARY} )
@@ -104,16 +105,17 @@ IF(WIN32)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
     ADD_DEFINITIONS(-D_SCL_SECURE_NO_WARNINGS)
 ELSE(WIN32)
+    set(suffix .so)
     ADD_LIBRARY(EM2 SHARED ${LIB_EM_SOURCE})
     ADD_LIBRARY(GLEM2 SHARED ${LIB_GLEM_SOURCE})
-    	
-    #	if(APPLE)
-    #	set_target_properties(EM GLEM 
-    #		PROPERTIES
-    #		SUFFIX .so
-    #	)
-    #	endif(APPLE)
     
+    set_target_properties(EM GLEM 
+    	    PROPERTIES
+    	    PREFIX lib
+    	    SUFFIX ${suffix}
+    	    INSTALL_RPATH "@loader_path/../../../;@loader_path/."
+    	    )
+
     IF(ENABLE_FFTW2 OR ENABLE_FFTW3)
     	TARGET_LINK_LIBRARIES(EM2 ${FFTW_LIBRARIES} ${GSL_LIBRARY} ${GSL_CBLAS_LIBRARY} m)
     ELSE(ENABLE_FFTW2 OR ENABLE_FFTW3)
