@@ -43,7 +43,8 @@ import signal
 import traceback
 import shutil
 import subprocess
-from EMAN2 import thread,threading
+import thread
+import threading
 import getpass
 import select
 
@@ -792,7 +793,7 @@ class EMMpiClient():
 					if com=="EXIT":
 						if verbose>1 : print "rank %d: I was just told to exit"%self.rank
 						break
-					
+
 					if com=="EXEC":
 						if self.logfile!=None : self.logfile.write( "EXEC\n")
 						task=loads(data)		# just for clarity
