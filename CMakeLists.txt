@@ -13,6 +13,7 @@ SET(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/lib CACHE INTERNAL "installation 
 
 SET(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/EMAN2 CACHE PATH "output directory for building all libraries.")
 
+set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
 OPTION(ENABLE_AUTODOC "enable latex/doxygen document generation and etc. " OFF)
 
 OPTION(ENABLE_FFTW2 "enable fftw 2 support (LEGACY)" OFF)
