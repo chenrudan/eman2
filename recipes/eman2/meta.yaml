@@ -19,34 +19,33 @@ requirements:
         - cmake
         - pyopengl
         - numpy
-        - ftgl
+        - ftgl 2.1.3
         - freetype
-        - gsl
+        - gsl 2.1
         - boost
-        - fftw
+        - fftw 3.3.4
         - hdf5
-        - libtiff >4
-        - jpeg >8
+        - libtiff
+        - jpeg
         - libpng
         - python <3
     run:
-        - mpi4py
         - python <3
         - numpy
         - freetype
         - matplotlib
         - boost
-        - fftw
+        - fftw 3.3.4
         - ipython
         - pyqt
         - pyopengl
-        - ftgl
+        - ftgl 2.1.3
         - bsddb
         - readline
-        - libtiff >4
-        - jpeg >8
+        - libtiff
+        - jpeg
         - libpng
-        - gsl
+        - gsl 2.1
         - hdf5
 
 about:
