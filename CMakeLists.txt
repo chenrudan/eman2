@@ -187,51 +187,23 @@ ENDIF(ENABLE_IOCACHE)
 # ENDIF(ENABLE_HDFIOCACHE)
 
 SET(INCLUDE_DIRS 
-	${EMAN_SOURCE_DIR}/libEM
+	${CMAKE_SOURCE_DIR}/libEM
+	${CMAKE_SOURCE_DIR}/libpyEM
 	$ENV{PREFIX}/include
-	$ENV{HOME}/include 
-	$ENV{FFTWDIR}/include 
-	$ENV{GSLDIR}/include 
-	/usr/local/include 
-	/usr/local/cuda/include
-	/usr/include 
-	/sw/include
-	/usr/include/freetype2
-	/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/OpenGL.framework/Headers
 	)
 
 SET(LIB_DIRS 
-	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries
-	$ENV{EMANDIR}/lib 
 	$ENV{PREFIX}/lib
-	$ENV{HOME}/lib 
-	${PLATFORMLIB} 
-	$ENV{FFTWDIR}/lib 
-	$ENV{GSLDIR}/lib 
-	/usr/local/lib
-	/usr/local/cuda/lib
-	/usr/lib64 
-	/usr/lib 
-	/sw/lib
 	)
 
 
 MACRO(CHECK_REQUIRED_LIB2 upper lower header lower2 header2)
-    FIND_PATH(${upper}_INCLUDE_PATH ${header} $ENV{${upper}DIR}/include ${INCLUDE_DIRS})
-    IF(${upper}_INCLUDE_PATH)
-    ELSE (${upper}_INCLUDE_PATH)
-		FIND_PATH(${upper}_INCLUDE_PATH ${header2} $ENV{${upper}DIR}/include ${INCLUDE_DIRS})
-    ENDIF(${upper}_INCLUDE_PATH)
-    
-    IF(${upper}_INCLUDE_PATH)
-		FIND_LIBRARY(${upper}_LIBRARY NAMES ${lower} ${lower2} PATHS $ENV{${upper}DIR}/lib ${LIB_DIRS})		
-		IF(${upper}_LIBRARY)
-		ELSE(${upper}_LIBRARY)
-			#MESSAGE(SEND_ERROR "ERROR: ${upper} not found. please install ${upper} first!")
-		ENDIF(${upper}_LIBRARY)
-    ELSE(${upper}_INCLUDE_PATH)
-		#MESSAGE(SEND_ERROR "ERROR: ${upper} not found. please install ${upper} first!")
-    ENDIF(${upper}_INCLUDE_PATH)
+    FIND_PATH(${upper}_INCLUDE_PATH ${header} ${INCLUDE_DIRS})
+    IF(NOT ${upper}_INCLUDE_PATH)
+		    FIND_PATH(${upper}_INCLUDE_PATH ${header2} ${INCLUDE_DIRS})
+    ELSE()
+		    FIND_LIBRARY(${upper}_LIBRARY NAMES ${lower} ${lower2})
+    ENDIF()
 ENDMACRO(CHECK_REQUIRED_LIB2)
 
 MACRO(CHECK_REQUIRED_LIB upper lower header)
@@ -239,10 +211,10 @@ MACRO(CHECK_REQUIRED_LIB upper lower header)
 ENDMACRO(CHECK_REQUIRED_LIB)
 
 MACRO(CHECK_OPTIONAL_LIB upper lower header)
-    FIND_PATH(${upper}_INCLUDE_PATH ${header} $ENV{${upper}DIR}/include ${INCLUDE_DIRS}) 
+    FIND_PATH(${upper}_INCLUDE_PATH ${header} ${INCLUDE_DIRS}) 
     
     IF(${upper}_INCLUDE_PATH)
-        FIND_LIBRARY(${upper}_LIBRARY NAMES ${lower} PATHS $ENV{${upper}DIR}/lib ${LIB_DIRS})
+        FIND_LIBRARY(${upper}_LIBRARY NAMES ${lower})
 		
         IF(${upper}_LIBRARY)
 			ADD_DEFINITIONS(-DEM_${upper})
@@ -259,7 +231,7 @@ MACRO(CHECK_OPTIONAL_LIB upper lower header)
 ENDMACRO(CHECK_OPTIONAL_LIB)
 
 MACRO(CHECK_LIB_ONLY upper lower)
-    FIND_LIBRARY(${upper}_LIBRARY NAMES ${lower} PATHS $ENV{${upper}DIR}/lib ${LIB_DIRS})
+    FIND_LIBRARY(${upper}_LIBRARY NAMES ${lower})
 ENDMACRO(CHECK_LIB_ONLY)
 
 MACRO(CHECK_PYTHON)
@@ -414,7 +386,7 @@ IF (ENABLE_FTGL)
 		ADD_DEFINITIONS(-DOLD_FTGL)
 	ENDIF(EXISTS ${FTGL_INCLUDE_PATH}/FTGL/FTGL.h AND COMMAND IF)
 	ADD_SUBDIRECTORY(fonts)
-    	FIND_PATH(FREETYPE_INCLUDE_PATH ft2build.h $ENV{PREFIX}/include/freetype2 /usr/include/freetype2 /usr/include $ENV{${upper}DIR}/include ${INCLUDE_DIRS})
+    	FIND_PATH(FREETYPE_INCLUDE_PATH ft2build.h $ENV{PREFIX}/include/freetype2 ${INCLUDE_DIRS})
 	CHECK_REQUIRED_LIB(FREETYPE freetype freetype/config/ftheader.h )
 	IF (ENABLE_STATIC_FTGL)
 		IF(WIN32)
@@ -456,22 +428,7 @@ ENDIF(ENABLE_PNG)
 
 FIND_PATH(NUMPY_INCLUDE_PATH numpy/arrayobject.h
 	$ENV{SP_DIR}/numpy/core/include
-	$ENV{PYTHON_ROOT}/lib/python2.5/site-packages/numpy/core/include
-	$ENV{PYTHON_ROOT}/lib/python2.4/site-packages/numpy/core/include
-	/usr/local/lib/python2.7/site-packages/numpy/core/include
-	/usr/local/lib/python2.6/site-packages/numpy/core/include
-	/usr/lib64/python2.7/site-packages/numpy/core/include
-	/usr/lib64/python2.6/site-packages/numpy/core/include
-	/usr/lib64/python2.5/site-packages/numpy/core/include
-	/usr/lib64/python2.4/site-packages/numpy/core/include
-	/usr/lib/python2.7/site-packages/numpy/core/include
-	/usr/lib/python2.6/site-packages/numpy/core/include
-	/usr/lib/python2.5/site-packages/numpy/core/include
-    /Library/Python/2.5/site-packages/numpy/core/include
-    /usr/lib/python2.4/site-packages/numpy/core/include
-    /System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/numpy/core/include
-    /System/Library/Frameworks/Python.framework/Versions/2.6/Extras/lib/python/numpy/core/include
-    /usr/include)
+)
 INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_PATH}) 
 
 IF(WIN32)
