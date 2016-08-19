@@ -202,6 +202,14 @@ set(OPENGL_LIBRARY ${OPENGL_gl_LIBRARY} CACHE PATH "")
 set(GL_LIBRARY ${OPENGL_gl_LIBRARY}     CACHE PATH "")
 set(GLU_LIBRARY ${OPENGL_glu_LIBRARY} CACHE PATH "")
 set(GLUT_LIBRARY ${GLUT_glut_LIBRARY} CACHE PATH "")
+
+message("GL_INCLUDE_PATH: ${GL_INCLUDE_PATH}")
+message("GLU_INCLUDE_PATH: ${GLU_INCLUDE_PATH}")
+message("OPENGL_INCLUDE_DIR: ${OPENGL_INCLUDE_DIR}")
+message("GL_LIBRARY: ${GL_LIBRARY}")
+message("GLU_LIBRARY: ${GLU_LIBRARY}")
+message("GLUT_LIBRARY: ${GLUT_LIBRARY}")
+
 set(FFTW3F_LIBRARY ${FFTW3F_LIBRARIES} CACHE PATH "")
 set(HDF5_LIBRARY ${HDF5_LIBRARIES} CACHE PATH "")
 set(PNG_LIBRARY ${PNG_LIBRARIES} CACHE PATH "")
@@ -222,11 +230,16 @@ SET(INCLUDE_DIRS
 SET(LIB_DIRS 
 	)
 
+message("INCLUDE_DIRS: ${INCLUDE_DIRS}")
 
 MACRO(CHECK_REQUIRED_LIB2 upper lower header lower2 header2)
+	message("......CHECK_REQUIRED_LIB2(${upper} ${lower} ${header} ${lower2} ${header2})")
     FIND_PATH(${upper}_INCLUDE_PATH ${header} ${INCLUDE_DIRS})
 	FIND_PATH(${upper}_INCLUDE_PATH ${header2} ${INCLUDE_DIRS})
+	message("........if..not..${upper}_INCLUDE_PATH ${header2} ${INCLUDE_DIRS}")
 	FIND_LIBRARY(${upper}_LIBRARY NAMES ${lower} ${lower2})
+	message("........else.....${upper}_LIBRARY NAMES ${lower} ${lower2}")
+	message("..results (inc, lib): ${${upper}_INCLUDE_PATH} ${${upper}_LIBRARY}")
 ENDMACRO(CHECK_REQUIRED_LIB2)
 
 MACRO(CHECK_REQUIRED_LIB upper lower header)
@@ -301,6 +314,9 @@ IF(ENABLE_FFTW3)
     SET(FFTW_LIBRARIES ${FFTW3_LIBRARY})
     SET(FFTW_INCLUDE_PATH ${FFTW3_INCLUDE_PATH})
     
+    message("...IF(ENABLE_FFTW3)......")
+    message("...FFTW3_LIBRARY: ${FFTW3_LIBRARY}")
+
     IF(ENABLE_NFFT2)
     	CHECK_REQUIRED_LIB(FFTW3D fftw3 fftw3.h)
     	CHECK_REQUIRED_LIB(NFFT2 nfft nfft.h)
